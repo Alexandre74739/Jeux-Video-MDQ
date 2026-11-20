@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BlockEditor from "./BlockEditor";
+import BackButton from "./BackButton";
 import World2D from "./World2D";
 import type { WorldEvent } from "./World3D";
 import { BumpNumber, Confetti, Cubo, Logo, SoundToggle } from "./ui";
@@ -176,16 +177,14 @@ export default function LevelGame({ slug }: { slug: string }) {
   const fallback2D = <World2D world={world} />;
 
   return (
-    <div className="flex h-dvh min-h-[620px] flex-col overflow-hidden bg-cream">
+    <div className="flex min-h-dvh flex-col bg-cream lg:h-dvh lg:min-h-[620px] lg:overflow-hidden">
       <Confetti fire={confetti} />
 
       {/* Barre du haut */}
-      <header className="flex h-[72px] shrink-0 items-center gap-4 border-b-[3px] border-ink bg-paper px-4">
+      <header className="sticky top-0 z-40 flex min-h-[72px] shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:px-4 lg:flex-nowrap">
+        <BackButton fallback="/jouer/" label="Défis" />
         <Logo small />
-        <Link href="/jouer/" className="btn flex items-center gap-1.5 whitespace-nowrap bg-paper px-3 py-2 text-sm" aria-label="Retour au choix des défis">
-          <LayoutGrid size={18} strokeWidth={2.75} aria-hidden="true" /> Défis
-        </Link>
-        <nav aria-label="Niveaux" className="mx-auto flex items-center">
+        <nav aria-label="Niveaux" className="order-last flex w-full items-center overflow-x-auto px-1 pt-1 pb-3 lg:order-none lg:mx-auto lg:w-auto lg:overflow-visible lg:p-0">
           {LEVELS.map((l, i) => {
             const st = progress.stars[sk(l.id)] ?? 0;
             const open = unlocked(i);
@@ -216,7 +215,7 @@ export default function LevelGame({ slug }: { slug: string }) {
             );
           })}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <div className="toon flex items-center gap-1.5 rounded-full bg-sun px-3 py-1.5 font-display text-lg font-bold" title="Étoiles gagnées">
             <StarIcon size={22} /><BumpNumber value={totalStars} /><span className="sr-only">étoiles</span>
           </div>
@@ -240,9 +239,9 @@ export default function LevelGame({ slug }: { slug: string }) {
         </div>
       </header>
 
-      <main className="flex min-h-0 flex-1 gap-3 p-3">
+      <main className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:flex-row">
         {/* Colonne monde */}
-        <div className="flex w-[min(40vw,560px)] shrink-0 flex-col gap-3">
+        <div className="flex w-full shrink-0 flex-col gap-3 lg:w-[min(40vw,560px)]">
           <div className="flex items-start gap-2">
             <motion.div key={hop} initial={{ y: 0 }} animate={{ y: [0, -14, 0] }} transition={{ duration: 0.35 }} className="shrink-0">
               <Cubo size={64} mood={msg.mood} />
@@ -270,7 +269,7 @@ export default function LevelGame({ slug }: { slug: string }) {
 
           <div
             key={shake}
-            className={`relative min-h-0 flex-1 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop ${shake ? "shake" : ""}`}
+            className={`relative min-h-[320px] flex-1 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop lg:min-h-0 ${shake ? "shake" : ""}`}
             style={{ background: "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)" }}
           >
             {ready && (view3d ? <World3D world={world} event={event} fallback={fallback2D} /> : fallback2D)}

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { BlockView } from "@/components/BlockView";
 import { Logo } from "@/components/ui";
+import BackButton from "@/components/BackButton";
 import { StarIcon } from "@/components/Icon";
 import { LayoutGrid } from "lucide-react";
 import { COURSES, DIFFICULTY } from "@/lib/levels";
@@ -11,7 +12,10 @@ export default function Solutions() {
   return (
     <div className="min-h-dvh bg-cream">
       <header className="sticky top-0 z-40 flex items-center justify-between border-b-[3px] border-ink bg-paper px-4 py-3 sm:px-6">
-        <Logo small />
+        <div className="flex items-center gap-2">
+          <BackButton fallback="/" />
+          <Logo small />
+        </div>
         <Link href="/jouer/" className="btn flex items-center gap-2 bg-sun px-4 py-2"><LayoutGrid size={19} strokeWidth={2.75} aria-hidden="true" /> Défis</Link>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">

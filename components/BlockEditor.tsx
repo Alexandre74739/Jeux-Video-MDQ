@@ -173,12 +173,12 @@ export default function BlockEditor(props: Props) {
   const empty = program.length === 0;
 
   return (
-    <div className="flex min-h-0 flex-1 gap-3">
+    <div className="flex min-h-[640px] flex-1 flex-col gap-3 md:min-h-[520px] md:flex-row lg:min-h-0">
       {/* Palette */}
       <section
         data-trash={drag ? "1" : undefined}
         aria-label="Blocs disponibles"
-        className={`relative flex ${showTabs ? "w-[320px]" : "w-[250px]"} shrink-0 flex-col overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop transition-colors ${overTrash ? "bg-coral/30" : "bg-paper"}`}
+        className={`relative flex w-full max-h-[280px] md:max-h-none ${showTabs ? "md:w-[320px]" : "md:w-[250px]"} shrink-0 flex-col overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop transition-colors ${overTrash ? "bg-coral/30" : "bg-paper"}`}
       >
         <h2 className="border-b-[3px] border-ink bg-sky px-4 py-2 text-lg font-bold">Blocs</h2>
         <div className="flex min-h-0 flex-1">
@@ -237,7 +237,7 @@ export default function BlockEditor(props: Props) {
       </section>
 
       {/* Programme */}
-      <section aria-label="Mon programme" className={`flex min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-pop ${disabled ? "pointer-events-none" : ""}`}>
+      <section aria-label="Mon programme" className={`flex min-h-[340px] min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-pop md:min-h-0 ${disabled ? "pointer-events-none" : ""}`}>
         <div className="flex items-center gap-2 border-b-[3px] border-ink bg-sun px-4 py-1.5">
           <h2 className="text-lg font-bold whitespace-nowrap">{title}</h2>
           <div className="ml-auto flex items-center gap-2">{toolbar}</div>

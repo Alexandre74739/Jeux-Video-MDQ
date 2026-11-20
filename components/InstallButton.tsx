@@ -26,8 +26,8 @@ const STEPS: Record<Platform, { title: string; steps: string[] }> = {
   "firefox-android": { title: "Sur Firefox (Android)", steps: ["Touche le menu ⋮ en haut à droite.", "Choisis « Installer » (ou « Ajouter à l'écran d'accueil »)."] },
   samsung: { title: "Sur Samsung Internet", steps: ["Touche le menu ≡ en bas.", "Choisis « Ajouter la page à » puis « Écran d'accueil »."] },
   chromium: { title: "Sur Edge / Chrome", steps: ["Clique sur l'icône d'installation à droite de la barre d'adresse.", "Ou ouvre le menu ⋯ › Applications › « Installer CuboCode »."] },
-  "firefox-windows": { title: "Firefox ne sait pas installer d'applications", steps: ["Ouvre CuboCode dans Microsoft Edge (déjà présent sur Windows) avec le bouton ci-dessous.", "Dans Edge, clique sur « Installer l'appli »."] },
-  "firefox-desktop": { title: "Firefox ne sait pas installer d'applications", steps: ["Ouvre CuboCode avec Chrome, Edge ou Safari.", "Clique ensuite sur « Installer l'appli »."] },
+  "firefox-windows": { title: "Sur Firefox (Windows)", steps: ["Clique sur l'icône « applications web » qui apparaît dans la barre d'adresse.", "Choisis « Ajouter à la barre des tâches » : CuboCode s'ouvre comme une application et apparaît dans le menu Démarrer.", "Pas d'icône ? Mets Firefox à jour (version 143 ou plus). La version du Microsoft Store ne le permet pas : utilise alors le bouton Edge ci-dessous."] },
+  "firefox-desktop": { title: "Sur Firefox (Mac / Linux)", steps: ["Firefox permet l'installation seulement sur Windows pour l'instant.", "Sur Mac, ouvre CuboCode avec Safari (Fichier › Ajouter au Dock) ou Chrome.", "Sur Linux, ouvre-le avec Chrome ou Edge puis clique sur « Installer l'appli »."] },
 };
 
 /** Bouton « Installer l'appli » : installation directe quand le navigateur le permet, sinon aide adaptée au navigateur. */
@@ -90,7 +90,7 @@ export default function InstallButton({ className = "", full = false }: { classN
                 href={`microsoft-edge:${typeof window !== "undefined" ? window.location.href : ""}`}
                 className="btn mt-3 flex items-center justify-center gap-2 bg-sky py-2"
               >
-                <ExternalLink size={18} strokeWidth={2.75} aria-hidden="true" /> Ouvrir dans Edge
+                <ExternalLink size={18} strokeWidth={2.75} aria-hidden="true" /> Sinon : ouvrir dans Edge
               </a>
             )}
           </motion.div>

@@ -7,6 +7,7 @@ import { AnimatePresence } from "motion/react";
 import { useRef } from "react";
 import World2D from "./World2D";
 import InstallButton from "./InstallButton";
+import BackButton from "./BackButton";
 import { Cubo, Logo, SoundToggle } from "./ui";
 import { Icon, StarIcon } from "./Icon";
 import { BlockView } from "./BlockView";
@@ -106,7 +107,10 @@ export default function CourseHub() {
     <div className="min-h-dvh bg-cream">
       <header className="sticky top-0 z-40 border-b-[3px] border-ink bg-paper">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Logo small />
+          <div className="flex items-center gap-2">
+            <BackButton fallback="/" />
+            <Logo small />
+          </div>
           <div className="flex items-center gap-2">
             <span className="hidden md:block"><InstallButton /></span>
             <Link href="/creer/" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-4 py-2">

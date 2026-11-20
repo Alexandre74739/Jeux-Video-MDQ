@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BlockEditor from "./BlockEditor";
 import { BumpNumber, Confetti, Cubo, Logo, SoundToggle } from "./ui";
 import { StarIcon } from "./Icon";
+import BackButton from "./BackButton";
 import { Download, FolderOpen, ImagePlus, Map as MapIcon, Palette, PartyPopper, Play, Plus, RotateCcw, Square, Trash2, WandSparkles, X } from "lucide-react";
 import { createBlock, newId, type Block, type Category } from "@/lib/blocks";
 import { BACKGROUNDS, BASE, Runtime, STAGE_H, STAGE_W, type Project, type SpriteDef } from "@/lib/runtime";
@@ -246,28 +247,30 @@ export default function FreeStudio() {
   const r = rt.current;
 
   return (
-    <div className="flex h-dvh min-h-[620px] flex-col overflow-hidden bg-cream">
+    <div className="flex min-h-dvh flex-col bg-cream lg:h-dvh lg:min-h-[620px] lg:overflow-hidden">
       <Confetti fire={confetti} />
-      <header className="flex h-[72px] shrink-0 items-center gap-3 border-b-[3px] border-ink bg-paper px-4">
+      <header className="sticky top-0 z-40 flex min-h-[72px] shrink-0 flex-wrap items-center gap-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:gap-3 sm:px-4">
+        <BackButton fallback="/" />
         <Logo small />
-        <span className="toon ml-2 flex items-center gap-2 rounded-full bg-pink px-3 py-1 font-display text-lg font-bold"><Palette size={20} strokeWidth={2.75} aria-hidden="true" /> Création libre</span>
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={download} className="btn flex items-center gap-2 bg-mint px-4 py-2"><Download size={19} strokeWidth={2.75} aria-hidden="true" /> Télécharger mon jeu</button>
-          <button onClick={() => openRef.current?.click()} className="btn flex items-center gap-2 bg-sky px-4 py-2"><FolderOpen size={19} strokeWidth={2.75} aria-hidden="true" /> Ouvrir</button>
+        <span className="toon ml-2 hidden items-center gap-2 rounded-full bg-pink md:flex px-3 py-1 font-display text-lg font-bold"><Palette size={20} strokeWidth={2.75} aria-hidden="true" /> Création libre</span>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+          <button onClick={download} title="Télécharger mon jeu" aria-label="Télécharger mon jeu" className="btn flex items-center gap-2 bg-mint px-3 py-2 xl:px-4"><Download size={19} strokeWidth={2.75} aria-hidden="true" /><span className="hidden xl:inline">Télécharger mon jeu</span></button>
+          <button onClick={() => openRef.current?.click()} title="Ouvrir un jeu" aria-label="Ouvrir un jeu" className="btn flex items-center gap-2 bg-sky px-3 py-2 xl:px-4"><FolderOpen size={19} strokeWidth={2.75} aria-hidden="true" /><span className="hidden xl:inline">Ouvrir</span></button>
           <input ref={openRef} type="file" accept=".json,application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) openFile(f); e.target.value = ""; }} />
           <button
             onClick={() => { if (window.confirm("Effacer ton jeu et recommencer avec l'exemple ?")) { stopGame(); const p = starter(); setProject(p); setSel(p.sprites[0].id); sfx("trash"); } }}
-            className="btn flex items-center gap-2 bg-paper px-4 py-2"
+            title="Nouveau jeu" aria-label="Nouveau jeu"
+            className="btn flex items-center gap-2 bg-paper px-3 py-2 xl:px-4"
           >
-            <WandSparkles size={19} strokeWidth={2.75} aria-hidden="true" /> Nouveau
+            <WandSparkles size={19} strokeWidth={2.75} aria-hidden="true" /><span className="hidden xl:inline">Nouveau</span>
           </button>
-          <Link href="/jouer/" className="btn flex items-center gap-2 bg-sun px-4 py-2"><MapIcon size={19} strokeWidth={2.75} aria-hidden="true" /> Aventure</Link>
+          <Link href="/jouer/" title="Les défis" aria-label="Les défis" className="btn flex items-center gap-2 bg-sun px-3 py-2 xl:px-4"><MapIcon size={19} strokeWidth={2.75} aria-hidden="true" /><span className="hidden xl:inline">Défis</span></Link>
           <SoundToggle />
         </div>
       </header>
 
-      <main className="flex min-h-0 flex-1 gap-3 p-3">
-        <div className="flex w-[min(38vw,500px)] shrink-0 flex-col gap-3">
+      <main className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:flex-row">
+        <div className="flex w-full shrink-0 flex-col gap-3 md:mx-auto md:max-w-[560px] lg:mx-0 lg:w-[min(38vw,500px)] lg:max-w-none">
           {/* Scène */}
           <div
             ref={stageRef}
@@ -342,10 +345,10 @@ export default function FreeStudio() {
 
           {/* Personnages + décor */}
           <div className="toon flex min-h-0 flex-1 flex-col gap-2 rounded-3xl bg-paper p-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-bold">Personnages</h2>
-              <div className="flex items-center gap-1" role="radiogroup" aria-label="Décor">
-                <span className="mr-1 text-sm font-extrabold">Décor :</span>
+              <div className="flex flex-wrap items-center gap-1" role="radiogroup" aria-label="Décor">
+                <span className="mr-1 text-sm font-extrabold whitespace-nowrap">Décor :</span>
                 {BACKGROUNDS.map((b) => (
                   <button
                     key={b.id}
@@ -403,13 +406,13 @@ export default function FreeStudio() {
               <span className="flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={sprite.src} alt="" className="size-8 object-contain" />
-                <span>Programme de</span>
+                <span className="hidden 2xl:inline">Programme de</span>
                 <input
                   value={sprite.name}
                   maxLength={16}
                   aria-label="Nom du personnage"
                   onChange={(e) => updateSprite(sprite.id, { name: e.target.value })}
-                  className="w-32 rounded-full border-[3px] border-ink bg-paper px-2 font-display text-base font-bold"
+                  className="w-28 min-w-0 rounded-full border-[3px] border-ink bg-paper px-2 font-display text-base font-bold"
                 />
               </span>
             }
