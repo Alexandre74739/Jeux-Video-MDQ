@@ -9,6 +9,8 @@ import {
 import { Cubo, Logo } from "@/components/ui";
 import { Icon, StarIcon } from "@/components/Icon";
 import HomeDemo from "@/components/HomeDemo";
+import SiteHeader from "@/components/SiteHeader";
+import BackToTop from "@/components/BackToTop";
 import { BlockView } from "@/components/BlockView";
 import { createBlock, type Block } from "@/lib/blocks";
 import { COURSES, DIFFICULTY } from "@/lib/levels";
@@ -102,21 +104,8 @@ function CTA({ href, children, bg = "bg-sun", big = false }: { href: string; chi
 export default function Home() {
   return (
     <div className="min-h-dvh overflow-x-hidden bg-cream">
-      {/* Navigation */}
-      <header className="sticky top-0 z-40 border-b-[3px] border-ink bg-cream/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Logo />
-          <nav className="hidden items-center gap-6 font-display text-lg font-semibold md:flex" aria-label="Sections">
-            <a href="#demo" className="hover:text-grape">Essayer</a>
-            <a href="#aventure" className="hover:text-grape">L&apos;aventure</a>
-            <a href="#creer" className="hover:text-grape">Créer</a>
-            <a href="#animateurs" className="hover:text-grape">Animateurs</a>
-          </nav>
-          <Link href="/jouer/" className="btn flex items-center gap-2 bg-sun px-5 py-2.5 text-lg" onClick={() => sfx("click")}>
-            Jouer <ArrowRight size={20} strokeWidth={3} aria-hidden="true" />
-          </Link>
-        </div>
-      </header>
+      <SiteHeader />
+      <BackToTop />
 
       <main>
         {/* HERO */}

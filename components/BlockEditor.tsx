@@ -178,12 +178,12 @@ export default function BlockEditor(props: Props) {
       <section
         data-trash={drag ? "1" : undefined}
         aria-label="Blocs disponibles"
-        className={`relative flex ${showTabs ? "w-[300px]" : "w-[250px]"} shrink-0 flex-col overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop transition-colors ${overTrash ? "bg-coral/30" : "bg-paper"}`}
+        className={`relative flex ${showTabs ? "w-[320px]" : "w-[250px]"} shrink-0 flex-col overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop transition-colors ${overTrash ? "bg-coral/30" : "bg-paper"}`}
       >
         <h2 className="border-b-[3px] border-ink bg-sky px-4 py-2 text-lg font-bold">Blocs</h2>
         <div className="flex min-h-0 flex-1">
           {showTabs && (
-            <nav className="flex w-[66px] shrink-0 flex-col gap-1.5 border-r-[3px] border-ink bg-cream p-1.5" aria-label="Familles de blocs">
+            <nav className="flex w-[86px] shrink-0 flex-col gap-1.5 border-r-[3px] border-ink bg-cream p-1.5" aria-label="Familles de blocs">
               {groups.map((g) => {
                 const c = CATEGORIES[g.category];
                 const on = g.category === tab;
@@ -192,7 +192,7 @@ export default function BlockEditor(props: Props) {
                     key={g.category}
                     onClick={() => { setTab(g.category); sfx("click"); }}
                     aria-pressed={on}
-                    className={`flex flex-col items-center rounded-xl border-[3px] py-1 text-[11px] font-extrabold leading-tight transition ${on ? "border-ink shadow-pop" : "border-transparent hover:border-ink/40"}`}
+                    className={`flex w-full flex-col items-center rounded-xl border-[3px] px-0.5 py-1 text-center text-[11px] font-extrabold leading-tight break-words transition ${on ? "border-ink shadow-pop" : "border-transparent hover:border-ink/40"}`}
                     style={{ background: on ? c.color : "transparent" }}
                   >
                     <Icon name={c.icon} size={22} />

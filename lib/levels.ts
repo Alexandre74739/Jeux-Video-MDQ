@@ -46,6 +46,8 @@ export type Course = {
   difficulty: 1 | 2 | 3 | 4;
   color: string;
   newBlocks: string[];
+  /** Numéro du niveau montré en aperçu sur la carte du parcours. */
+  preview: number;
   levels: LevelDef[];
 };
 
@@ -387,19 +389,19 @@ const MAITRE: RawLevel[] = [
 export const COURSES: Course[] = [
   {
     slug: "tutoriel", title: "Tutoriel", subtitle: "Apprends les bases avec Cubo : avancer, tourner, répéter.",
-    difficulty: 1, color: "#4FC3F7", newBlocks: ["avancer", "repeter", "si"], levels: numbered(TUTO),
+    difficulty: 1, color: "#4FC3F7", newBlocks: ["avancer", "repeter", "si"], preview: 9, levels: numbered(TUTO),
   },
   {
     slug: "vallee-des-cles", title: "La vallée des clés", subtitle: "Des portes fermées partout ! Trouve les clés pour passer.",
-    difficulty: 2, color: "#7BD88F", newBlocks: ["ouvrir", "demitour"], levels: numbered(CLES),
+    difficulty: 2, color: "#7BD88F", newBlocks: ["ouvrir", "demitour"], preview: 9, levels: numbered(CLES),
   },
   {
     slug: "volcan", title: "Le volcan", subtitle: "Saute par-dessus la lave et répète jusqu'au coffre.",
-    difficulty: 3, color: "#FFA94D", newBlocks: ["sauter", "jusqua"], levels: numbered(VOLCAN),
+    difficulty: 3, color: "#FFA94D", newBlocks: ["sauter", "jusqua"], preview: 9, levels: numbered(VOLCAN),
   },
   {
     slug: "labyrinthe", title: "Le labyrinthe du maître", subtitle: "Si… sinon, labyrinthes et vrais algorithmes de pro.",
-    difficulty: 4, color: "#C3A6FF", newBlocks: ["sisinon"], levels: numbered(MAITRE),
+    difficulty: 4, color: "#C3A6FF", newBlocks: ["sisinon"], preview: 10, levels: numbered(MAITRE),
   },
 ];
 

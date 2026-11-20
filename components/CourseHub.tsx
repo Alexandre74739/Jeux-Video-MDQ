@@ -2,12 +2,17 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { ArrowRight, Check, Palette, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Palette, Puzzle, Sparkles, X } from "lucide-react";
+import { AnimatePresence } from "motion/react";
+import { useRef } from "react";
+import World2D from "./World2D";
+import InstallButton from "./InstallButton";
 import { Cubo, Logo, SoundToggle } from "./ui";
 import { Icon, StarIcon } from "./Icon";
 import { BlockView } from "./BlockView";
 import { createBlock } from "@/lib/blocks";
-import { COURSES, DIFFICULTY } from "@/lib/levels";
+import { BLOCKS } from "@/lib/blocks";
+import { COURSES, DIFFICULTY, buildWorld, type Course } from "@/lib/levels";
 import { BADGES, emptyProgress, load, type Progress } from "@/lib/storage";
 import { sfx } from "@/lib/sound";
 
@@ -24,8 +29,77 @@ function DifficultyMeter({ level }: { level: number }) {
   );
 }
 
+/** Aperçu du niveau phare + bouton latéral qui ouvre la liste des nouveaux blocs. */
+function CoursePreview({ course, open, onToggle, onClose }: { course: Course; open: boolean; onToggle: () => void; onClose: () => void }) {
+  const box = useRef<HTMLDivElement>(null);
+  const level = course.levels[course.preview - 1];
+  const world = buildWorld(level);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => { if (!box.current?.contains(e.target as Node)) onClose(); };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("keydown", esc);
+    return () => { window.removeEventListener("pointerdown", close); window.removeEventListener("keydown", esc); };
+  }, [open, onClose]);
+
+  return (
+    <div ref={box} className="relative">
+      <div
+        className="relative h-52 overflow-hidden rounded-2xl border-[3px] border-ink"
+        style={{ background: "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)" }}
+      >
+        <div className="pointer-events-none absolute inset-0 p-3 pr-14" aria-hidden="true">
+          <World2D world={world} />
+        </div>
+        <span className="absolute bottom-2 left-2 rounded-full border-2 border-ink bg-paper px-2.5 py-0.5 text-xs font-extrabold">
+          Niveau {level.id} : {level.title}
+        </span>
+        <span className="sr-only">Aperçu du niveau {level.id} : {level.title}</span>
+      </div>
+
+      {/* Bouton sur le côté */}
+      <motion.button
+        whileHover={{ x: -3 }} whileTap={{ scale: 0.92 }}
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-label={`Voir les nouveaux blocs de ${course.title}`}
+        className="absolute top-1/2 right-2 flex -translate-y-1/2 flex-col items-center gap-1 rounded-2xl border-[3px] border-ink px-1.5 py-2.5 font-display text-xs font-bold shadow-pop"
+        style={{ background: course.color }}
+      >
+        <Puzzle size={20} strokeWidth={2.75} aria-hidden="true" />
+        <span className="[writing-mode:vertical-rl] rotate-180">Blocs</span>
+      </motion.button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, x: 16, scale: 0.92 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 16, scale: 0.92 }}
+            transition={{ type: "spring", stiffness: 380, damping: 26 }}
+            role="dialog" aria-label={`Nouveaux blocs de ${course.title}`}
+            className="absolute top-1/2 right-14 z-20 w-[min(300px,calc(100%-4rem))] origin-right -translate-y-1/2 rounded-3xl border-[3px] border-ink bg-paper p-4 shadow-pop-lg"
+          >
+            <button onClick={onClose} className="absolute top-2 right-2 grid size-8 place-items-center rounded-full hover:bg-cream" aria-label="Fermer">
+              <X size={18} strokeWidth={3} aria-hidden="true" />
+            </button>
+            <p className="pr-8 text-sm font-extrabold tracking-wide text-ink-soft uppercase">Nouveaux blocs</p>
+            <div className="mt-2 flex flex-col gap-2">
+              {course.newBlocks.map((t) => <BlockView key={t} block={createBlock(t)} mode="static" />)}
+            </div>
+            <p className="mt-3 text-sm font-bold text-ink-soft">
+              {course.newBlocks.map((t) => BLOCKS[t].label.replace(/[{][a-z]+[}]/g, "…")).join(", ")}
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function CourseHub() {
   const [progress, setProgress] = useState<Progress>(emptyProgress);
+  const [openInfo, setOpenInfo] = useState<string | null>(null);
   useEffect(() => setProgress(load<Progress>("progress", emptyProgress)), []);
 
   return (
@@ -34,6 +108,7 @@ export default function CourseHub() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Logo small />
           <div className="flex items-center gap-2">
+            <span className="hidden md:block"><InstallButton /></span>
             <Link href="/creer/" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-4 py-2">
               <Palette size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden sm:inline">Création libre</span>
             </Link>
@@ -85,12 +160,7 @@ export default function CourseHub() {
                   <p className="font-bold">{c.subtitle}</p>
                 </div>
                 <div className="flex flex-1 flex-col gap-4 p-6">
-                  <div>
-                    <p className="text-sm font-extrabold tracking-wide text-ink-soft uppercase">Nouveaux blocs</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {c.newBlocks.map((t) => <BlockView key={t} block={createBlock(t)} mode="static" />)}
-                    </div>
-                  </div>
+                  <CoursePreview course={c} open={openInfo === c.slug} onToggle={() => { setOpenInfo(openInfo === c.slug ? null : c.slug); sfx("click"); }} onClose={() => setOpenInfo(null)} />
                   <div className="mt-auto">
                     <div className="flex items-center justify-between text-sm font-extrabold">
                       <span className="flex items-center gap-1">
