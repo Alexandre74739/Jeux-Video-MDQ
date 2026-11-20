@@ -1,0 +1,554 @@
+[
+  {
+    "id": "1f408",
+    "name": "Chat",
+    "category": "Animaux",
+    "src": "/sprites/1f408.svg"
+  },
+  {
+    "id": "1f415",
+    "name": "Chien",
+    "category": "Animaux",
+    "src": "/sprites/1f415.svg"
+  },
+  {
+    "id": "1f407",
+    "name": "Lapin",
+    "category": "Animaux",
+    "src": "/sprites/1f407.svg"
+  },
+  {
+    "id": "1f438",
+    "name": "Grenouille",
+    "category": "Animaux",
+    "src": "/sprites/1f438.svg"
+  },
+  {
+    "id": "1f981",
+    "name": "Lion",
+    "category": "Animaux",
+    "src": "/sprites/1f981.svg"
+  },
+  {
+    "id": "1f43c",
+    "name": "Panda",
+    "category": "Animaux",
+    "src": "/sprites/1f43c.svg"
+  },
+  {
+    "id": "1f427",
+    "name": "Pingouin",
+    "category": "Animaux",
+    "src": "/sprites/1f427.svg"
+  },
+  {
+    "id": "1f984",
+    "name": "Licorne",
+    "category": "Animaux",
+    "src": "/sprites/1f984.svg"
+  },
+  {
+    "id": "1f996",
+    "name": "Dino",
+    "category": "Animaux",
+    "src": "/sprites/1f996.svg"
+  },
+  {
+    "id": "1f995",
+    "name": "Diplo",
+    "category": "Animaux",
+    "src": "/sprites/1f995.svg"
+  },
+  {
+    "id": "1f41d",
+    "name": "Abeille",
+    "category": "Animaux",
+    "src": "/sprites/1f41d.svg"
+  },
+  {
+    "id": "1f98b",
+    "name": "Papillon",
+    "category": "Animaux",
+    "src": "/sprites/1f98b.svg"
+  },
+  {
+    "id": "1f420",
+    "name": "Poisson",
+    "category": "Animaux",
+    "src": "/sprites/1f420.svg"
+  },
+  {
+    "id": "1f419",
+    "name": "Pieuvre",
+    "category": "Animaux",
+    "src": "/sprites/1f419.svg"
+  },
+  {
+    "id": "1f422",
+    "name": "Tortue",
+    "category": "Animaux",
+    "src": "/sprites/1f422.svg"
+  },
+  {
+    "id": "1f40c",
+    "name": "Escargot",
+    "category": "Animaux",
+    "src": "/sprites/1f40c.svg"
+  },
+  {
+    "id": "1f989",
+    "name": "Hibou",
+    "category": "Animaux",
+    "src": "/sprites/1f989.svg"
+  },
+  {
+    "id": "1f98a",
+    "name": "Renard",
+    "category": "Animaux",
+    "src": "/sprites/1f98a.svg"
+  },
+  {
+    "id": "1f988",
+    "name": "Requin",
+    "category": "Animaux",
+    "src": "/sprites/1f988.svg"
+  },
+  {
+    "id": "1f433",
+    "name": "Baleine",
+    "category": "Animaux",
+    "src": "/sprites/1f433.svg"
+  },
+  {
+    "id": "1f916",
+    "name": "Robot",
+    "category": "Héros",
+    "src": "/sprites/1f916.svg"
+  },
+  {
+    "id": "1f47e",
+    "name": "Monstre",
+    "category": "Héros",
+    "src": "/sprites/1f47e.svg"
+  },
+  {
+    "id": "1f47b",
+    "name": "Fantôme",
+    "category": "Héros",
+    "src": "/sprites/1f47b.svg"
+  },
+  {
+    "id": "1f9d9",
+    "name": "Magicien",
+    "category": "Héros",
+    "src": "/sprites/1f9d9.svg"
+  },
+  {
+    "id": "1f9da",
+    "name": "Fée",
+    "category": "Héros",
+    "src": "/sprites/1f9da.svg"
+  },
+  {
+    "id": "1f977",
+    "name": "Ninja",
+    "category": "Héros",
+    "src": "/sprites/1f977.svg"
+  },
+  {
+    "id": "1f9b8",
+    "name": "Super-héros",
+    "category": "Héros",
+    "src": "/sprites/1f9b8.svg"
+  },
+  {
+    "id": "1f478",
+    "name": "Princesse",
+    "category": "Héros",
+    "src": "/sprites/1f478.svg"
+  },
+  {
+    "id": "1f934",
+    "name": "Prince",
+    "category": "Héros",
+    "src": "/sprites/1f934.svg"
+  },
+  {
+    "id": "1f9dc",
+    "name": "Sirène",
+    "category": "Héros",
+    "src": "/sprites/1f9dc.svg"
+  },
+  {
+    "id": "1f9d1-200d-1f680",
+    "name": "Astronaute",
+    "category": "Héros",
+    "src": "/sprites/1f9d1-200d-1f680.svg"
+  },
+  {
+    "id": "1f409",
+    "name": "Dragon",
+    "category": "Héros",
+    "src": "/sprites/1f409.svg"
+  },
+  {
+    "id": "1f47d",
+    "name": "Alien",
+    "category": "Héros",
+    "src": "/sprites/1f47d.svg"
+  },
+  {
+    "id": "1f9db",
+    "name": "Vampire",
+    "category": "Héros",
+    "src": "/sprites/1f9db.svg"
+  },
+  {
+    "id": "1f383",
+    "name": "Citrouille",
+    "category": "Héros",
+    "src": "/sprites/1f383.svg"
+  },
+  {
+    "id": "1f9de",
+    "name": "Génie",
+    "category": "Héros",
+    "src": "/sprites/1f9de.svg"
+  },
+  {
+    "id": "2b50",
+    "name": "Étoile",
+    "category": "Objets",
+    "src": "/sprites/2b50.svg"
+  },
+  {
+    "id": "1f48e",
+    "name": "Diamant",
+    "category": "Objets",
+    "src": "/sprites/1f48e.svg"
+  },
+  {
+    "id": "1fa99",
+    "name": "Pièce",
+    "category": "Objets",
+    "src": "/sprites/1fa99.svg"
+  },
+  {
+    "id": "1f381",
+    "name": "Cadeau",
+    "category": "Objets",
+    "src": "/sprites/1f381.svg"
+  },
+  {
+    "id": "1f3c6",
+    "name": "Trophée",
+    "category": "Objets",
+    "src": "/sprites/1f3c6.svg"
+  },
+  {
+    "id": "1f511",
+    "name": "Clé",
+    "category": "Objets",
+    "src": "/sprites/1f511.svg"
+  },
+  {
+    "id": "2764",
+    "name": "Cœur",
+    "category": "Objets",
+    "src": "/sprites/2764.svg"
+  },
+  {
+    "id": "1f388",
+    "name": "Ballon",
+    "category": "Objets",
+    "src": "/sprites/1f388.svg"
+  },
+  {
+    "id": "26bd",
+    "name": "Foot",
+    "category": "Objets",
+    "src": "/sprites/26bd.svg"
+  },
+  {
+    "id": "1f3c0",
+    "name": "Basket",
+    "category": "Objets",
+    "src": "/sprites/1f3c0.svg"
+  },
+  {
+    "id": "1f4a3",
+    "name": "Bombe",
+    "category": "Objets",
+    "src": "/sprites/1f4a3.svg"
+  },
+  {
+    "id": "1f6a9",
+    "name": "Drapeau",
+    "category": "Objets",
+    "src": "/sprites/1f6a9.svg"
+  },
+  {
+    "id": "1f451",
+    "name": "Couronne",
+    "category": "Objets",
+    "src": "/sprites/1f451.svg"
+  },
+  {
+    "id": "1f344",
+    "name": "Champignon",
+    "category": "Objets",
+    "src": "/sprites/1f344.svg"
+  },
+  {
+    "id": "1f4e6",
+    "name": "Caisse",
+    "category": "Objets",
+    "src": "/sprites/1f4e6.svg"
+  },
+  {
+    "id": "1f9f2",
+    "name": "Aimant",
+    "category": "Objets",
+    "src": "/sprites/1f9f2.svg"
+  },
+  {
+    "id": "1f34e",
+    "name": "Pomme",
+    "category": "Miam",
+    "src": "/sprites/1f34e.svg"
+  },
+  {
+    "id": "1f34c",
+    "name": "Banane",
+    "category": "Miam",
+    "src": "/sprites/1f34c.svg"
+  },
+  {
+    "id": "1f353",
+    "name": "Fraise",
+    "category": "Miam",
+    "src": "/sprites/1f353.svg"
+  },
+  {
+    "id": "1f355",
+    "name": "Pizza",
+    "category": "Miam",
+    "src": "/sprites/1f355.svg"
+  },
+  {
+    "id": "1f369",
+    "name": "Donut",
+    "category": "Miam",
+    "src": "/sprites/1f369.svg"
+  },
+  {
+    "id": "1f36a",
+    "name": "Cookie",
+    "category": "Miam",
+    "src": "/sprites/1f36a.svg"
+  },
+  {
+    "id": "1f366",
+    "name": "Glace",
+    "category": "Miam",
+    "src": "/sprites/1f366.svg"
+  },
+  {
+    "id": "1f955",
+    "name": "Carotte",
+    "category": "Miam",
+    "src": "/sprites/1f955.svg"
+  },
+  {
+    "id": "1f349",
+    "name": "Pastèque",
+    "category": "Miam",
+    "src": "/sprites/1f349.svg"
+  },
+  {
+    "id": "1f9c1",
+    "name": "Cupcake",
+    "category": "Miam",
+    "src": "/sprites/1f9c1.svg"
+  },
+  {
+    "id": "1f36d",
+    "name": "Sucette",
+    "category": "Miam",
+    "src": "/sprites/1f36d.svg"
+  },
+  {
+    "id": "1f354",
+    "name": "Burger",
+    "category": "Miam",
+    "src": "/sprites/1f354.svg"
+  },
+  {
+    "id": "1f680",
+    "name": "Fusée",
+    "category": "Véhicules",
+    "src": "/sprites/1f680.svg"
+  },
+  {
+    "id": "1f6f8",
+    "name": "Soucoupe",
+    "category": "Véhicules",
+    "src": "/sprites/1f6f8.svg"
+  },
+  {
+    "id": "1f697",
+    "name": "Voiture",
+    "category": "Véhicules",
+    "src": "/sprites/1f697.svg"
+  },
+  {
+    "id": "1f682",
+    "name": "Train",
+    "category": "Véhicules",
+    "src": "/sprites/1f682.svg"
+  },
+  {
+    "id": "1f681",
+    "name": "Hélico",
+    "category": "Véhicules",
+    "src": "/sprites/1f681.svg"
+  },
+  {
+    "id": "2708",
+    "name": "Avion",
+    "category": "Véhicules",
+    "src": "/sprites/2708.svg"
+  },
+  {
+    "id": "26f5",
+    "name": "Bateau",
+    "category": "Véhicules",
+    "src": "/sprites/26f5.svg"
+  },
+  {
+    "id": "1f6b2",
+    "name": "Vélo",
+    "category": "Véhicules",
+    "src": "/sprites/1f6b2.svg"
+  },
+  {
+    "id": "1f3ce",
+    "name": "Bolide",
+    "category": "Véhicules",
+    "src": "/sprites/1f3ce.svg"
+  },
+  {
+    "id": "1f69c",
+    "name": "Tracteur",
+    "category": "Véhicules",
+    "src": "/sprites/1f69c.svg"
+  },
+  {
+    "id": "1f6f6",
+    "name": "Canoë",
+    "category": "Véhicules",
+    "src": "/sprites/1f6f6.svg"
+  },
+  {
+    "id": "1f6fc",
+    "name": "Patin",
+    "category": "Véhicules",
+    "src": "/sprites/1f6fc.svg"
+  },
+  {
+    "id": "1f333",
+    "name": "Arbre",
+    "category": "Nature",
+    "src": "/sprites/1f333.svg"
+  },
+  {
+    "id": "1f335",
+    "name": "Cactus",
+    "category": "Nature",
+    "src": "/sprites/1f335.svg"
+  },
+  {
+    "id": "1f33b",
+    "name": "Tournesol",
+    "category": "Nature",
+    "src": "/sprites/1f33b.svg"
+  },
+  {
+    "id": "1f308",
+    "name": "Arc-en-ciel",
+    "category": "Nature",
+    "src": "/sprites/1f308.svg"
+  },
+  {
+    "id": "26a1",
+    "name": "Éclair",
+    "category": "Nature",
+    "src": "/sprites/26a1.svg"
+  },
+  {
+    "id": "2744",
+    "name": "Flocon",
+    "category": "Nature",
+    "src": "/sprites/2744.svg"
+  },
+  {
+    "id": "1f525",
+    "name": "Feu",
+    "category": "Nature",
+    "src": "/sprites/1f525.svg"
+  },
+  {
+    "id": "1faa8",
+    "name": "Rocher",
+    "category": "Nature",
+    "src": "/sprites/1faa8.svg"
+  },
+  {
+    "id": "1f30b",
+    "name": "Volcan",
+    "category": "Nature",
+    "src": "/sprites/1f30b.svg"
+  },
+  {
+    "id": "1f340",
+    "name": "Trèfle",
+    "category": "Nature",
+    "src": "/sprites/1f340.svg"
+  },
+  {
+    "id": "2600",
+    "name": "Soleil",
+    "category": "Nature",
+    "src": "/sprites/2600.svg"
+  },
+  {
+    "id": "2601",
+    "name": "Nuage",
+    "category": "Nature",
+    "src": "/sprites/2601.svg"
+  },
+  {
+    "id": "1fa90",
+    "name": "Planète",
+    "category": "Nature",
+    "src": "/sprites/1fa90.svg"
+  },
+  {
+    "id": "1f319",
+    "name": "Lune",
+    "category": "Nature",
+    "src": "/sprites/1f319.svg"
+  },
+  {
+    "id": "2604",
+    "name": "Comète",
+    "category": "Nature",
+    "src": "/sprites/2604.svg"
+  },
+  {
+    "id": "1f30d",
+    "name": "Terre",
+    "category": "Nature",
+    "src": "/sprites/1f30d.svg"
+  }
+]

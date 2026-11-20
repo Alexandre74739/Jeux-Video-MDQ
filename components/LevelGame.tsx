@@ -1,0 +1,420 @@
+"use client";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { AnimatePresence, motion } from "motion/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import BlockEditor from "./BlockEditor";
+import World2D from "./World2D";
+import type { WorldEvent } from "./World3D";
+import { BumpNumber, Confetti, Cubo, Logo, SoundToggle } from "./ui";
+import { Icon, StarIcon } from "./Icon";
+import { ArrowRight, Blocks, Flame, Gem, Hourglass, Lightbulb, Lock, Palette, Play, Rabbit, RotateCcw, Trash2, Turtle, Volume2 } from "lucide-react";
+import { BLOCKS, type Block, type Category } from "@/lib/blocks";
+import {
+  LEVELS, FAIL_MESSAGES, buildWorld, countBlocks, runProgram, starsFor,
+  type Outcome, type Step, type World,
+} from "@/lib/levels";
+import { BADGES, emptyProgress, load, save, type Progress } from "@/lib/storage";
+import { sfx, speak } from "@/lib/sound";
+
+const World3D = dynamic(() => import("./World3D"), {
+  ssr: false,
+  loading: () => <div className="grid h-full place-items-center font-display text-xl">Chargement du monde…</div>,
+});
+
+type Mood = "happy" | "wow" | "sad" | "think";
+type WinInfo = { stars: number; used: number; best: boolean; badges: string[] };
+
+const STEP_SFX: Partial<Record<Step["kind"], Parameters<typeof sfx>[0]>> = {
+  move: "step", turn: "turn", collect: "gem", break: "crack", bridge: "plank",
+  bump: "bump", splash: "splash", nothing: "click",
+};
+
+const CHEERS = ["Bien joué !", "Génial !", "Trop fort !", "Tu es un vrai codeur !", "Incroyable !"];
+
+function groupsFor(types: string[]) {
+  const order: Category[] = ["motion", "action", "control"];
+  return [{ category: order[0], types: [...types].sort((a, b) => order.indexOf(BLOCKS[a].category) - order.indexOf(BLOCKS[b].category)) }];
+}
+
+export default function LevelGame() {
+  const [ready, setReady] = useState(false);
+  const [progress, setProgress] = useState<Progress>(emptyProgress);
+  const [idx, setIdx] = useState(0);
+  const level = LEVELS[idx];
+  const initial = useMemo(() => buildWorld(level), [level]);
+  const [program, setProgram] = useState<Block[]>([]);
+  const [world, setWorld] = useState<World>(initial);
+  const [event, setEvent] = useState<WorldEvent>({ kind: "reset", key: 0 });
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+  const [fast, setFast] = useState(false);
+  const [view3d, setView3d] = useState(true);
+  const [msg, setMsg] = useState<{ text: string; mood: Mood }>({ text: level.goal, mood: "happy" });
+  const [fails, setFails] = useState(0);
+  const [win, setWin] = useState<WinInfo | null>(null);
+  const [shake, setShake] = useState(0);
+  const [confetti, setConfetti] = useState(0);
+  const [hop, setHop] = useState(0);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const evKey = useRef(1);
+
+  // Chargement initial (progression + vue)
+  useEffect(() => {
+    const p = load<Progress>("progress", emptyProgress);
+    setProgress(p);
+    setView3d(load("view3d", true));
+    const firstTodo = LEVELS.findIndex((l) => !p.stars[l.id]);
+    setIdx(firstTodo === -1 ? LEVELS.length - 1 : firstTodo);
+    setReady(true);
+  }, []);
+
+  const stop = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
+  useEffect(() => stop, []);
+
+  // Changement de niveau
+  useEffect(() => {
+    if (!ready) return;
+    stop();
+    setRunning(false);
+    setProgram(load<Block[]>(`prog:${level.id}`, []));
+    setWorld(initial);
+    setActiveId(null);
+    setEvent({ kind: "reset", key: evKey.current++ });
+    setMsg({ text: level.goal, mood: "happy" });
+    setFails(0);
+  }, [ready, level, initial]);
+
+  const changeProgram = useCallback((p: Block[]) => {
+    setProgram(p);
+    save(`prog:${level.id}`, p);
+  }, [level.id]);
+
+  const unlocked = (i: number) => i === 0 || !!progress.stars[LEVELS[i - 1].id];
+  const totalStars = Object.values(progress.stars).reduce((a, b) => a + b, 0);
+  const used = countBlocks(program);
+
+  const reset = () => {
+    stop();
+    setRunning(false);
+    setWorld(initial);
+    setActiveId(null);
+    setEvent({ kind: "reset", key: evKey.current++ });
+  };
+
+  const finish = (out: Outcome) => {
+    setRunning(false);
+    setActiveId(null);
+    if (out.ok) {
+      const stars = starsFor(level, used);
+      const prev = progress.stars[level.id] ?? 0;
+      const newBadges = Object.entries(BADGES)
+        .filter(([k, b]) => b.level === level.id && !progress.badges.includes(k))
+        .map(([k]) => k);
+      const next: Progress = {
+        stars: { ...progress.stars, [level.id]: Math.max(prev, stars) },
+        streak: fails === 0 ? progress.streak + 1 : 1,
+        badges: [...progress.badges, ...newBadges],
+      };
+      setProgress(next);
+      save("progress", next);
+      sfx("win");
+      setConfetti((c) => c + 1);
+      const cheer = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+      setMsg({ text: `${cheer} Cubo a trouvé le trésor !`, mood: "wow" });
+      setTimeout(() => setWin({ stars, used, best: stars > prev, badges: newBadges }), 900);
+    } else {
+      sfx("fail");
+      setShake((s) => s + 1);
+      const n = fails + 1;
+      setFails(n);
+      const base = FAIL_MESSAGES[out.reason];
+      setMsg({ text: n >= 2 && out.reason !== "empty" ? `${base} Astuce : ${level.tip}` : `${base} Essaie encore !`, mood: "sad" });
+      if (progress.streak) { const p = { ...progress, streak: 0 }; setProgress(p); save("progress", p); }
+    }
+  };
+
+  const run = () => {
+    if (running) return;
+    reset();
+    setRunning(true);
+    setMsg({ text: "C'est parti !", mood: "think" });
+    sfx("click");
+    const gen = runProgram(initial, program);
+    const tick = () => {
+      const r = gen.next();
+      if (r.done) { finish(r.value); return; }
+      const st = r.value;
+      setWorld(st.world);
+      setActiveId(st.blockId);
+      setEvent({ kind: st.kind, at: st.at, key: evKey.current++ });
+      const s = STEP_SFX[st.kind];
+      if (s) sfx(s);
+      const base = fast ? 0.5 : 1;
+      const d = st.kind === "check" ? 320 : st.kind === "turn" ? 380 : st.kind === "splash" ? 900 : st.kind === "win" ? 300 : 560;
+      timer.current = setTimeout(tick, d * base);
+    };
+    timer.current = setTimeout(tick, 300);
+  };
+
+  const goLevel = (i: number) => {
+    if (!unlocked(i) || running) { sfx("bump"); return; }
+    sfx("click");
+    setWin(null);
+    setIdx(i);
+  };
+
+  const fallback2D = <World2D world={world} />;
+
+  return (
+    <div className="flex h-dvh min-h-[620px] flex-col overflow-hidden bg-cream">
+      <Confetti fire={confetti} />
+
+      {/* Barre du haut */}
+      <header className="flex h-[72px] shrink-0 items-center gap-4 border-b-[3px] border-ink bg-paper px-4">
+        <Logo small />
+        <nav aria-label="Niveaux" className="mx-auto flex items-center">
+          {LEVELS.map((l, i) => {
+            const st = progress.stars[l.id] ?? 0;
+            const open = unlocked(i);
+            const cur = i === idx;
+            return (
+              <div key={l.id} className="flex items-center">
+                {i > 0 && <span className={`h-[5px] w-3 ${open ? "bg-ink" : "bg-ink/20"}`} aria-hidden="true" />}
+                <motion.button
+                  whileHover={open ? { y: -3 } : undefined}
+                  whileTap={open ? { scale: 0.9 } : undefined}
+                  animate={cur ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                  transition={cur ? { repeat: Infinity, duration: 1.6 } : undefined}
+                  onClick={() => goLevel(i)}
+                  aria-current={cur ? "step" : undefined}
+                  aria-label={`Niveau ${l.id}${open ? "" : " (verrouillé)"}${st ? `, ${st} étoile${st > 1 ? "s" : ""}` : ""}`}
+                  className={`relative grid size-11 place-items-center rounded-full border-[3px] border-ink font-display text-lg font-bold ${
+                    cur ? "bg-grape text-white shadow-pop" : st ? "bg-mint shadow-pop" : open ? "bg-paper shadow-pop" : "bg-[#E8E4F0] text-ink-soft"
+                  }`}
+                >
+                  {open ? l.id : <Lock size={18} strokeWidth={3} aria-hidden="true" />}
+                  {st > 0 && (
+                    <span className="absolute -bottom-2.5 left-1/2 flex -translate-x-1/2" aria-hidden="true">
+                      {Array.from({ length: st }, (_, k) => <StarIcon key={k} size={13} />)}
+                    </span>
+                  )}
+                </motion.button>
+              </div>
+            );
+          })}
+        </nav>
+        <div className="flex items-center gap-2">
+          <div className="toon flex items-center gap-1.5 rounded-full bg-sun px-3 py-1.5 font-display text-lg font-bold" title="Étoiles gagnées">
+            <StarIcon size={22} /><BumpNumber value={totalStars} /><span className="sr-only">étoiles</span>
+          </div>
+          <AnimatePresence>
+            {progress.streak >= 2 && (
+              <motion.div
+                initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                className="toon flex items-center gap-1 rounded-full bg-orange px-3 py-1.5 font-display text-lg font-bold"
+                title="Niveaux réussis du premier coup d'affilée"
+              >
+                <motion.span animate={{ rotate: [-8, 8, -8] }} transition={{ repeat: Infinity, duration: 0.6 }} aria-hidden="true"><Flame size={22} strokeWidth={2.75} fill="#FFD23F" /></motion.span>
+                <BumpNumber value={progress.streak} /><span className="sr-only">d'affilée</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="flex gap-0.5" aria-label={`${progress.badges.length} badges`}>
+            {Object.entries(BADGES).map(([k, b]) => (
+              <span key={k} title={b.name} className={`grid size-8 place-items-center rounded-full border-2 ${progress.badges.includes(k) ? "border-ink bg-lilac" : "border-ink/20 text-ink/25"}`} aria-hidden="true"><Icon name={b.icon} size={16} /></span>
+            ))}
+          </div>
+          <Link href="/creer/" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-4 py-2 text-base"><Palette size={20} strokeWidth={2.75} aria-hidden="true" /> Créer</Link>
+          <SoundToggle />
+        </div>
+      </header>
+
+      <main className="flex min-h-0 flex-1 gap-3 p-3">
+        {/* Colonne monde */}
+        <div className="flex w-[min(40vw,560px)] shrink-0 flex-col gap-3">
+          <div className="flex items-start gap-2">
+            <motion.div key={hop} initial={{ y: 0 }} animate={{ y: [0, -14, 0] }} transition={{ duration: 0.35 }} className="shrink-0">
+              <Cubo size={64} mood={msg.mood} />
+            </motion.div>
+            <div className="toon relative min-h-[76px] flex-1 rounded-3xl bg-paper px-4 py-2.5">
+              <span className="absolute top-6 -left-[11px] size-4 rotate-45 border-b-[3px] border-l-[3px] border-ink bg-paper" aria-hidden="true" />
+              <p className="mb-0.5 font-display text-sm font-bold text-grape">
+                Niveau {level.id} · {level.title} <span className="ml-1 rounded-full bg-lilac px-2 py-0.5 text-xs text-ink">{level.concept}</span>
+              </p>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={msg.text}
+                  initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                  className="pr-10 text-[15px] font-bold leading-snug"
+                  aria-live="polite"
+                >
+                  {msg.text}
+                </motion.p>
+              </AnimatePresence>
+              <button onClick={() => speak(msg.text)} className="btn absolute top-2 right-2 grid size-9 place-items-center bg-sky" aria-label="Écouter la consigne"><Volume2 size={18} strokeWidth={2.75} aria-hidden="true" /></button>
+            </div>
+          </div>
+
+          <div
+            key={shake}
+            className={`relative min-h-0 flex-1 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop ${shake ? "shake" : ""}`}
+            style={{ background: "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)" }}
+          >
+            {ready && (view3d ? <World3D world={world} event={event} fallback={fallback2D} /> : fallback2D)}
+            <div className="absolute top-2 left-2 flex gap-2">
+              {initial.totalGems > 0 && (
+                <span className="toon flex items-center gap-1.5 rounded-full bg-paper px-3 py-1 font-display font-bold">
+                  <Gem size={18} strokeWidth={2.75} color="#0A6F86" aria-hidden="true" /> <BumpNumber value={initial.totalGems - world.gems.length} /> / {initial.totalGems}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => { const v = !view3d; setView3d(v); save("view3d", v); sfx("click"); }}
+              className="btn absolute top-2 right-2 bg-paper px-3 py-1 text-sm"
+              aria-label={view3d ? "Passer en vue 2D" : "Passer en vue 3D"}
+            >
+              {view3d ? "Vue 2D" : "Vue 3D"}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
+              onClick={run} disabled={running}
+              className="btn flex flex-1 items-center justify-center gap-2 bg-mint py-3 text-2xl"
+            >
+              {running ? <><Hourglass size={24} strokeWidth={2.75} aria-hidden="true" /> En cours…</> : <><Play size={24} strokeWidth={2.75} fill="#16123A" aria-hidden="true" /> Lancer</>}
+            </motion.button>
+            <button onClick={() => { reset(); sfx("click"); }} className="btn bg-paper px-5 py-3" aria-label="Recommencer"><RotateCcw size={24} strokeWidth={3} aria-hidden="true" /></button>
+            <button
+              onClick={() => { setFast(!fast); sfx("click"); }}
+              className={`btn px-4 py-3 ${fast ? "bg-orange" : "bg-paper"}`}
+              aria-pressed={fast}
+              aria-label={fast ? "Vitesse rapide" : "Vitesse normale"}
+              title="Vitesse"
+            >
+              {fast ? <Rabbit size={24} strokeWidth={2.75} aria-hidden="true" /> : <Turtle size={24} strokeWidth={2.75} aria-hidden="true" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Éditeur */}
+        <BlockEditor
+          program={program}
+          onChange={changeProgram}
+          groups={groupsFor(level.blocks)}
+          mode="stack"
+          activeId={activeId}
+          disabled={running}
+          onAdd={() => setHop((h) => h + 1)}
+          title="Mon programme"
+          toolbar={
+            <>
+              <span className="toon flex items-center gap-1 rounded-full bg-paper px-3 py-0.5 text-sm font-extrabold whitespace-nowrap" title={`Blocs utilisés. 3 étoiles avec ${level.optimal} blocs ou moins.`}>
+                <Blocks size={16} strokeWidth={2.75} aria-hidden="true" /> <BumpNumber value={used} /> / {level.optimal} <StarIcon size={16} />
+              </span>
+              <button
+                onClick={() => { if (program.length) { changeProgram([]); sfx("trash"); } }}
+                className="btn flex items-center gap-1 bg-paper px-3 py-0.5 text-sm whitespace-nowrap"
+              >
+                <Trash2 size={15} strokeWidth={2.75} aria-hidden="true" /> Effacer
+              </button>
+            </>
+          }
+        />
+      </main>
+
+      <AnimatePresence>
+        {win && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[90] grid place-items-center bg-ink/50 p-4"
+            role="dialog" aria-modal="true" aria-labelledby="win-title"
+          >
+            <WinCard
+              info={win}
+              levelId={level.id}
+              optimal={level.optimal}
+              last={idx === LEVELS.length - 1}
+              onReplay={() => { setWin(null); reset(); }}
+              onNext={() => goLevel(idx + 1)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function WinCard({ info, levelId, optimal, last, onReplay, onNext }: {
+  info: WinInfo; levelId: number; optimal: number; last: boolean; onReplay: () => void; onNext: () => void;
+}) {
+  useEffect(() => {
+    const ts = [0, 1, 2].filter((i) => i < info.stars).map((i) => setTimeout(() => sfx("star", i), 350 + i * 300));
+    if (info.badges.length) ts.push(setTimeout(() => sfx("badge"), 1400));
+    speak(`Bravo ! Tu as gagné ${info.stars} étoile${info.stars > 1 ? "s" : ""} !`);
+    return () => ts.forEach(clearTimeout);
+  }, [info]);
+
+  return (
+    <motion.div
+      initial={{ scale: 0.4, rotate: -6, y: 60 }} animate={{ scale: 1, rotate: 0, y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 16 }}
+      className="relative w-[440px] max-w-full rounded-[36px] border-[3px] border-ink bg-paper p-7 text-center shadow-pop-xl"
+    >
+      <motion.div className="absolute -top-16 left-1/2 -translate-x-1/2" animate={{ y: [0, -10, 0], rotate: [0, -6, 6, 0] }} transition={{ repeat: Infinity, duration: 1.2 }}>
+        <Cubo size={100} mood="wow" />
+      </motion.div>
+      <h2 id="win-title" className="mt-8 text-4xl font-bold">Niveau {levelId} réussi !</h2>
+      <div className="my-4 flex justify-center gap-3" aria-label={`${info.stars} étoiles sur 3`}>
+        {[0, 1, 2].map((i) => (
+          <motion.span
+            key={i}
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: i < info.stars ? 1 : 0.8, rotate: 0 }}
+            transition={{ delay: 0.35 + i * 0.3, type: "spring", stiffness: 400, damping: 10 }}
+            aria-hidden="true"
+          >
+            <StarIcon size={68} filled={i < info.stars} />
+          </motion.span>
+        ))}
+      </div>
+      <p className="text-lg font-bold">
+        Tu as utilisé <strong className="text-grape">{info.used}</strong> bloc{info.used > 1 ? "s" : ""}.
+      </p>
+      {info.stars < 3 && (
+        <p className="mt-1 flex items-center gap-2 rounded-2xl bg-sun/40 px-3 py-2 text-left font-bold">
+          <Lightbulb size={28} strokeWidth={2.5} className="shrink-0" aria-hidden="true" /> Défi : peux-tu réussir avec seulement {optimal} blocs ? Essaie la boucle « répéter » !
+        </p>
+      )}
+      {info.badges.map((k) => (
+        <motion.div
+          key={k}
+          initial={{ scale: 0, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ delay: 1.4, type: "spring" }}
+          className="toon mt-3 flex items-center gap-3 rounded-2xl bg-lilac px-4 py-2 text-left"
+        >
+          <span className="grid size-14 shrink-0 place-items-center rounded-full border-[3px] border-ink bg-sun" aria-hidden="true"><Icon name={BADGES[k].icon} size={28} /></span>
+          <span>
+            <span className="block font-display text-lg font-bold">Nouveau badge : {BADGES[k].name}</span>
+            <span className="font-bold">{BADGES[k].text}</span>
+          </span>
+        </motion.div>
+      ))}
+      <div className="mt-6 flex gap-3">
+        <button onClick={onReplay} className="btn flex flex-1 items-center justify-center gap-1.5 bg-paper py-3 text-lg"><RotateCcw size={18} strokeWidth={3} aria-hidden="true" /> Rejouer</button>
+        {last ? (
+          <Link href="/creer/" className="btn flex flex-[2] items-center justify-center gap-2 bg-pink py-3 text-lg"><Palette size={20} strokeWidth={2.75} aria-hidden="true" /> Crée ton jeu !</Link>
+        ) : (
+          <motion.button
+            autoFocus
+            animate={{ scale: [1, 1.05, 1] }} transition={{ repeat: Infinity, duration: 1.2 }}
+            onClick={onNext} className="btn flex flex-[2] items-center justify-center gap-2 bg-mint py-3 text-lg"
+          >
+            Niveau suivant <ArrowRight size={20} strokeWidth={3} aria-hidden="true" />
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
