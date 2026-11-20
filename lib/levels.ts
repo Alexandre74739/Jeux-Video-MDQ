@@ -49,6 +49,8 @@ export type Course = {
   /** Numéro du niveau montré en aperçu sur la carte du parcours. */
   preview: number;
   levels: LevelDef[];
+  /** Monde secret : étoiles nécessaires pour l'ouvrir. */
+  unlockStars?: number;
 };
 
 export const DIFFICULTY = ["", "Débutant", "Moyen", "Difficile", "Expert"] as const;
@@ -386,6 +388,56 @@ const MAITRE: RawLevel[] = [
   },
 ];
 
+// ---------------------------------------------------------------- MONDE FINAL : L'ÎLE SECRÈTE
+const ILE: RawLevel[] = [
+  {
+    title: "L'arrivée sur l'île", concept: "Séquence",
+    goal: "Le bateau a accosté ! Pose un pont pour traverser, ramasse la gemme et file au coffre.",
+    tip: "Avance, pose un pont, avance 3 fois, ramasse, puis fais un dernier pas.",
+    grid: ["WWWWWWWW", "WS.W.GFW", "WWWWWWWW"], startDir: 1,
+    blocks: B3, solution: [av(), pont(), rep(3, [av()]), ram(), av()],
+  },
+  {
+    title: "Les cocotiers", concept: "Boucle",
+    goal: "Des rochers et des gemmes, encore et encore. Trouve le motif qui se répète !",
+    tip: "Le motif : casser, avancer, avancer, ramasser. Répète-le 3 fois, puis avance.",
+    grid: ["WWWWWWWWWW", "WSRGRGRGFW", "WWTWWTWWTW"], startDir: 1,
+    blocks: B3, solution: [rep(3, [cas(), av(), av(), ram()]), av()],
+  },
+  {
+    title: "Les pierres du lagon", concept: "Boucle",
+    goal: "Marche de pierre en pierre sans tomber à l'eau, et ramasse la gemme de chaque pierre !",
+    tip: "Une marche : avancer, ramasser, tourner à gauche, avancer, tourner à droite. Répète 4 fois, puis avance.",
+    grid: ["WWWWWWWW", "WWWWW.FW", "WWWW.GWW", "WWW.GWWW", "WW.GWWWW", "WSGWWWWW", "WWWWWWWW"], startDir: 1,
+    blocks: B3, solution: [rep(4, [av(), ram(), tg(), av(), td()]), av()],
+  },
+  {
+    title: "Le gué brûlant", concept: "Conditions",
+    goal: "De l'eau et de la lave sur le chemin ! Laisse Cubo décider tout seul à chaque pas.",
+    tip: "Jusqu'au coffre : si eau → pont. Puis si lave → sauter, sinon → avancer.",
+    grid: ["WWWWWLWWWLWW", "WS.W.L..WLFW", "WWWWWLWWWLWW"], startDir: 1,
+    blocks: B3, solution: [jusqua([si("eau", [pont()]), sisinon("lave", [saut()], [av()])])],
+  },
+  {
+    title: "La grotte aux clés", concept: "Si… sinon",
+    goal: "Le chemin tourne et les portes sont fermées. Une seule règle peut tout faire !",
+    tip: "Jusqu'au coffre : ramasser, puis si porte → ouvrir, sinon (si chemin devant → avancer, sinon → tourner à droite).",
+    grid: ["TTTTTTT", "TSK.D.T", "TTTTT.T", "TF.DK.T", "TTTTTTT"], startDir: 1,
+    blocks: B3, solution: [jusqua([ram(), sisinon("porte", [ouv()], [sisinon("chemin", [av()], [td()])])])],
+  },
+  {
+    title: "Le trésor de l'île", concept: "Tout ensemble",
+    goal: "Le grand final ! Clé, porte, rocher, rivière, lave et gemmes : écris le programme qui sait tout faire.",
+    tip: "Jusqu'au coffre : ramasser, si eau → pont, si rocher → casser, si porte → ouvrir, puis si lave → sauter, sinon (si chemin → avancer, sinon → tourner à droite).",
+    grid: ["TTTTTTTTTT", "TSK.D.R.GT", "TfTTTTTTWT", "TTTTTTTT.T", "TTTTfTTTLT", "TTTF.L.G.T", "TTTTTTTTTT"], startDir: 1,
+    blocks: B3,
+    solution: [jusqua([
+      ram(), si("eau", [pont()]), si("rocher", [cas()]), si("porte", [ouv()]),
+      sisinon("lave", [saut()], [sisinon("chemin", [av()], [td()])]),
+    ])],
+  },
+];
+
 export const COURSES: Course[] = [
   {
     slug: "tutoriel", title: "Tutoriel", subtitle: "Apprends les bases avec Cubo : avancer, tourner, répéter.",
@@ -402,6 +454,10 @@ export const COURSES: Course[] = [
   {
     slug: "labyrinthe", title: "Le labyrinthe du maître", subtitle: "Si… sinon, labyrinthes et vrais algorithmes de pro.",
     difficulty: 4, color: "#C3A6FF", newBlocks: ["sisinon"], preview: 10, levels: numbered(MAITRE),
+  },
+  {
+    slug: "ile-secrete", title: "L'île secrète", subtitle: "Le monde caché de la carte au trésor. Tous tes blocs pour une seule aventure !",
+    difficulty: 3, color: "#5EE6C8", newBlocks: [], preview: 3, levels: numbered(ILE), unlockStars: 60,
   },
 ];
 

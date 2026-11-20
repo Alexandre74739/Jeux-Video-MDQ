@@ -1,5 +1,7 @@
 // Sons synthétisés avec Web Audio : aucun fichier à télécharger, fonctionne hors-ligne.
-import { load, save } from "./storage";
+import { load, loadSession, save, saveSession } from "./storage";
+import { lineId } from "./lines";
+import manifest from "./voice-manifest.json";
 
 let ctx: AudioContext | null = null;
 let muted = false;
@@ -86,57 +88,119 @@ export function sfx(name: SfxName, arg?: number) {
 }
 
 // ---------------------------------------------------------------- VOIX
-// Synthèse vocale du navigateur. On choisit en priorité une voix française masculine
-// et « naturelle » (ex. Microsoft Henri / Rémy Online (Natural) dans Edge), avec un
-// repli automatique sur une voix installée sur le PC si la voix en ligne échoue (hors-ligne).
+// Cubo a une seule voix : Thierry (voix neuronale), pré-enregistrée dans public/voice/thierry/<id>.mp3
+// par `npm run voices`. Si un fichier manque (hors-ligne, pas encore en cache), la synthèse vocale
+// du navigateur prend le relais pour cette phrase.
 
-export type VoicePrefs = { uri: string; rate: number; pitch: number; auto: boolean };
-const DEFAULT_VOICE: VoicePrefs = { uri: "", rate: 1.1, pitch: 0.95, auto: false };
+const VOICE = "thierry";
+
+export type VoicePrefs = { on: boolean; rate: number; auto: boolean };
+const DEFAULT_VOICE: VoicePrefs = { on: true, rate: 1, auto: false };
 let voicePrefs: VoicePrefs = DEFAULT_VOICE;
-if (typeof window !== "undefined") voicePrefs = { ...DEFAULT_VOICE, ...load<Partial<VoicePrefs>>("voice", {}) };
+if (typeof window !== "undefined") {
+  const saved = load<Partial<VoicePrefs>>("voice", {});
+  voicePrefs = { on: saved.on ?? true, rate: saved.rate ?? 1, auto: saved.auto ?? false };
+}
+
+const CLIPS = new Set((manifest as Record<string, string[]>)[VOICE] ?? []);
+const clipUrl = (text: string) => (CLIPS.has(lineId(text)) ? `/voice/${VOICE}/${lineId(text)}.mp3` : null);
 
 export const getVoicePrefs = () => voicePrefs;
 export function setVoicePrefs(p: Partial<VoicePrefs>) {
   voicePrefs = { ...voicePrefs, ...p };
   save("voice", voicePrefs);
+  if (p.on === false) stopSpeaking();
+  listeners.forEach((f) => f());
 }
 
-const MALE = /henri|r[eé]my|paul|thomas|antoine|jean|g[eé]rard|guillaume|fabrice|alain|daniel|mathieu|nicolas|olivier|yves|jacques|julien|hugo|lucien|vincent|maxime|aur[eé]lien|male|homme/i;
-const FEMALE = /julie|hortense|denise|eloise|élo[iï]se|vivienne|brigitte|celeste|c[eé]line|am[eé]lie|audrey|marie|virginie|sylvie|caroline|nathalie|female|femme|google fran/i;
-
-export const isMaleVoice = (v: SpeechSynthesisVoice) => MALE.test(v.name) && !FEMALE.test(v.name);
-export const isNaturalVoice = (v: SpeechSynthesisVoice) => /natural|neural|online|premium|enhanced/i.test(v.name);
-
-function score(v: SpeechSynthesisVoice) {
-  return (isMaleVoice(v) ? 10 : 0) + (isNaturalVoice(v) ? 5 : 0) + (v.lang === "fr-FR" ? 2 : 0) + (v.localService ? 1 : 0);
+const listeners = new Set<() => void>();
+/** Prévient quand les réglages de voix changent ; renvoie la fonction de désinscription. */
+export function onVoicePrefs(f: () => void) {
+  listeners.add(f);
+  return () => { listeners.delete(f); };
 }
 
-/** Voix françaises disponibles, la meilleure d'abord. */
-export function frenchVoices(): SpeechSynthesisVoice[] {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return [];
-  return window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("fr")).sort((a, b) => score(b) - score(a));
+/** Secours : meilleure voix française du navigateur (masculine et naturelle de préférence). */
+function fallbackVoice(localOnly: boolean) {
+  const MALE = /thierry|henri|r[eé]my|paul|thomas|antoine|jean|g[eé]rard|guillaume|fabrice|daniel|nicolas|male|homme/i;
+  const score = (v: SpeechSynthesisVoice) =>
+    (MALE.test(v.name) ? 10 : 0) + (/natural|neural|online|premium|enhanced/i.test(v.name) ? 5 : 0) + (v.localService ? 1 : 0);
+  return window.speechSynthesis.getVoices()
+    .filter((v) => v.lang.toLowerCase().startsWith("fr") && (!localOnly || v.localService))
+    .sort((a, b) => score(b) - score(a))[0];
 }
 
-function pickVoice(localOnly = false) {
-  const list = frenchVoices().filter((v) => !localOnly || v.localService);
-  return list.find((v) => v.voiceURI === voicePrefs.uri) ?? list[0];
-}
-
-/** Lecture à voix haute avec la voix choisie. */
-export function speak(text: string) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+function systemSpeak(text: string) {
+  if (!("speechSynthesis" in window)) return;
   const s = window.speechSynthesis;
   s.cancel();
   const say = (localOnly: boolean) => {
-    const u = new SpeechSynthesisUtterance(text.replace(/[«»]/g, "").replace(/…/g, "..."));
+    const u = new SpeechSynthesisUtterance(text.replace(/[«»]/g, "").replace(/…/g, "...").replace(/\s*→\s*/g, ", "));
     u.lang = "fr-FR";
-    u.rate = voicePrefs.rate;
-    u.pitch = voicePrefs.pitch;
-    const v = pickVoice(localOnly);
+    u.rate = voicePrefs.rate * 1.1;
+    const v = fallbackVoice(localOnly);
     if (v) u.voice = v;
-    // Voix en ligne indisponible (pas de réseau) : on réessaie avec une voix du PC.
     if (v && !v.localService && !localOnly) u.onerror = (e) => { if (e.error !== "interrupted" && e.error !== "canceled") say(true); };
     s.speak(u);
   };
   say(!navigator.onLine);
+}
+
+let audio: HTMLAudioElement | null = null;
+let token = 0;
+
+/** Arrête la phrase en cours. */
+export function stopSpeaking() {
+  token++;
+  if (audio) { audio.onended = null; audio.onerror = null; audio.pause(); }
+  if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+
+/**
+ * Cubo dit une ou plusieurs phrases (une phrase = un fichier audio).
+ * Ne fait rien si la voix est coupée dans le menu son (les effets sonores restent actifs).
+ */
+export function speak(text: string | string[]) {
+  if (typeof window === "undefined" || !voicePrefs.on) return;
+  const parts = (Array.isArray(text) ? text : [text]).filter(Boolean);
+  stopSpeaking();
+  if (!parts.length) return;
+  const urls = parts.map(clipUrl);
+  if (urls.some((u) => !u)) { systemSpeak(parts.join(" ")); return; }
+
+  const my = token;
+  audio ??= new Audio();
+  const a = audio;
+  let i = 0;
+  const next = () => {
+    if (my !== token || i >= urls.length) return;
+    a.src = urls[i++]!;
+    a.playbackRate = voicePrefs.rate;
+    a.onended = () => setTimeout(next, 180);
+    a.onerror = () => { if (my === token) systemSpeak(parts.slice(i - 1).join(" ")); };
+    a.play().catch(() => { /* lecture bloquée par le navigateur avant un premier clic */ });
+  };
+  next();
+}
+
+/**
+ * Télécharge en arrière-plan les fichiers de la voix, pour qu'elle marche ensuite hors-ligne
+ * (le service worker les met en cache). Une fois par session.
+ */
+export function warmVoice() {
+  if (typeof window === "undefined" || !navigator.onLine || !CLIPS.size) return;
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  if (conn?.saveData) return;
+  const flag = `voiceWarm:${VOICE}`;
+  if (loadSession(flag, false)) return;
+  saveSession(flag, true);
+  const queue = [...CLIPS].map((id) => `/voice/${VOICE}/${id}.mp3`);
+  const worker = async () => {
+    while (queue.length) {
+      try { await fetch(queue.shift()!); } catch { return; }
+    }
+  };
+  const start = () => { for (let k = 0; k < 2; k++) worker(); };
+  if ("requestIdleCallback" in window) window.requestIdleCallback(start, { timeout: 8000 });
+  else setTimeout(start, 4000);
 }

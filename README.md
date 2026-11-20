@@ -18,6 +18,7 @@ npm run build      # export statique dans out/ + service worker hors-ligne
 npm start          # sert out/ en local
 npm run verify     # vérifie que la solution de chacun des 40 niveaux gagne
 npm run sprites    # (re)télécharge les images OpenMoji dans public/sprites
+npm run voices     # (re)génère les fichiers audio de la voix de Cubo
 ```
 
 ## Déploiement sur Vercel
@@ -40,9 +41,13 @@ puis rechargent automatiquement la page avec la nouvelle version. `vercel.json` 
 en cache de `sw.js` et du manifeste.
 
 ## Voix
-La voix de Cubo utilise la synthèse vocale du navigateur. Une voix française masculine est choisie
-automatiquement ; le menu son permet d'en changer. Dans Microsoft Edge, les voix « Henri » ou « Rémy »
-(naturelles, en ligne) donnent le meilleur résultat, avec repli automatique hors-ligne.
+Cubo a une seule voix : Thierry (voix neuronale). Toutes ses phrases sont pré-enregistrées dans
+`public/voice/thierry/` (une phrase = un fichier MP3, liste dans `lib/voice-manifest.json`).
+Après avoir ajouté ou modifié un texte (niveaux, histoire, badges…), lancer `npm run voices` :
+seules les phrases nouvelles sont générées et les fichiers inutilisés sont supprimés.
+Les fichiers audio sont téléchargés en arrière-plan après la première visite pour fonctionner hors-ligne ;
+si un fichier manque, la synthèse vocale du navigateur prend le relais. Le menu son permet de couper
+la voix seule (les effets sonores restent actifs), de régler sa vitesse et la lecture automatique.
 
 ## Crédits
 Conçu et développé par Alexandre-Philippe Perez, développeur chez [fablioo.com](https://fablioo.com).

@@ -4,6 +4,8 @@ import { Edges } from "@react-three/drei";
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import type { StepKind, World } from "@/lib/levels";
+import { useOutfit } from "@/lib/outfit";
+import { colorOf, trailOf, type Outfit } from "@/lib/rewards";
 
 export type WorldEvent = { kind: StepKind | "reset"; at?: { x: number; y: number }; key: number };
 
@@ -55,7 +57,7 @@ const ARROW_GEO = (() => {
 })();
 const hash = (x: number, y: number) => ((x * 73856093) ^ (y * 19349663)) >>> 0;
 
-function Box({ size, pos, material, edges = true, rot }: { size: [number, number, number]; pos: [number, number, number]; material: THREE.Material | THREE.Material[]; edges?: boolean; rot?: number }) {
+export function Box({ size, pos, material, edges = true, rot }: { size: [number, number, number]; pos: [number, number, number]; material: THREE.Material | THREE.Material[]; edges?: boolean; rot?: number }) {
   return (
     <mesh position={pos} rotation={[0, rot ?? 0, 0]} material={material} castShadow receiveShadow>
       <boxGeometry args={size} />
@@ -206,7 +208,167 @@ function Goal({ open }: { open: boolean }) {
 
 const ANGLE = [Math.PI, Math.PI / 2, 0, -Math.PI / 2];
 
+const HAT = {
+  red: mat("#FF6B57"), blue: mat("#4FC3F7"), purple: mat("#9B7BFF"), purpleDark: mat("#7356E0"),
+  brown: mat("#B5672D"), brownLight: mat("#D69A5B"), brownDark: mat("#6B4423"), horn: mat("#FFF1BF"), pink: mat("#FF8FC7"),
+};
+
+function Propeller() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame((_, dt) => { if (ref.current) ref.current.rotation.y += dt * 9; });
+  return (
+    <group ref={ref} position={[0, 0.66, 0]}>
+      <Box size={[0.56, 0.03, 0.1]} pos={[0, 0, 0]} material={M.yellow} />
+      <Box size={[0.1, 0.03, 0.56]} pos={[0, 0, 0]} material={HAT.blue} />
+    </group>
+  );
+}
+
+/** Chapeau de Cubo en 3D (le haut du corps est à y = 0.32). */
+function Hat3D({ id }: { id: string }) {
+  switch (id) {
+    case "aucun": return null;
+    case "helice":
+      return (
+        <group>
+          <Box size={[0.5, 0.1, 0.5]} pos={[0, 0.37, 0]} material={HAT.red} />
+          <Box size={[0.3, 0.06, 0.18]} pos={[0, 0.34, 0.32]} material={HAT.red} />
+          <Box size={[0.05, 0.24, 0.05]} pos={[0, 0.52, 0]} material={M.black} edges={false} />
+          <Propeller />
+        </group>
+      );
+    case "sorcier":
+      return (
+        <group>
+          <mesh position={[0, 0.35, 0]} material={HAT.purpleDark} castShadow><cylinderGeometry args={[0.46, 0.46, 0.04, 20]} /><Edges color={INK} threshold={20} /></mesh>
+          <mesh position={[0, 0.68, 0]} rotation={[0.12, 0, 0]} material={HAT.purple} castShadow><coneGeometry args={[0.27, 0.66, 12]} /><Edges color={INK} threshold={30} /></mesh>
+          <Box size={[0.1, 0.1, 0.03]} pos={[0, 0.56, 0.2]} material={M.yellow} edges={false} />
+        </group>
+      );
+    case "cowboy":
+      return (
+        <group>
+          <mesh position={[0, 0.35, 0]} material={HAT.brown} castShadow><cylinderGeometry args={[0.5, 0.5, 0.04, 20]} /><Edges color={INK} threshold={20} /></mesh>
+          <mesh position={[0, 0.49, 0]} material={HAT.brownLight} castShadow><cylinderGeometry args={[0.23, 0.27, 0.26, 16]} /><Edges color={INK} threshold={20} /></mesh>
+          <mesh position={[0, 0.41, 0]} material={HAT.brownDark}><cylinderGeometry args={[0.275, 0.275, 0.06, 16]} /></mesh>
+        </group>
+      );
+    case "pirate":
+      return (
+        <group>
+          <Box size={[0.82, 0.18, 0.3]} pos={[0, 0.42, 0]} material={M.black} />
+          <Box size={[0.5, 0.16, 0.26]} pos={[0, 0.58, 0]} material={M.black} />
+          <Box size={[0.12, 0.12, 0.03]} pos={[0, 0.5, 0.16]} material={M.white} edges={false} />
+        </group>
+      );
+    case "couronne":
+      return (
+        <group>
+          <mesh position={[0, 0.43, 0]} material={M.gold} castShadow><cylinderGeometry args={[0.28, 0.28, 0.2, 10, 1, true]} /><Edges color={INK} threshold={20} /></mesh>
+          {[0, 1, 2, 3, 4].map((k) => {
+            const a = (k / 5) * Math.PI * 2;
+            return (
+              <mesh key={k} position={[Math.sin(a) * 0.25, 0.6, Math.cos(a) * 0.25]} material={M.gold}>
+                <coneGeometry args={[0.07, 0.16, 6]} />
+              </mesh>
+            );
+          })}
+          <Box size={[0.08, 0.08, 0.03]} pos={[0, 0.43, 0.285]} material={M.red} edges={false} />
+        </group>
+      );
+    case "licorne":
+      return (
+        <group position={[0, 0.5, 0.12]} rotation={[0.4, 0, 0]}>
+          <mesh material={HAT.horn} castShadow><coneGeometry args={[0.09, 0.5, 10]} /><Edges color={INK} threshold={30} /></mesh>
+          <mesh position={[0, -0.08, 0]} material={HAT.pink}><torusGeometry args={[0.07, 0.018, 6, 12]} /></mesh>
+        </group>
+      );
+    default:
+      return (
+        <group>
+          <Box size={[0.5, 0.1, 0.5]} pos={[0, 0.37, 0]} material={M.cap} />
+          <Box size={[0.3, 0.06, 0.18]} pos={[0, 0.34, 0.32]} material={M.cap} />
+        </group>
+      );
+  }
+}
+
+/** Corps de Cubo (cube, yeux, sac à dos, chapeau) avec la tenue choisie. */
+export function CuboBody({ outfit }: { outfit: Outfit }) {
+  const body = useMemo(() => mat(colorOf(outfit.color).faces[1]), [outfit.color]);
+  return (
+    <>
+      <Box size={[0.64, 0.64, 0.64]} pos={[0, 0, 0]} material={body} />
+      <Hat3D id={outfit.hat} />
+      <Box size={[0.14, 0.18, 0.04]} pos={[-0.14, 0.06, 0.33]} material={M.white} edges={false} />
+      <Box size={[0.14, 0.18, 0.04]} pos={[0.14, 0.06, 0.33]} material={M.white} edges={false} />
+      <Box size={[0.07, 0.09, 0.03]} pos={[-0.13, 0.04, 0.355]} material={M.black} edges={false} />
+      <Box size={[0.07, 0.09, 0.03]} pos={[0.15, 0.04, 0.355]} material={M.black} edges={false} />
+      <Box size={[0.18, 0.05, 0.03]} pos={[0, -0.12, 0.335]} material={M.black} edges={false} />
+      <Box size={[0.42, 0.42, 0.16]} pos={[0, 0.02, -0.38]} material={M.pack} />
+    </>
+  );
+}
+
+const TRAIL_N = 36;
+/** Traînée de particules derrière Cubo quand il se déplace (dans le repère de son parent). */
+export function Trail({ target, kind }: { target: React.RefObject<THREE.Group | null>; kind: string }) {
+  const def = trailOf(kind);
+  const mats = useMemo(() => def.colors.map((c) => (kind === "bulles"
+    ? new THREE.MeshLambertMaterial({ color: c, transparent: true, opacity: 0.75 })
+    : kind === "flammes" || kind === "paillettes"
+      ? new THREE.MeshBasicMaterial({ color: c })
+      : mat(c))), [def, kind]);
+  const geo = useMemo(() => (kind === "bulles" ? new THREE.SphereGeometry(0.07, 10, 8)
+    : kind === "paillettes" ? new THREE.OctahedronGeometry(0.06)
+      : new THREE.BoxGeometry(0.1, 0.1, 0.1)), [kind]);
+  const meshes = useRef<(THREE.Mesh | null)[]>([]);
+  const parts = useRef(Array.from({ length: TRAIL_N }, () => ({ life: 0, p: new THREE.Vector3(), v: new THREE.Vector3() })));
+  const last = useRef<THREE.Vector3 | null>(null);
+  const acc = useRef(0);
+  const next = useRef(0);
+  useFrame((_, dt) => {
+    const g = target.current;
+    if (!g || !mats.length) return;
+    const pos = g.position;
+    if (!last.current) last.current = pos.clone();
+    const moved = last.current.distanceTo(pos);
+    last.current.copy(pos);
+    // Pas de traînée lors d'un saut de position (réinitialisation du niveau)
+    if (moved < 1) acc.current += moved;
+    while (acc.current > 0.09) {
+      acc.current -= 0.09;
+      const pt = parts.current[next.current];
+      next.current = (next.current + 1) % TRAIL_N;
+      pt.life = 1;
+      pt.p.set(pos.x + (Math.random() - 0.5) * 0.3, 0.15 + Math.random() * 0.4, pos.z + (Math.random() - 0.5) * 0.3);
+      const up = kind === "flammes" ? 1.6 : kind === "bulles" ? 0.7 : kind === "paillettes" ? -0.2 : 0.4;
+      pt.v.set((Math.random() - 0.5) * 0.4, up, (Math.random() - 0.5) * 0.4);
+    }
+    parts.current.forEach((pt, i) => {
+      const m = meshes.current[i];
+      if (!m) return;
+      if (pt.life <= 0) { m.visible = false; return; }
+      pt.life -= dt * (kind === "flammes" ? 1.8 : 1.1);
+      pt.p.addScaledVector(pt.v, dt);
+      m.visible = pt.life > 0;
+      m.position.copy(pt.p);
+      m.scale.setScalar(Math.max(0.01, pt.life));
+      m.rotation.y += dt * 4;
+    });
+  });
+  if (!mats.length) return null;
+  return (
+    <>
+      {parts.current.map((_, i) => (
+        <mesh key={i} ref={(m) => { meshes.current[i] = m; }} geometry={geo} material={mats[i % mats.length]} visible={false} />
+      ))}
+    </>
+  );
+}
+
 function CuboModel({ world, event, cx, cz }: { world: World; event: WorldEvent; cx: number; cz: number }) {
+  const outfit = useOutfit();
   const ref = useRef<THREE.Group>(null);
   const body = useRef<THREE.Group>(null);
   const fx = useRef({ bump: 0, splash: 0, win: 0, nod: 0 });
@@ -255,6 +417,8 @@ function CuboModel({ world, event, cx, cz }: { world: World; event: WorldEvent; 
   });
 
   return (
+    <>
+    <Trail target={ref} kind={outfit.trail} />
     <group ref={ref}>
       <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.32, 20]} />
@@ -265,17 +429,10 @@ function CuboModel({ world, event, cx, cz }: { world: World; event: WorldEvent; 
         <Edges color={INK} />
       </mesh>
       <group ref={body}>
-        <Box size={[0.64, 0.64, 0.64]} pos={[0, 0, 0]} material={M.body} />
-        <Box size={[0.5, 0.1, 0.5]} pos={[0, 0.37, 0]} material={M.cap} />
-        <Box size={[0.3, 0.06, 0.18]} pos={[0, 0.34, 0.32]} material={M.cap} />
-        <Box size={[0.14, 0.18, 0.04]} pos={[-0.14, 0.06, 0.33]} material={M.white} edges={false} />
-        <Box size={[0.14, 0.18, 0.04]} pos={[0.14, 0.06, 0.33]} material={M.white} edges={false} />
-        <Box size={[0.07, 0.09, 0.03]} pos={[-0.13, 0.04, 0.355]} material={M.black} edges={false} />
-        <Box size={[0.07, 0.09, 0.03]} pos={[0.15, 0.04, 0.355]} material={M.black} edges={false} />
-        <Box size={[0.18, 0.05, 0.03]} pos={[0, -0.12, 0.335]} material={M.black} edges={false} />
-        <Box size={[0.42, 0.42, 0.16]} pos={[0, 0.02, -0.38]} material={M.pack} />
+        <CuboBody outfit={outfit} />
       </group>
     </group>
+    </>
   );
 }
 
@@ -318,8 +475,9 @@ function Fit({ w, h }: { w: number; h: number }) {
   useEffect(() => {
     const cam = camera as THREE.OrthographicCamera;
     cam.position.set(9, 17, 11);
-    cam.lookAt(0, 0, 0);
-    cam.zoom = Math.min(size.width / (0.78 * (w + h) + 0.6), size.height / (0.58 * (w + h) + 1.2));
+    // Vise le centre visuel de l'île (sol + terre en dessous) et la cadre au plus près.
+    cam.lookAt(0, -0.3, 0);
+    cam.zoom = Math.min(size.width / (0.74 * (w + h) + 0.4), size.height / (0.55 * (w + h) + 1));
     cam.updateProjectionMatrix();
   }, [camera, size, w, h]);
   return null;

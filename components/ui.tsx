@@ -3,24 +3,89 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
-import { frenchVoices, getVoicePrefs, isMaleVoice, isMuted, isNaturalVoice, setMuted, setVoicePrefs, sfx, speak, type VoicePrefs } from "@/lib/sound";
+import { getVoicePrefs, isMuted, onVoicePrefs, setMuted, setVoicePrefs, sfx, speak, type VoicePrefs } from "@/lib/sound";
+import { LINES } from "@/lib/lines";
+import { useOutfit } from "@/lib/outfit";
+import { colorOf, type Outfit } from "@/lib/rewards";
 
 type Mood = "happy" | "wow" | "sad" | "think";
 
-/** Cubo, la mascotte : un petit cube explorateur (SVG isométrique). */
-export function Cubo({ size = 120, mood = "happy", className = "" }: { size?: number; mood?: Mood; className?: string }) {
+/** Chapeaux de Cubo en 2D, posés sur la face du dessus (centre ≈ 60,26). */
+function Hat2D({ id }: { id: string }) {
+  const S = { stroke: "#16123A", strokeWidth: 3.5, strokeLinejoin: "round" as const };
+  switch (id) {
+    case "aucun": return null;
+    case "helice":
+      return (
+        <g>
+          <path d="M38 26 L60 15 L82 26 L60 37 Z" fill="#FF6B57" {...S} />
+          <path d="M60 24 L60 8" stroke="#16123A" strokeWidth="3.5" strokeLinecap="round" />
+          <ellipse cx="49" cy="7" rx="11" ry="3.5" fill="#FFD23F" {...S} strokeWidth={3} />
+          <ellipse cx="71" cy="7" rx="11" ry="3.5" fill="#4FC3F7" {...S} strokeWidth={3} />
+          <circle cx="60" cy="7" r="3" fill="#16123A" />
+        </g>
+      );
+    case "sorcier":
+      return (
+        <g>
+          <ellipse cx="60" cy="29" rx="27" ry="9" fill="#7356E0" {...S} />
+          <path d="M42 29 Q50 6 62 -8 Q66 10 78 29 Z" fill="#9B7BFF" {...S} />
+          <path d="M57 14 l2 -5 l2 5 l5 0 l-4 3 l2 5 l-5 -3 l-5 3 l2 -5 l-4 -3 Z" fill="#FFD23F" stroke="#16123A" strokeWidth="1.5" />
+        </g>
+      );
+    case "cowboy":
+      return (
+        <g>
+          <ellipse cx="60" cy="30" rx="36" ry="11" fill="#B5672D" {...S} />
+          <path d="M45 29 L47 12 Q60 6 73 12 L75 29 Q60 34 45 29 Z" fill="#D69A5B" {...S} />
+          <path d="M46 24 Q60 29 74 24" fill="none" stroke="#6B4423" strokeWidth="4" />
+        </g>
+      );
+    case "pirate":
+      return (
+        <g>
+          <path d="M28 31 Q44 2 60 8 Q76 2 92 31 Q60 22 28 31 Z" fill="#16123A" {...S} />
+          <circle cx="60" cy="18" r="4.5" fill="#fff" />
+          <path d="M55 24 l10 0" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+        </g>
+      );
+    case "couronne":
+      return (
+        <g>
+          <path d="M42 32 L40 12 L50 21 L60 6 L70 21 L80 12 L78 32 Q60 38 42 32 Z" fill="#FFD23F" {...S} />
+          <circle cx="60" cy="26" r="3" fill="#FF6B57" stroke="#16123A" strokeWidth="1.5" />
+          <circle cx="49" cy="27" r="2.4" fill="#4FC3F7" stroke="#16123A" strokeWidth="1.5" />
+          <circle cx="71" cy="27" r="2.4" fill="#3DDC97" stroke="#16123A" strokeWidth="1.5" />
+        </g>
+      );
+    case "licorne":
+      return (
+        <g>
+          <path d="M53 30 L63 -6 L69 30 Q61 34 53 30 Z" fill="#FFF1BF" {...S} />
+          <path d="M55 22 L67 18 M57 13 L66 9 M59 4 L64 2" stroke="#FF8FC7" strokeWidth="3" strokeLinecap="round" />
+        </g>
+      );
+    default:
+      return <path d="M38 26 L60 15 L82 26 L60 37 Z" fill="#7BD88F" {...S} />;
+  }
+}
+
+/** Cubo, la mascotte : un petit cube explorateur (SVG isométrique), avec la tenue choisie. */
+export function Cubo({ size = 120, mood = "happy", className = "", outfit }: { size?: number; mood?: Mood; className?: string; outfit?: Outfit }) {
+  const current = useOutfit();
+  const o = outfit ?? current;
+  const [top, left, right] = colorOf(o.color).faces;
   const eyeY = mood === "sad" ? 62 : 58;
   return (
-    <svg viewBox="0 0 120 130" width={size} height={size * 1.08} className={className} aria-hidden="true">
+    <svg viewBox="0 0 120 130" width={size} height={size * 1.08} className={className} style={{ overflow: "visible" }} aria-hidden="true">
       <ellipse cx="60" cy="122" rx="38" ry="6" fill="#16123A" opacity="0.18" />
       {/* sac à dos */}
       <path d="M92 44 L106 52 L106 80 L92 72 Z" fill="#4FC3F7" stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
       {/* faces du cube */}
-      <path d="M60 14 L100 34 L60 54 L20 34 Z" fill="#FFB27A" stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
-      <path d="M20 34 L60 54 L60 108 L20 88 Z" fill="#FF8A3D" stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
-      <path d="M100 34 L60 54 L60 108 L100 88 Z" fill="#E66A1F" stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
-      {/* casquette d'explorateur */}
-      <path d="M38 26 L60 15 L82 26 L60 37 Z" fill="#7BD88F" stroke="#16123A" strokeWidth="3.5" strokeLinejoin="round" />
+      <path d="M60 14 L100 34 L60 54 L20 34 Z" fill={top} stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M20 34 L60 54 L60 108 L20 88 Z" fill={left} stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M100 34 L60 54 L60 108 L100 88 Z" fill={right} stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
+      <Hat2D id={o.hat} />
       {/* yeux */}
       {mood === "wow" ? (
         <>
@@ -65,18 +130,12 @@ export function Logo({ small = false }: { small?: boolean }) {
 export function SoundToggle() {
   const [m, setM] = useState(false);
   const [open, setOpen] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [prefs, setPrefs] = useState<VoicePrefs>(getVoicePrefs());
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setM(isMuted());
     setPrefs(getVoicePrefs());
-    if (!("speechSynthesis" in window)) return;
-    const upd = () => setVoices(frenchVoices());
-    upd();
-    window.speechSynthesis.addEventListener("voiceschanged", upd);
-    return () => window.speechSynthesis.removeEventListener("voiceschanged", upd);
   }, []);
 
   useEffect(() => {
@@ -89,7 +148,6 @@ export function SoundToggle() {
   }, [open]);
 
   const update = (p: Partial<VoicePrefs>) => { setVoicePrefs(p); setPrefs(getVoicePrefs()); };
-  const current = voices.find((v) => v.voiceURI === prefs.uri) ?? voices[0];
 
   return (
     <div ref={box} className="relative">
@@ -116,25 +174,16 @@ export function SoundToggle() {
               />
             </label>
             <hr className="my-3 border-t-2 border-ink/15" />
-            <p className="font-display text-lg font-bold">Voix de Cubo</p>
-            {voices.length === 0 ? (
-              <p className="mt-1 text-sm font-bold text-ink-soft">Aucune voix française trouvée sur cet ordinateur.</p>
-            ) : (
-              <select
-                className="mt-1 w-full rounded-xl border-[3px] border-ink bg-cream px-2 py-1.5 font-bold"
-                value={current?.voiceURI ?? ""}
-                aria-label="Choisir la voix"
-                onChange={(e) => update({ uri: e.target.value })}
-              >
-                {voices.map((v, i) => (
-                  <option key={v.voiceURI} value={v.voiceURI}>
-                    {i === 0 ? "★ " : ""}{v.name.replace(/^Microsoft /, "").replace(/ - .*/, "")}
-                    {isMaleVoice(v) ? " · homme" : ""}{isNaturalVoice(v) ? " · naturelle" : ""}{v.localService ? "" : " (en ligne)"}
-                  </option>
-                ))}
-              </select>
-            )}
-            <label className="mt-3 block text-sm font-extrabold">
+            <label className="flex items-center justify-between gap-3 font-display text-lg font-bold">
+              Voix de Cubo
+              <input
+                type="checkbox" checked={prefs.on} className="size-6 accent-[#5B3DF5]"
+                onChange={(e) => { update({ on: e.target.checked }); sfx("click"); }}
+              />
+            </label>
+            <p className="text-xs font-bold text-ink-soft">Coupe seulement la voix : les effets sonores restent actifs.</p>
+            <fieldset disabled={!prefs.on} className={`mt-1 ${prefs.on ? "" : "opacity-45"}`}>
+            <label className="mt-2 block text-sm font-extrabold">
               Vitesse : {prefs.rate.toFixed(1)}
               <input type="range" min={0.8} max={1.4} step={0.1} value={prefs.rate} className="mt-1 w-full accent-[#5B3DF5]"
                 onChange={(e) => update({ rate: Number(e.target.value) })} />
@@ -143,17 +192,25 @@ export function SoundToggle() {
               Lire les consignes automatiquement
               <input type="checkbox" checked={prefs.auto} className="size-5 accent-[#5B3DF5]" onChange={(e) => update({ auto: e.target.checked })} />
             </label>
-            <button onClick={() => speak("Salut ! Moi, c'est Cubo. Prêt pour l'aventure ? C'est parti !")} className="btn mt-3 flex w-full items-center justify-center gap-2 bg-sky py-2">
+            <button onClick={() => speak(LINES.hello)} className="btn mt-3 flex w-full items-center justify-center gap-2 bg-sky py-2">
               <Volume2 size={18} strokeWidth={2.75} aria-hidden="true" /> Écouter
             </button>
-            <p className="mt-2 text-xs font-bold text-ink-soft">
-              Astuce : dans Microsoft Edge, choisis « Henri » ou « Rémy » (naturelle) pour la meilleure voix. Hors-ligne, une voix du PC prend le relais.
-            </p>
+            </fieldset>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+}
+
+/** Vrai quand la voix de Cubo est activée (mis à jour en direct). */
+export function useVoiceOn() {
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    setOn(getVoicePrefs().on);
+    return onVoicePrefs(() => setOn(getVoicePrefs().on));
+  }, []);
+  return on;
 }
 
 /** Explosion de confettis (canvas plein écran, se nettoie seul). */

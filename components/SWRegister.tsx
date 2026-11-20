@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import "@/lib/install"; // écoute l'événement d'installation dès le chargement
+import { warmVoice } from "@/lib/sound";
 
 const CHECK_EVERY = 15 * 60 * 1000; // vérifie les mises à jour toutes les 15 minutes
 
@@ -14,7 +15,7 @@ export default function SWRegister() {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
+    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) { warmVoice(); return; }
     let reg: ServiceWorkerRegistration | undefined;
     const hadController = !!navigator.serviceWorker.controller;
     let reloading = false;
@@ -23,7 +24,8 @@ export default function SWRegister() {
 
     navigator.serviceWorker
       .register("/sw.js", { updateViaCache: "none" })
-      .then((r) => { reg = r; check(); })
+      .then((r) => { reg = r; check(); return navigator.serviceWorker.ready; })
+      .then(() => warmVoice())
       .catch(() => {});
 
     // Nouvelle version active : on recharge (sauf à la toute première installation).

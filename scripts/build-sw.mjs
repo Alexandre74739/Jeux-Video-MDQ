@@ -33,6 +33,8 @@ const urls = [];
 for (const f of files) {
   const rel = "/" + relative(OUT, f).split(sep).join("/");
   if (rel === "/sw.js" || rel === "/404.html") continue;
+  // Voix : seule la voix choisie est téléchargée, en arrière-plan (warmVoice dans lib/sound.ts).
+  if (rel.startsWith("/voice/")) continue;
   hash.update(rel);
   hash.update(await readFile(f));
   if (rel.endsWith("/index.html")) urls.push(rel.slice(0, -"index.html".length));

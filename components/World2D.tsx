@@ -80,10 +80,10 @@ function TileArt({ t, x, y, horizontal }: { t: string; x: number; y: number; hor
 }
 
 export default function World2D({ world }: { world: World }) {
-  const size = `min(${90 / world.w}cqw, ${88 / world.h}cqh)`;
+  const size = `min(${96 / world.w}cqw, ${94 / world.h}cqh)`;
   const open = world.gems.length === 0;
   return (
-    <div className="grid h-full w-full place-items-center" style={{ containerType: "size" }}>
+    <div className="grid h-full w-full place-items-center px-2 pt-12 pb-4" style={{ containerType: "size" }}>
       <div
         className="relative overflow-hidden rounded-xl border-[3px] border-ink"
         style={{ display: "grid", gridTemplateColumns: `repeat(${world.w}, ${size})`, boxShadow: "0 8px 0 0 #9C6A3C, 0 8px 0 3px #16123A" }}

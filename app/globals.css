@@ -113,3 +113,14 @@ h1, h2, h3, .font-display {
     cursor: pointer;
   }
 }
+
+/* Bandeau défilant de l'accueil : boucle continue sans raccord */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 80s linear infinite; will-change: transform; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}

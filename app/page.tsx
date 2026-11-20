@@ -156,16 +156,23 @@ export default function Home() {
           </div>
         </section>
 
-        {/* BANDEAU DÉFILANT */}
-        <div className="overflow-hidden border-y-[3px] border-ink bg-ink py-4" aria-label="Points clés">
-          <motion.ul className="flex w-max gap-10" animate={{ x: ["0%", "-50%"] }} transition={{ repeat: Infinity, duration: 28, ease: "linear" }}>
-            {[...facts, ...facts].map((f, i) => (
-              <li key={i} aria-hidden={i >= facts.length} className="flex items-center gap-3 font-display text-xl font-semibold text-white">
-                <span className="grid size-10 place-items-center rounded-full bg-sun text-ink"><f.icon size={20} strokeWidth={sw} aria-hidden="true" /></span>
-                {f.text}
-              </li>
+        {/* BANDEAU DÉFILANT : 2 groupes identiques (chacun plus large que l'écran), décalés d'un groupe pile */}
+        <div className="marquee overflow-hidden border-y-[3px] border-ink bg-ink py-4">
+          <ul className="sr-only" aria-label="Points clés">
+            {facts.map((f) => <li key={f.text}>{f.text}</li>)}
+          </ul>
+          <div className="marquee-track flex w-max" aria-hidden="true">
+            {[0, 1].map((g) => (
+              <div key={g} className="flex shrink-0 items-center gap-10 pr-10">
+                {[...facts, ...facts, ...facts].map((f, i) => (
+                  <span key={i} className="flex shrink-0 items-center gap-3 font-display text-xl font-semibold whitespace-nowrap text-white">
+                    <span className="grid size-10 place-items-center rounded-full bg-sun text-ink"><f.icon size={20} strokeWidth={sw} /></span>
+                    {f.text}
+                  </span>
+                ))}
+              </div>
             ))}
-          </motion.ul>
+          </div>
         </div>
 
         {/* DÉMO */}
