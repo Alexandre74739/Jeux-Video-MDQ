@@ -11,20 +11,23 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
-    orientation: "landscape",
+    // Pas d'orientation imposée : l'appli suit la rotation de la tablette (portrait ou paysage).
+    orientation: "any",
     lang: "fr",
-    background_color: "#FFF7E8",
+    dir: "ltr",
+    background_color: "#4FC3F7",
     theme_color: "#4FC3F7",
     categories: ["education", "games", "kids"],
+    prefer_related_applications: false,
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icons/maskable-192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
       { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-      { src: "/icons/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
     ],
     shortcuts: [
-      { name: "Les défis", url: "/jouer/", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
-      { name: "Création libre", url: "/creer/", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+      { name: "Les défis", url: "/jouer/", icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
+      { name: "Création libre", url: "/creer/", icons: [{ src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }] },
     ],
   };
 }
