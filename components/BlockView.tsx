@@ -111,23 +111,46 @@ export function BlockView(props: Props) {
             <div className="h-4 w-24 rounded-lg border-[3px] border-ink/50" style={{ background: cat.soft }} />
           </div>
         )}
-        {def.container && mode !== "palette" && (
-          <div className="px-2 pb-2.5">
-            <div
-              data-list={mode === "edit" ? block.id : undefined}
-              className="flex min-h-12 min-w-40 flex-col gap-1.5 rounded-xl border-[3px] border-ink/70 p-1.5"
-              style={{ background: cat.soft }}
-            >
-              {(block.children ?? []).map((c) =>
-                renderChild ? renderChild(c) : <BlockView key={c.id} {...props} block={c} />
-              )}
-              {mode === "edit" && (block.children ?? []).length === 0 && (
-                <span className="pointer-events-none px-2 py-1.5 text-sm font-bold text-ink-soft">dépose des blocs ici</span>
-              )}
+        {def.container && mode === "palette" && def.hasElse && (
+          <>
+            <div className="px-3 pb-1 text-[15px]">sinon</div>
+            <div className="px-2 pb-2">
+              <div className="h-4 w-24 rounded-lg border-[3px] border-ink/50" style={{ background: cat.soft }} />
             </div>
-          </div>
+          </>
+        )}
+        {def.container && mode !== "palette" && (
+          <>
+            <div className="px-2 pb-2.5">
+              <InnerList {...props} listId={block.id} items={block.children ?? []} soft={cat.soft} />
+            </div>
+            {def.hasElse && (
+              <>
+                <div className="-mt-1 px-3 pb-1">sinon</div>
+                <div className="px-2 pb-2.5">
+                  <InnerList {...props} listId={`${block.id}:alt`} items={block.alt ?? []} soft={cat.soft} />
+                </div>
+              </>
+            )}
+          </>
         )}
       </div>
+    </div>
+  );
+}
+
+function InnerList({ listId, items, soft, ...props }: Props & { listId: string; items: Block[]; soft: string }) {
+  const { mode, renderChild } = props;
+  return (
+    <div
+      data-list={mode === "edit" ? listId : undefined}
+      className="flex min-h-12 min-w-40 flex-col gap-1.5 rounded-xl border-[3px] border-ink/70 p-1.5"
+      style={{ background: soft }}
+    >
+      {items.map((c) => (renderChild ? renderChild(c) : <BlockView key={c.id} {...props} block={c} />))}
+      {mode === "edit" && items.length === 0 && (
+        <span className="pointer-events-none px-2 py-1.5 text-sm font-bold text-ink-soft">dépose des blocs ici</span>
+      )}
     </div>
   );
 }

@@ -85,16 +85,58 @@ export function sfx(name: SfxName, arg?: number) {
   try { (SFX[name] as (a?: number) => void)(arg); } catch { /* audio indisponible */ }
 }
 
-/** Lecture à voix haute (synthèse vocale du système, hors-ligne). */
+// ---------------------------------------------------------------- VOIX
+// Synthèse vocale du navigateur. On choisit en priorité une voix française masculine
+// et « naturelle » (ex. Microsoft Henri / Rémy Online (Natural) dans Edge), avec un
+// repli automatique sur une voix installée sur le PC si la voix en ligne échoue (hors-ligne).
+
+export type VoicePrefs = { uri: string; rate: number; pitch: number; auto: boolean };
+const DEFAULT_VOICE: VoicePrefs = { uri: "", rate: 1.1, pitch: 0.95, auto: false };
+let voicePrefs: VoicePrefs = DEFAULT_VOICE;
+if (typeof window !== "undefined") voicePrefs = { ...DEFAULT_VOICE, ...load<Partial<VoicePrefs>>("voice", {}) };
+
+export const getVoicePrefs = () => voicePrefs;
+export function setVoicePrefs(p: Partial<VoicePrefs>) {
+  voicePrefs = { ...voicePrefs, ...p };
+  save("voice", voicePrefs);
+}
+
+const MALE = /henri|r[eé]my|paul|thomas|antoine|jean|g[eé]rard|guillaume|fabrice|alain|daniel|mathieu|nicolas|olivier|yves|jacques|julien|hugo|lucien|vincent|maxime|aur[eé]lien|male|homme/i;
+const FEMALE = /julie|hortense|denise|eloise|élo[iï]se|vivienne|brigitte|celeste|c[eé]line|am[eé]lie|audrey|marie|virginie|sylvie|caroline|nathalie|female|femme|google fran/i;
+
+export const isMaleVoice = (v: SpeechSynthesisVoice) => MALE.test(v.name) && !FEMALE.test(v.name);
+export const isNaturalVoice = (v: SpeechSynthesisVoice) => /natural|neural|online|premium|enhanced/i.test(v.name);
+
+function score(v: SpeechSynthesisVoice) {
+  return (isMaleVoice(v) ? 10 : 0) + (isNaturalVoice(v) ? 5 : 0) + (v.lang === "fr-FR" ? 2 : 0) + (v.localService ? 1 : 0);
+}
+
+/** Voix françaises disponibles, la meilleure d'abord. */
+export function frenchVoices(): SpeechSynthesisVoice[] {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return [];
+  return window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith("fr")).sort((a, b) => score(b) - score(a));
+}
+
+function pickVoice(localOnly = false) {
+  const list = frenchVoices().filter((v) => !localOnly || v.localService);
+  return list.find((v) => v.voiceURI === voicePrefs.uri) ?? list[0];
+}
+
+/** Lecture à voix haute avec la voix choisie. */
 export function speak(text: string) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   const s = window.speechSynthesis;
   s.cancel();
-  const u = new SpeechSynthesisUtterance(text.replace(/[«»]/g, ""));
-  u.lang = "fr-FR";
-  u.rate = 0.95;
-  u.pitch = 1.1;
-  const fr = s.getVoices().find((v) => v.lang.startsWith("fr"));
-  if (fr) u.voice = fr;
-  s.speak(u);
+  const say = (localOnly: boolean) => {
+    const u = new SpeechSynthesisUtterance(text.replace(/[«»]/g, "").replace(/…/g, "..."));
+    u.lang = "fr-FR";
+    u.rate = voicePrefs.rate;
+    u.pitch = voicePrefs.pitch;
+    const v = pickVoice(localOnly);
+    if (v) u.voice = v;
+    // Voix en ligne indisponible (pas de réseau) : on réessaie avec une voix du PC.
+    if (v && !v.localService && !localOnly) u.onerror = (e) => { if (e.error !== "interrupted" && e.error !== "canceled") say(true); };
+    s.speak(u);
+  };
+  say(!navigator.onLine);
 }

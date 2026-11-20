@@ -1,9 +1,9 @@
 "use client";
 import Link from "next/link";
-import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
-import { isMuted, setMuted, sfx } from "@/lib/sound";
+import { frenchVoices, getVoicePrefs, isMaleVoice, isMuted, isNaturalVoice, setMuted, setVoicePrefs, sfx, speak, type VoicePrefs } from "@/lib/sound";
 
 type Mood = "happy" | "wow" | "sad" | "think";
 
@@ -61,18 +61,98 @@ export function Logo({ small = false }: { small?: boolean }) {
   );
 }
 
+/** Bouton son + menu de réglage de la voix (mascotte). */
 export function SoundToggle() {
   const [m, setM] = useState(false);
-  useEffect(() => setM(isMuted()), []);
+  const [open, setOpen] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [prefs, setPrefs] = useState<VoicePrefs>(getVoicePrefs());
+  const box = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setM(isMuted());
+    setPrefs(getVoicePrefs());
+    if (!("speechSynthesis" in window)) return;
+    const upd = () => setVoices(frenchVoices());
+    upd();
+    window.speechSynthesis.addEventListener("voiceschanged", upd);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", upd);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => { if (!box.current?.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("keydown", esc);
+    return () => { window.removeEventListener("pointerdown", close); window.removeEventListener("keydown", esc); };
+  }, [open]);
+
+  const update = (p: Partial<VoicePrefs>) => { setVoicePrefs(p); setPrefs(getVoicePrefs()); };
+  const current = voices.find((v) => v.voiceURI === prefs.uri) ?? voices[0];
+
   return (
-    <button
-      className="btn size-11 grid place-items-center bg-paper"
-      aria-label={m ? "Activer le son" : "Couper le son"}
-      aria-pressed={!m}
-      onClick={() => { setMuted(!m); setM(!m); if (m) sfx("click"); }}
-    >
-      {m ? <VolumeX size={22} strokeWidth={2.75} aria-hidden="true" /> : <Volume2 size={22} strokeWidth={2.75} aria-hidden="true" />}
-    </button>
+    <div ref={box} className="relative">
+      <button
+        className="btn grid size-11 place-items-center bg-paper"
+        aria-label="Réglages du son et de la voix"
+        aria-expanded={open}
+        onClick={() => { setOpen(!open); sfx("click"); }}
+      >
+        {m ? <VolumeX size={22} strokeWidth={2.75} aria-hidden="true" /> : <Volume2 size={22} strokeWidth={2.75} aria-hidden="true" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: -8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: -8 }}
+            className="absolute top-14 right-0 z-[95] w-[320px] origin-top-right rounded-3xl border-[3px] border-ink bg-paper p-4 shadow-pop-lg"
+            role="dialog" aria-label="Son et voix"
+          >
+            <label className="flex items-center justify-between gap-3 font-display text-lg font-bold">
+              Effets sonores
+              <input
+                type="checkbox" checked={!m} className="size-6 accent-[#5B3DF5]"
+                onChange={() => { setMuted(!m); setM(!m); if (m) sfx("click"); }}
+              />
+            </label>
+            <hr className="my-3 border-t-2 border-ink/15" />
+            <p className="font-display text-lg font-bold">Voix de Cubo</p>
+            {voices.length === 0 ? (
+              <p className="mt-1 text-sm font-bold text-ink-soft">Aucune voix française trouvée sur cet ordinateur.</p>
+            ) : (
+              <select
+                className="mt-1 w-full rounded-xl border-[3px] border-ink bg-cream px-2 py-1.5 font-bold"
+                value={current?.voiceURI ?? ""}
+                aria-label="Choisir la voix"
+                onChange={(e) => update({ uri: e.target.value })}
+              >
+                {voices.map((v, i) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {i === 0 ? "★ " : ""}{v.name.replace(/^Microsoft /, "").replace(/ - .*/, "")}
+                    {isMaleVoice(v) ? " · homme" : ""}{isNaturalVoice(v) ? " · naturelle" : ""}{v.localService ? "" : " (en ligne)"}
+                  </option>
+                ))}
+              </select>
+            )}
+            <label className="mt-3 block text-sm font-extrabold">
+              Vitesse : {prefs.rate.toFixed(1)}
+              <input type="range" min={0.8} max={1.4} step={0.1} value={prefs.rate} className="mt-1 w-full accent-[#5B3DF5]"
+                onChange={(e) => update({ rate: Number(e.target.value) })} />
+            </label>
+            <label className="mt-2 flex items-center justify-between gap-3 text-sm font-extrabold">
+              Lire les consignes automatiquement
+              <input type="checkbox" checked={prefs.auto} className="size-5 accent-[#5B3DF5]" onChange={(e) => update({ auto: e.target.checked })} />
+            </label>
+            <button onClick={() => speak("Salut ! Moi, c'est Cubo. Prêt pour l'aventure ? C'est parti !")} className="btn mt-3 flex w-full items-center justify-center gap-2 bg-sky py-2">
+              <Volume2 size={18} strokeWidth={2.75} aria-hidden="true" /> Écouter
+            </button>
+            <p className="mt-2 text-xs font-bold text-ink-soft">
+              Astuce : dans Microsoft Edge, choisis « Henri » ou « Rémy » (naturelle) pour la meilleure voix. Hors-ligne, une voix du PC prend le relais.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

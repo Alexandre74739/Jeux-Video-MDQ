@@ -9,9 +9,11 @@ const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito", weight: [
 export const metadata: Metadata = {
   title: "CuboCode : crée ton jeu vidéo",
   description: "Apprends à coder en t'amusant : glisse des blocs, guide Cubo et crée ton propre jeu vidéo.",
+  applicationName: "CuboCode",
+  appleWebApp: { capable: true, title: "CuboCode", statusBarStyle: "default" },
 };
 
-export const viewport: Viewport = { themeColor: "#FFD23F" };
+export const viewport: Viewport = { themeColor: "#4FC3F7" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

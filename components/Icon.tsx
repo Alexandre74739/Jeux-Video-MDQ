@@ -3,14 +3,14 @@ import {
   ArrowUp, CornerUpLeft, CornerUpRight, Gem, Pickaxe, Fence, Repeat, CircleHelp, Play, Keyboard,
   MousePointerClick, Shapes, Zap, Move, Dices, Crosshair, MessageCircle, ZoomIn, ZoomOut, EyeOff, Eye,
   RotateCw, Volume2, Hourglass, Infinity as InfinityIcon, Star, RotateCcw, Trophy, Skull, Sparkles, Music,
-  Footprints, Crown, type LucideIcon,
+  Footprints, Crown, Undo2, ChevronsUp, KeyRound, Repeat2, Split, Package, Flame, Mountain, Award, type LucideIcon,
 } from "lucide-react";
 
 export const ICONS: Record<string, LucideIcon> = {
   ArrowUp, CornerUpLeft, CornerUpRight, Gem, Pickaxe, Fence, Repeat, CircleHelp, Play, Keyboard,
   MousePointerClick, Shapes, Zap, Move, Dices, Crosshair, MessageCircle, ZoomIn, ZoomOut, EyeOff, Eye,
   RotateCw, Volume2, Hourglass, Infinity: InfinityIcon, Star, RotateCcw, Trophy, Skull, Sparkles, Music,
-  Footprints, Crown,
+  Footprints, Crown, Undo2, ChevronsUp, KeyRound, Repeat2, Split, Package, Flame, Mountain, Award,
 };
 
 /** Icône du catalogue (par nom), trait épais façon dessin animé. */

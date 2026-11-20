@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import LevelGame from "@/components/LevelGame";
+import CourseHub from "@/components/CourseHub";
 
-export const metadata: Metadata = { title: "L'aventure de Cubo · CuboCode" };
+export const metadata: Metadata = { title: "Choisis ton défi · CuboCode" };
 
 export default function Page() {
-  return <LevelGame />;
+  return <CourseHub />;
 }

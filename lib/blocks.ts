@@ -30,7 +30,19 @@ export type BlockDef = {
   params?: ParamDef[];
   hat?: boolean;
   container?: boolean;
+  /** Possède une branche « sinon ». */
+  hasElse?: boolean;
 };
+
+const CONDITIONS = [
+  { value: "eau", label: "eau devant" },
+  { value: "rocher", label: "rocher devant" },
+  { value: "lave", label: "lave devant" },
+  { value: "porte", label: "porte devant" },
+  { value: "chemin", label: "chemin devant" },
+  { value: "droite", label: "chemin à droite" },
+  { value: "gauche", label: "chemin à gauche" },
+];
 
 const KEYS = [
   { value: "ArrowRight", label: "→ droite" },
@@ -62,16 +74,21 @@ export const BLOCKS: Record<string, BlockDef> = {
   ramasser: { type: "ramasser", category: "action", icon: "Gem", label: "ramasser" },
   casser: { type: "casser", category: "action", icon: "Pickaxe", label: "casser le rocher" },
   pont: { type: "pont", category: "action", icon: "Fence", label: "poser un pont" },
+  demitour: { type: "demitour", category: "motion", icon: "Undo2", label: "faire demi-tour" },
+  sauter: { type: "sauter", category: "motion", icon: "ChevronsUp", label: "sauter" },
+  ouvrir: { type: "ouvrir", category: "action", icon: "KeyRound", label: "ouvrir la porte" },
+  jusqua: { type: "jusqua", category: "control", icon: "Repeat2", label: "répéter jusqu'au coffre", container: true },
   repeter: {
     type: "repeter", category: "control", icon: "Repeat", label: "répéter {n} fois", container: true,
     params: [{ key: "n", kind: "number", def: 3, min: 1, max: 20 }],
   },
   si: {
-    type: "si", category: "control", icon: "CircleHelp", label: "si {what} devant", container: true,
-    params: [{
-      key: "what", kind: "select", def: "eau",
-      options: [{ value: "eau", label: "eau" }, { value: "rocher", label: "rocher" }, { value: "chemin", label: "chemin" }],
-    }],
+    type: "si", category: "control", icon: "CircleHelp", label: "si {what}", container: true,
+    params: [{ key: "what", kind: "select", def: "eau", options: CONDITIONS }],
+  },
+  sisinon: {
+    type: "sisinon", category: "control", icon: "Split", label: "si {what}", container: true, hasElse: true,
+    params: [{ key: "what", kind: "select", def: "chemin", options: CONDITIONS }],
   },
 
   // --- Création libre ---
@@ -135,45 +152,53 @@ export function createBlock(type: string, spriteDefault = ""): Block {
   const def = BLOCKS[type];
   const params: Block["params"] = {};
   for (const p of def.params ?? []) params[p.key] = p.kind === "sprite" ? spriteDefault : p.def;
-  return { id: newId(), type, params, ...(def.container ? { children: [] } : {}) };
+  return { id: newId(), type, params, ...(def.container ? { children: [] } : {}), ...(def.hasElse ? { alt: [] } : {}) };
 }
 
 export function cloneBlock(bl: Block): Block {
-  return { ...bl, id: newId(), params: { ...bl.params }, children: bl.children?.map(cloneBlock) };
+  return { ...bl, id: newId(), params: { ...bl.params }, children: bl.children?.map(cloneBlock), alt: bl.alt?.map(cloneBlock) };
 }
 
 // ---------- Manipulation de l'arbre ----------
+/** Applique f aux listes enfants (children et alt) d'un bloc. */
+function mapLists(bl: Block, f: (l: Block[]) => Block[]): Block {
+  if (!bl.children && !bl.alt) return bl;
+  return { ...bl, ...(bl.children ? { children: f(bl.children) } : {}), ...(bl.alt ? { alt: f(bl.alt) } : {}) };
+}
+
 export function removeBlock(list: Block[], id: string): [Block[], Block | null] {
   let found: Block | null = null;
   const walk = (l: Block[]): Block[] =>
     l.flatMap((bl) => {
       if (bl.id === id) { found = bl; return []; }
-      return bl.children ? [{ ...bl, children: walk(bl.children) }] : [bl];
+      return [mapLists(bl, walk)];
     });
   const res = walk(list);
   return [res, found];
 }
 
-/** listId : "root" ou l'id du bloc conteneur. */
+/** listId : "root", l'id du bloc conteneur, ou "<id>:alt" pour la branche « sinon ». */
 export function insertBlock(list: Block[], listId: string, index: number, block: Block): Block[] {
   if (listId === "root") {
     const c = [...list];
     c.splice(index, 0, block);
     return c;
   }
+  const isAlt = listId.endsWith(":alt");
+  const target = isAlt ? listId.slice(0, -4) : listId;
   return list.map((bl) => {
-    if (bl.id === listId) {
-      const c = [...(bl.children ?? [])];
+    if (bl.id === target) {
+      const c = [...((isAlt ? bl.alt : bl.children) ?? [])];
       c.splice(index, 0, block);
-      return { ...bl, children: c };
+      return isAlt ? { ...bl, alt: c } : { ...bl, children: c };
     }
-    return bl.children ? { ...bl, children: insertBlock(bl.children, listId, index, block) } : bl;
+    return mapLists(bl, (l) => insertBlock(l, listId, index, block));
   });
 }
 
 export function updateParam(list: Block[], id: string, key: string, value: string | number): Block[] {
   return list.map((bl) => {
     if (bl.id === id) return { ...bl, params: { ...bl.params, [key]: value } };
-    return bl.children ? { ...bl, children: updateParam(bl.children, id, key, value) } : bl;
+    return mapLists(bl, (l) => updateParam(l, id, key, value));
   });
 }

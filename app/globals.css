@@ -98,3 +98,18 @@ h1, h2, h3, .font-display {
 @media (prefers-reduced-motion: reduce) {
   .shake, .running-glow { animation: none; }
 }
+
+/* Curseur « main » sur tout ce qui est cliquable (couche base : les classes utilitaires gardent la priorité) */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  [role="radio"],
+  a[href],
+  select,
+  summary,
+  label:has(input[type="checkbox"]),
+  input[type="checkbox"],
+  input[type="range"] {
+    cursor: pointer;
+  }
+}

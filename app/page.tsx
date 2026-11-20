@@ -11,18 +11,19 @@ import { Icon, StarIcon } from "@/components/Icon";
 import HomeDemo from "@/components/HomeDemo";
 import { BlockView } from "@/components/BlockView";
 import { createBlock, type Block } from "@/lib/blocks";
-import { LEVELS } from "@/lib/levels";
+import { COURSES, DIFFICULTY } from "@/lib/levels";
 import { BADGES } from "@/lib/storage";
 import { sfx } from "@/lib/sound";
 import LIBRARY from "@/lib/sprites.json";
 
 const sw = 2.75;
 
+// Étiquettes flottantes autour de Cubo : collées aux bords sur mobile, débordent un peu sur grand écran.
 const floatChips = [
-  { icon: "ArrowUp", text: "avancer", bg: "#4FC3F7", x: "-8%", y: "8%", r: -8, d: 0 },
-  { icon: "Repeat", text: "répéter 3 fois", bg: "#FFA94D", x: "60%", y: "2%", r: 6, d: 0.4 },
-  { icon: "Gem", text: "ramasser", bg: "#7BD88F", x: "68%", y: "78%", r: -5, d: 0.8 },
-  { icon: "Zap", text: "quand je clique", bg: "#FFD23F", x: "-12%", y: "74%", r: 7, d: 1.2 },
+  { icon: "ArrowUp", text: "avancer", bg: "#4FC3F7", pos: "top-[6%] left-0 lg:-left-[8%]", r: -8, d: 0 },
+  { icon: "Repeat", text: "répéter 3 fois", bg: "#FFA94D", pos: "top-0 right-0 lg:-right-[6%]", r: 6, d: 0.4 },
+  { icon: "Gem", text: "ramasser", bg: "#7BD88F", pos: "bottom-[6%] right-0 lg:-right-[8%]", r: -5, d: 0.8 },
+  { icon: "Zap", text: "quand je clique", bg: "#FFD23F", pos: "bottom-[10%] left-0 lg:-left-[10%]", r: 7, d: 1.2 },
 ];
 
 const facts: { icon: LucideIcon; text: string }[] = [
@@ -35,7 +36,7 @@ const facts: { icon: LucideIcon; text: string }[] = [
 ];
 
 const steps: { n: number; icon: LucideIcon; title: string; text: string; bg: string }[] = [
-  { n: 1, icon: MapIcon, title: "Apprends", text: "10 petits niveaux pour guider Cubo dans un monde en cubes.", bg: "bg-sky" },
+  { n: 1, icon: MapIcon, title: "Apprends", text: "Un tutoriel puis 3 défis de plus en plus durs dans un monde en cubes.", bg: "bg-sky" },
   { n: 2, icon: Puzzle, title: "Assemble", text: "Glisse et emboîte des blocs, comme des briques de construction.", bg: "bg-mint" },
   { n: 3, icon: Gamepad2, title: "Crée", text: "Choisis tes personnages et invente ton propre jeu vidéo !", bg: "bg-pink" },
 ];
@@ -46,10 +47,10 @@ function b(type: string, params: Block["params"] = {}, children?: Block[]): Bloc
 }
 
 const concepts: { title: string; text: string; color: string; levels: string; sample: Block[] }[] = [
-  { title: "Séquence", text: "Donner des instructions dans le bon ordre, une par une.", color: "bg-sky", levels: "Niveaux 1 à 3", sample: [b("avancer"), b("droite"), b("avancer")] },
-  { title: "Actions", text: "Agir sur le monde : ramasser, casser, construire.", color: "bg-mint", levels: "Niveaux 4, 6, 7", sample: [b("ramasser"), b("pont")] },
-  { title: "Boucles", text: "Répéter sans tout réécrire. Le super-pouvoir des codeurs !", color: "bg-orange", levels: "Niveaux 5 à 9", sample: [b("repeter", { n: 3 }, [b("avancer"), b("casser")])] },
-  { title: "Conditions", text: "Vérifier avant d'agir : SI il y a de l'eau, ALORS…", color: "bg-lilac", levels: "Niveau 10", sample: [b("si", { what: "eau" }, [b("pont")])] },
+  { title: "Séquence", text: "Donner des instructions dans le bon ordre, une par une.", color: "bg-sky", levels: "Tutoriel", sample: [b("avancer"), b("droite"), b("avancer")] },
+  { title: "Actions", text: "Agir sur le monde : ramasser, casser, ouvrir, sauter.", color: "bg-mint", levels: "Vallée des clés", sample: [b("ramasser"), b("ouvrir"), b("sauter")] },
+  { title: "Boucles", text: "Répéter sans tout réécrire. Le super-pouvoir des codeurs !", color: "bg-orange", levels: "Volcan", sample: [b("repeter", { n: 3 }, [b("avancer"), b("casser")])] },
+  { title: "Conditions", text: "Vérifier avant d'agir : SI il y a de la lave, je saute, SINON j'avance.", color: "bg-lilac", levels: "Labyrinthe du maître", sample: [{ ...b("sisinon", { what: "lave" }, [b("sauter")]), alt: [b("avancer")] }] },
 ];
 
 const features: { icon: LucideIcon; title: string; text: string }[] = [
@@ -67,7 +68,7 @@ const showcase = ["1f916", "2b50", "1f996", "1f680", "1f984", "1f47e", "1f355", 
 
 const timeline = [
   { t: "0 – 10 min", title: "Découverte", text: "On présente Cubo et on fait la démo de l'accueil ensemble.", bg: "bg-sun" },
-  { t: "10 – 50 min", title: "L'aventure", text: "Les binômes avancent dans les 10 niveaux, chacun à son rythme.", bg: "bg-sky" },
+  { t: "10 – 50 min", title: "Les défis", text: "Le tutoriel, puis les défis de plus en plus durs, chacun à son rythme.", bg: "bg-sky" },
   { t: "50 – 80 min", title: "Création libre", text: "Chaque binôme invente son jeu avec ses personnages préférés.", bg: "bg-pink" },
   { t: "80 – 90 min", title: "On partage !", text: "Chacun montre son jeu aux autres et télécharge sa création.", bg: "bg-mint" },
 ];
@@ -144,10 +145,10 @@ export default function Home() {
             </motion.div>
           </div>
 
-          <div className="relative mx-auto aspect-square w-full max-w-110">
+          <div className="relative mx-auto aspect-square w-full max-w-[min(440px,100%)]">
             <motion.div initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 120 }} className="absolute inset-[8%] rounded-full border-[3px] border-ink bg-sky" style={{ boxShadow: "10px 12px 0 0 #16123A" }} />
             <motion.div className="absolute inset-0 grid place-items-center" animate={{ y: [0, -18, 0] }} transition={{ repeat: Infinity, duration: 2.6, ease: "easeInOut" }}>
-              <Cubo size={250} />
+              <Cubo size={250} className="h-auto w-[56%]" />
             </motion.div>
             {floatChips.map((c) => (
               <motion.span
@@ -156,10 +157,10 @@ export default function Home() {
                 initial={{ scale: 0, rotate: c.r - 30 }}
                 animate={{ scale: 1, rotate: c.r, y: [0, -10, 0] }}
                 transition={{ scale: { delay: 0.5 + c.d / 2, type: "spring" }, rotate: { delay: 0.5 + c.d / 2 }, y: { repeat: Infinity, duration: 3, delay: c.d } }}
-                className="absolute flex items-center gap-2 rounded-2xl border-[3px] border-ink px-3 py-2 font-display text-base font-semibold whitespace-nowrap shadow-pop sm:text-lg"
-                style={{ left: c.x, top: c.y, background: c.bg }}
+                className={`absolute z-10 flex items-center gap-1.5 rounded-2xl border-[3px] border-ink px-2 py-1.5 font-display text-sm font-semibold whitespace-nowrap shadow-pop sm:gap-2 sm:px-3 sm:py-2 sm:text-lg ${c.pos}`}
+                style={{ background: c.bg }}
               >
-                <span className="grid size-7 place-items-center rounded-lg bg-paper/70"><Icon name={c.icon} size={17} /></span>
+                <span className="grid size-6 place-items-center rounded-lg bg-paper/70 sm:size-7"><Icon name={c.icon} size={16} /></span>
                 {c.text}
               </motion.span>
             ))}
@@ -215,25 +216,37 @@ export default function Home() {
 
         {/* L'AVENTURE */}
         <section id="aventure" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6">
-          <SectionTitle kicker="L'aventure" title="10 niveaux pour devenir codeur" />
+          <SectionTitle kicker="L'aventure" title={`${COURSES.length} parcours, ${COURSES.reduce((n, c) => n + c.levels.length, 0)} niveaux`} />
 
-          {/* Chemin des niveaux */}
-          <motion.ol {...reveal} className="mx-auto mt-12 flex max-w-4xl flex-wrap items-center justify-center gap-y-6" aria-label="Les 10 niveaux">
-            {LEVELS.map((l, i) => (
-              <li key={l.id} className="flex items-center">
-                {i > 0 && <span className="h-1.5 w-4 bg-ink sm:w-6" aria-hidden="true" />}
-                <motion.span
-                  whileHover={{ y: -6, scale: 1.1 }}
-                  title={l.title}
-                  className={`grid size-14 place-items-center rounded-full border-[3px] border-ink font-display text-xl font-bold shadow-pop ${
-                    l.concept.includes("Condition") ? "bg-lilac" : l.concept.includes("Boucle") ? "bg-orange" : l.concept === "Actions" ? "bg-mint" : "bg-sky"
-                  }`}
-                >
-                  {l.id}
-                </motion.span>
-              </li>
+          {/* Les parcours */}
+          <div className="mx-auto mt-12 grid max-w-4xl gap-4">
+            {COURSES.map((c, ci) => (
+              <motion.div
+                key={c.slug}
+                initial={{ opacity: 0, x: ci % 2 ? 40 : -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }}
+                transition={{ type: "spring", stiffness: 120, damping: 16 }}
+                className="toon flex flex-col gap-3 rounded-3xl p-4 sm:flex-row sm:items-center"
+                style={{ background: c.color }}
+              >
+                <div className="sm:w-60">
+                  <h3 className="text-xl font-bold">{c.title}</h3>
+                  <span className="flex items-center gap-1.5 text-sm font-extrabold">
+                    <span className="flex gap-0.5" aria-hidden="true">
+                      {[1, 2, 3, 4].map((i) => <span key={i} className={`w-2.5 rounded-sm border-2 border-ink ${i <= c.difficulty ? "bg-ink" : "bg-paper"}`} style={{ height: 6 + i * 3 }} />)}
+                    </span>
+                    {DIFFICULTY[c.difficulty]}
+                  </span>
+                </div>
+                <ol className="flex flex-1 flex-wrap items-center gap-1.5" aria-label={`Les ${c.levels.length} niveaux de ${c.title}`}>
+                  {c.levels.map((l) => (
+                    <motion.li key={l.id} whileHover={{ y: -4, scale: 1.12 }} title={l.title} className="grid size-9 place-items-center rounded-full border-[3px] border-ink bg-paper font-display font-bold">
+                      {l.id}
+                    </motion.li>
+                  ))}
+                </ol>
+              </motion.div>
             ))}
-          </motion.ol>
+          </div>
 
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {concepts.map((c, i) => (
@@ -420,7 +433,10 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <Logo small />
           <p>
-            Images : <a href="https://openmoji.org" className="underline decoration-2 underline-offset-2">OpenMoji</a> (licence CC BY-SA 4.0).
+            Conçu et développé par <strong>Alexandre-Philippe Perez</strong>, développeur chez{" "}
+            <a href="https://fablioo.com" target="_blank" rel="noopener" className="underline decoration-2 underline-offset-2">fablioo.com</a>
+            <br />
+            Images : <a href="https://openmoji.org" className="underline decoration-2 underline-offset-2">OpenMoji</a> (CC BY-SA 4.0) · Icônes : Lucide.
           </p>
           <Link href="/solutions/" className="underline decoration-2 underline-offset-2">Espace animateur : solutions</Link>
         </div>

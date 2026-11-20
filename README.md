@@ -1,10 +1,12 @@
 # CuboCode
 
-Site pour apprendre à coder par blocs (6–10 ans) : une aventure de 10 niveaux en 3D, puis un mode « Création libre » pour inventer son jeu.
+Site pour apprendre à coder par blocs (6–10 ans) : un tutoriel et 3 défis (40 niveaux en 3D), puis un mode « Création libre » pour inventer son jeu.
 
 ## Pages
 - `/` : accueil
-- `/jouer/` : l'aventure (10 niveaux)
+- `/jouer/` : choix des défis
+- `/jouer/tutoriel/` : le tutoriel (10 niveaux)
+- `/jouer/vallee-des-cles/`, `/jouer/volcan/`, `/jouer/labyrinthe/` : 3 défis de 10 niveaux, de plus en plus difficiles
 - `/creer/` : création libre
 - `/solutions/` : solutions pour les animateurs
 
@@ -14,7 +16,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm run build      # export statique dans out/ + service worker hors-ligne
 npm start          # sert out/ en local
-npm run verify     # vérifie que la solution de chaque niveau gagne
+npm run verify     # vérifie que la solution de chacun des 40 niveaux gagne
 npm run sprites    # (re)télécharge les images OpenMoji dans public/sprites
 ```
 
@@ -27,6 +29,16 @@ la commande `npm run build` génère le site statique et le service worker.
 Ensuite, le site fonctionne même si la connexion coupe. Les sons sont synthétisés (aucun fichier audio),
 la voix utilise la synthèse vocale du système.
 
+## Application installable (PWA)
+Le site est installable (icône de Cubo sur fond bleu) depuis la barre d'adresse du navigateur.
+
+## Voix
+La voix de Cubo utilise la synthèse vocale du navigateur. Une voix française masculine est choisie
+automatiquement ; le menu son permet d'en changer. Dans Microsoft Edge, les voix « Henri » ou « Rémy »
+(naturelles, en ligne) donnent le meilleur résultat, avec repli automatique hors-ligne.
+
 ## Crédits
+Conçu et développé par Alexandre-Philippe Perez, développeur chez [fablioo.com](https://fablioo.com).
+
 Images des personnages : [OpenMoji](https://openmoji.org), licence CC BY-SA 4.0.
 Icônes : [Lucide](https://lucide.dev), licence ISC.

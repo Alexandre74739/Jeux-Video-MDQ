@@ -148,7 +148,7 @@ export default function HomeDemo() {
           </motion.button>
         </div>
         {state === "win" && (
-          <Link href="/jouer/" className="btn mx-4 mb-4 flex items-center justify-center gap-2 bg-sun py-3 text-lg">
+          <Link href="/jouer/tutoriel/" className="btn mx-4 mb-4 flex items-center justify-center gap-2 bg-sun py-3 text-lg">
             Continuer l&apos;aventure <ArrowRight size={20} strokeWidth={3} aria-hidden="true" />
           </Link>
         )}

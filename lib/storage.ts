@@ -18,13 +18,15 @@ export function save(key: string, value: unknown) {
   }
 }
 
-export type Progress = { stars: Record<number, number>; streak: number; badges: string[] };
+export type Progress = { stars: Record<string, number>; streak: number; badges: string[] };
 export const emptyProgress: Progress = { stars: {}, streak: 0, badges: [] };
 
-export const BADGES: Record<string, { icon: string; name: string; text: string; level: number }> = {
-  first: { icon: "Footprints", name: "Premier pas", text: "Tu as réussi ton premier niveau !", level: 1 },
-  gems: { icon: "Gem", name: "Chasseur de gemmes", text: "Tu sais utiliser les actions !", level: 4 },
-  loop: { icon: "Repeat", name: "Pro des boucles", text: "Tu maîtrises la boucle « répéter » !", level: 5 },
-  builder: { icon: "Fence", name: "Bâtisseur", text: "Tu as construit ton premier pont !", level: 7 },
-  master: { icon: "Crown", name: "Maître du code", text: "Tu as fini toute l'aventure !", level: 10 },
+/** Badges gagnés en réussissant un niveau précis (« parcours:numéro »). */
+export const BADGES: Record<string, { icon: string; name: string; text: string; at: string }> = {
+  first: { icon: "Footprints", name: "Premier pas", text: "Tu as réussi ton premier niveau !", at: "tutoriel:1" },
+  loop: { icon: "Repeat", name: "Pro des boucles", text: "Tu maîtrises la boucle « répéter » !", at: "tutoriel:5" },
+  student: { icon: "Award", name: "Diplômé", text: "Tu as terminé le tutoriel !", at: "tutoriel:10" },
+  keys: { icon: "KeyRound", name: "Maître des clés", text: "Tu as traversé la vallée des clés !", at: "vallee-des-cles:10" },
+  volcano: { icon: "Flame", name: "Dompteur de volcan", text: "Tu as vaincu le volcan !", at: "volcan:10" },
+  master: { icon: "Crown", name: "Grand maître du code", text: "Tu as résolu le labyrinthe du maître !", at: "labyrinthe:10" },
 };

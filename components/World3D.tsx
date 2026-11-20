@@ -17,6 +17,10 @@ const M = {
   path2: mat("#EAD596"),
   grassDark: mat("#4FB548"),
   arrow: new THREE.MeshBasicMaterial({ color: "#FFD23F", side: THREE.DoubleSide }),
+  lava: new THREE.MeshPhongMaterial({ color: "#FF6A1F", emissive: "#B83200", flatShading: true }),
+  lavaRock: mat("#5A4A5E"),
+  door: mat("#A0612E"),
+  post: mat("#6B4423"),
   grassA: mat("#7ED957"),
   grassB: mat("#6CCB48"),
   water: mat("#3FA9F5", { transparent: true, opacity: 0.88 }),
@@ -71,9 +75,65 @@ function PopIn({ children, from = 0 }: { children: ReactNode; from?: number }) {
   return <group ref={ref} scale={from}>{children}</group>;
 }
 
-function Tile({ t, x, y }: { t: string; x: number; y: number }) {
+function Lava() {
+  const ref = useRef<THREE.Mesh>(null);
+  const material = useMemo(() => M.lava.clone(), []);
+  useFrame(({ clock }) => {
+    const m = ref.current?.material as THREE.MeshPhongMaterial | undefined;
+    if (m) m.emissiveIntensity = 0.8 + Math.sin(clock.elapsedTime * 3) * 0.35;
+  });
+  return (
+    <group>
+      <Box size={[1, 1, 1]} pos={[0, -0.6, 0]} material={M.lavaRock} edges={false} />
+      <mesh ref={ref} position={[0, -0.12, 0]} material={material}>
+        <boxGeometry args={[0.98, 0.06, 0.98]} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Porte en bois : fermée (D) ou ouverte (O). horizontal = le chemin passe d'ouest en est. */
+function Door({ open, horizontal }: { open: boolean; horizontal: boolean }) {
+  const leaf = useRef<THREE.Group>(null);
+  useFrame((_, dt) => {
+    if (leaf.current) leaf.current.rotation.y = THREE.MathUtils.damp(leaf.current.rotation.y, open ? -Math.PI / 2 : 0, 6, dt);
+  });
+  return (
+    <group rotation={[0, horizontal ? Math.PI / 2 : 0, 0]}>
+      <Box size={[0.14, 1.05, 0.2]} pos={[-0.43, 0.52, 0]} material={M.post} />
+      <Box size={[0.14, 1.05, 0.2]} pos={[0.43, 0.52, 0]} material={M.post} />
+      <Box size={[1, 0.16, 0.22]} pos={[0, 1.1, 0]} material={M.post} />
+      <group ref={leaf} position={[-0.36, 0, 0]}>
+        <Box size={[0.72, 0.95, 0.1]} pos={[0.36, 0.48, 0]} material={M.door} />
+        <Box size={[0.12, 0.16, 0.14]} pos={[0.58, 0.5, 0]} material={M.gold} />
+      </group>
+    </group>
+  );
+}
+
+function KeyItem() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    ref.current.rotation.y = clock.elapsedTime * 2.2;
+    ref.current.position.y = 0.5 + Math.sin(clock.elapsedTime * 3) * 0.08;
+  });
+  return (
+    <group ref={ref}>
+      <mesh material={M.gold} castShadow position={[0, 0.12, 0]}>
+        <torusGeometry args={[0.13, 0.05, 8, 16]} />
+      </mesh>
+      <Box size={[0.07, 0.32, 0.07]} pos={[0, -0.12, 0]} material={M.gold} />
+      <Box size={[0.12, 0.05, 0.07]} pos={[0.07, -0.22, 0]} material={M.gold} edges={false} />
+      <Box size={[0.1, 0.05, 0.07]} pos={[0.06, -0.12, 0]} material={M.gold} edges={false} />
+    </group>
+  );
+}
+
+function Tile({ t, x, y, horizontal }: { t: string; x: number; y: number; horizontal: boolean }) {
   const h = hash(x, y);
   const alt = (x + y) % 2 === 0;
+  if (t === "L") return <Lava />;
   if (t === "W" || t === "B") {
     return (
       <group>
@@ -97,6 +157,7 @@ function Tile({ t, x, y }: { t: string; x: number; y: number }) {
           <Box size={[0.66, 0.46, 0.66]} pos={[0, 0.48, 0]} material={h % 2 ? M.leaf : M.leaf2} />
         </group>
       )}
+      {(t === "D" || t === "O") && <Door open={t === "O"} horizontal={horizontal} />}
       {t === "R" && <Box size={[0.78, 0.62, 0.78]} pos={[0, 0.31, 0]} material={M.rock} rot={(h % 5) * 0.15} />}
       {t === "f" && (
         <>
@@ -149,14 +210,15 @@ function CuboModel({ world, event, cx, cz }: { world: World; event: WorldEvent; 
   const ref = useRef<THREE.Group>(null);
   const body = useRef<THREE.Group>(null);
   const fx = useRef({ bump: 0, splash: 0, win: 0, nod: 0 });
+  const span = useRef({ tx: NaN, tz: NaN, d: 1 });
   const first = useRef(true);
 
   useEffect(() => {
     const f = fx.current;
     if (event.kind === "bump") f.bump = 1;
-    if (event.kind === "splash") f.splash = 0.001;
+    if (event.kind === "splash" || event.kind === "burn") f.splash = 0.001;
     if (event.kind === "win") f.win = 0.001;
-    if (event.kind === "collect" || event.kind === "break" || event.kind === "bridge") f.nod = 1;
+    if (["collect", "break", "bridge", "key", "open"].includes(event.kind)) f.nod = 1;
     if (event.kind === "reset") { f.bump = 0; f.splash = 0; f.win = 0; first.current = true; }
   }, [event]);
 
@@ -169,13 +231,16 @@ function CuboModel({ world, event, cx, cz }: { world: World; event: WorldEvent; 
     if (first.current) { g.position.set(tx, 0, tz); g.rotation.y = ANGLE[world.cubo.dir]; first.current = false; }
     g.position.x = THREE.MathUtils.damp(g.position.x, tx, 9, dt);
     g.position.z = THREE.MathUtils.damp(g.position.z, tz, 9, dt);
-    const dist = Math.min(1, Math.hypot(tx - g.position.x, tz - g.position.z));
+    const sp = span.current;
+    if (sp.tx !== tx || sp.tz !== tz) { sp.d = Math.max(0.01, Math.hypot(tx - g.position.x, tz - g.position.z)); sp.tx = tx; sp.tz = tz; }
+    const remaining = Math.hypot(tx - g.position.x, tz - g.position.z);
+    const progress = Math.min(1, remaining / sp.d);
     let ta = ANGLE[world.cubo.dir];
     let diff = ((ta - g.rotation.y + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
     g.rotation.y += diff * Math.min(1, dt * 12);
 
     const f = fx.current;
-    let y = Math.sin(dist * Math.PI) * 0.35;
+    let y = sp.d > 0.05 ? Math.sin(progress * Math.PI) * (sp.d > 1.5 ? 1 : 0.35) : 0;
     b.rotation.x = 0;
     b.rotation.z = 0;
     if (f.bump > 0) {
@@ -262,6 +327,7 @@ function Fit({ w, h }: { w: number; h: number }) {
 
 const BURST_COLORS: Partial<Record<StepKind, string>> = {
   collect: "#36E2F5", break: "#A5ADC0", bridge: "#D69A5B", splash: "#3FA9F5", win: "#FFD23F",
+  key: "#FFD23F", open: "#A0612E", burn: "#FF6A1F",
 };
 
 function Scene({ world, event }: { world: World; event: WorldEvent }) {
@@ -273,7 +339,7 @@ function Scene({ world, event }: { world: World; event: WorldEvent }) {
     const color = BURST_COLORS[event.kind as StepKind];
     if (!color) return;
     const at = event.at ?? { x: world.cubo.x, y: world.cubo.y };
-    setBursts((b) => [...b, { id: event.key, x: at.x - cx, z: at.y - cz, y: event.kind === "splash" ? -0.2 : 0.5, color, n: event.kind === "win" ? 30 : 16 }]);
+    setBursts((b) => [...b, { id: event.key, x: at.x - cx, z: at.y - cz, y: event.kind === "splash" || event.kind === "burn" ? -0.2 : 0.5, color, n: event.kind === "win" ? 30 : 16 }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event]);
 
@@ -290,8 +356,9 @@ function Scene({ world, event }: { world: World; event: WorldEvent }) {
       {world.tiles.map((row, y) =>
         row.map((t, x) => (
           <group key={`${x},${y}`} position={[x - cx, 0, y - cz]}>
-            <Tile t={t} x={x} y={y} />
+            <Tile t={t} x={x} y={y} horizontal={(row[x - 1] ?? "T") !== "T" || (row[x + 1] ?? "T") !== "T"} />
             {world.gems.includes(`${x},${y}`) && <Gem />}
+            {world.keys.includes(`${x},${y}`) && <KeyItem />}
             {world.goal.x === x && world.goal.y === y && <Goal open={world.gems.length === 0} />}
           </group>
         ))

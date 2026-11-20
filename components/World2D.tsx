@@ -22,8 +22,20 @@ const C = {
 };
 const ANGLE = [0, 90, 180, 270]; // N, E, S, O
 
-function TileArt({ t, x, y }: { t: string; x: number; y: number }) {
+function TileArt({ t, x, y, horizontal }: { t: string; x: number; y: number; horizontal: boolean }) {
   const alt = (x + y) % 2 === 0;
+  if (t === "L") {
+    return (
+      <motion.div
+        className="absolute inset-0"
+        animate={{ backgroundColor: ["#FF6A1F", "#FF8A3D", "#FF6A1F"] }}
+        transition={{ repeat: Infinity, duration: 1.6 }}
+      >
+        <span className="absolute top-[25%] left-[20%] size-[16%] rounded-full bg-[#FFD23F]" />
+        <span className="absolute top-[60%] left-[60%] size-[12%] rounded-full bg-[#FFD23F]" />
+      </motion.div>
+    );
+  }
   if (t === "W" || t === "B") {
     return (
       <div className="absolute inset-0" style={{ background: C.water }}>
@@ -44,6 +56,11 @@ function TileArt({ t, x, y }: { t: string; x: number; y: number }) {
       {t === "T" && (
         <div className="absolute inset-[14%] rounded-[18%] border-[3px] border-ink" style={{ background: (x * 7 + y * 3) % 2 ? C.leaf : C.leaf2, boxShadow: "3px 4px 0 rgba(22,18,58,.35)" }}>
           <div className="absolute inset-[22%] rounded-[18%] bg-white/20" />
+        </div>
+      )}
+      {(t === "D" || t === "O") && (
+        <div className={`absolute ${horizontal ? "inset-y-[6%] left-[38%] w-[24%]" : "inset-x-[6%] top-[38%] h-[24%]"} rounded-md border-[3px] border-ink`} style={{ background: t === "D" ? "#A0612E" : "transparent", borderStyle: t === "O" ? "dashed" : "solid" }}>
+          {t === "D" && <span className="absolute top-1/2 left-1/2 size-[40%] max-h-3 max-w-3 -translate-1/2 rounded-full border-2 border-ink bg-[#FFD23F]" />}
         </div>
       )}
       {t === "R" && (
@@ -77,7 +94,15 @@ export default function World2D({ world }: { world: World }) {
             const goal = world.goal.x === x && world.goal.y === y;
             return (
               <div key={`${x},${y}`} className="relative" style={{ width: size, height: size, boxShadow: "inset 0 0 0 1px rgba(22,18,58,.18)" }}>
-                <TileArt t={t} x={x} y={y} />
+                <TileArt t={t} x={x} y={y} horizontal={(row[x - 1] ?? "T") !== "T" || (row[x + 1] ?? "T") !== "T"} />
+                {world.keys.includes(`${x},${y}`) && (
+                  <motion.div className="absolute inset-[24%]" animate={{ rotate: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 1.6 }}>
+                    <svg viewBox="0 0 40 40" className="size-full" aria-hidden="true">
+                      <circle cx="13" cy="13" r="8" fill="#FFD23F" stroke="#16123A" strokeWidth="4" />
+                      <path d="M19 19 L34 34 M27 27 L22 32 M31 31 L27 35" stroke="#16123A" strokeWidth="5" strokeLinecap="round" />
+                    </svg>
+                  </motion.div>
+                )}
                 {goal && (
                   <motion.div
                     className="absolute inset-[16%] rounded-[16%] border-[3px] border-ink"
