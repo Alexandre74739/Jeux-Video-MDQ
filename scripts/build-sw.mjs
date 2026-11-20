@@ -27,15 +27,19 @@ for (const f of [...files]) {
   if (!existsSync(flat)) { await copyFile(f, flat); files.push(flat); }
 }
 
+files.sort();
 const hash = createHash("sha1");
 const urls = [];
 for (const f of files) {
   const rel = "/" + relative(OUT, f).split(sep).join("/");
   if (rel === "/sw.js" || rel === "/404.html") continue;
-  hash.update(rel + (await stat(f)).size);
+  hash.update(rel);
+  hash.update(await readFile(f));
   if (rel.endsWith("/index.html")) urls.push(rel.slice(0, -"index.html".length));
   else urls.push(rel);
 }
+// Le numéro de commit (fourni par Vercel) garantit une nouvelle version à chaque push.
+hash.update(process.env.VERCEL_GIT_COMMIT_SHA ?? "");
 const version = hash.digest("hex").slice(0, 10);
 const tpl = await readFile("scripts/sw-template.js", "utf8");
 await writeFile(

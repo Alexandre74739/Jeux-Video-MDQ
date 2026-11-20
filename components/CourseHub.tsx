@@ -46,7 +46,7 @@ function CoursePreview({ course, open, onToggle, onClose }: { course: Course; op
   }, [open, onClose]);
 
   return (
-    <div ref={box} className="relative">
+    <div ref={box} className="pointer-events-none relative">
       <div
         className="relative h-52 overflow-hidden rounded-2xl border-[3px] border-ink"
         style={{ background: "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)" }}
@@ -67,7 +67,7 @@ function CoursePreview({ course, open, onToggle, onClose }: { course: Course; op
         aria-expanded={open}
         aria-label={`Voir les nouveaux blocs de ${course.title}`}
         title="Nouveaux blocs"
-        className="absolute right-2 bottom-2 z-10 grid size-9 place-items-center rounded-full border-[3px] border-ink shadow-pop"
+        className="pointer-events-auto absolute right-2 bottom-2 z-10 grid size-9 place-items-center rounded-full border-[3px] border-ink shadow-pop"
         style={{ background: course.color }}
       >
         <Info size={20} strokeWidth={3} aria-hidden="true" />
@@ -79,7 +79,7 @@ function CoursePreview({ course, open, onToggle, onClose }: { course: Course; op
             initial={{ opacity: 0, y: 12, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 380, damping: 26 }}
             role="dialog" aria-label={`Nouveaux blocs de ${course.title}`}
-            className="absolute right-2 bottom-14 z-20 w-[min(300px,calc(100%-1rem))] origin-bottom-right rounded-3xl border-[3px] border-ink bg-paper p-4 shadow-pop-lg"
+            className="pointer-events-auto absolute right-2 bottom-14 z-20 w-[min(300px,calc(100%-1rem))] origin-bottom-right rounded-3xl border-[3px] border-ink bg-paper p-4 shadow-pop-lg"
           >
             <button onClick={onClose} className="absolute top-2 right-2 grid size-8 place-items-center rounded-full hover:bg-cream" aria-label="Fermer">
               <X size={18} strokeWidth={3} aria-hidden="true" />
@@ -150,6 +150,8 @@ export default function CourseHub() {
                 className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[30px] border-[3px] border-ink bg-paper focus-within:outline-4 focus-within:outline-offset-4 focus-within:outline-grape"
                 style={{ boxShadow: "8px 9px 0 0 #16123A" }}
               >
+                {/* Toute la carte est cliquable */}
+                <Link href={`/jouer/${c.slug}/`} onClick={() => sfx("click")} className="absolute inset-0 z-0" tabIndex={-1} aria-hidden="true" />
                 {i === 0 && (
                   <motion.span
                     animate={{ rotate: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 2 }}
@@ -180,7 +182,7 @@ export default function CourseHub() {
                   <Link
                     href={`/jouer/${c.slug}/`}
                     onClick={() => sfx("click")}
-                    className="btn flex items-center justify-center gap-2 py-3 text-xl after:absolute after:inset-0 after:rounded-[27px] after:content-['']"
+                    className="btn relative z-10 flex items-center justify-center gap-2 py-3 text-xl"
                     aria-label={`${label} : ${c.title}`}
                     style={{ background: c.color }}
                   >

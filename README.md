@@ -32,6 +32,13 @@ la voix utilise la synthèse vocale du système.
 ## Application installable (PWA)
 Le site est installable (icône de Cubo sur fond bleu) depuis la barre d'adresse du navigateur.
 
+### Mises à jour automatiques
+Chaque push sur `main` déclenche un déploiement Vercel. Le build génère un nouveau `sw.js`
+(version calculée à partir du contenu des fichiers et du commit). Les postes ouverts ou l'appli
+installée vérifient les mises à jour au chargement, toutes les 15 minutes et au retour sur l'onglet,
+puis rechargent automatiquement la page avec la nouvelle version. `vercel.json` empêche la mise
+en cache de `sw.js` et du manifeste.
+
 ## Voix
 La voix de Cubo utilise la synthèse vocale du navigateur. Une voix française masculine est choisie
 automatiquement ; le menu son permet d'en changer. Dans Microsoft Edge, les voix « Henri » ou « Rémy »
