@@ -15,10 +15,11 @@ import LIBRARY from "@/lib/sprites.json";
 
 const GROUPS: { category: Category; types: string[] }[] = [
   { category: "event", types: ["ev_start", "ev_key", "ev_click", "ev_touch"] },
-  { category: "motion", types: ["move", "random", "goto_center"] },
+  { category: "motion", types: ["avancer", "gauche", "droite", "demitour", "sauter", "move", "random", "goto_center"] },
+  { category: "action", types: ["ramasser", "casser", "ouvrir", "pont"] },
   { category: "looks", types: ["say", "grow", "shrink", "spin", "hide", "show"] },
   { category: "sound", types: ["sound"] },
-  { category: "control", types: ["wait", "repeat", "forever", "if_touch"] },
+  { category: "control", types: ["wait", "repeat", "forever", "jusqua", "if_touch", "si", "sisinon"] },
   { category: "score", types: ["score_add", "score_reset", "win", "lose"] },
 ];
 
@@ -279,6 +280,19 @@ export default function FreeStudio() {
             className="relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop outline-none"
             style={{ background: bg.css }}
           >
+            {r?.planks.map((pl, i) => (
+              <motion.span
+                key={i}
+                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                className="absolute rounded-md border-[3px] border-ink"
+                style={{
+                  left: (pl.x - (pl.horizontal ? 24 : 14)) * scale, top: (pl.y - (pl.horizontal ? 14 : 24)) * scale,
+                  width: (pl.horizontal ? 48 : 28) * scale, height: (pl.horizontal ? 28 : 48) * scale,
+                  background: `repeating-linear-gradient(${pl.horizontal ? 90 : 0}deg, #D69A5B 0 10px, #8A5A2E 10px 12px)`,
+                }}
+                aria-hidden="true"
+              />
+            ))}
             {project.sprites.map((s) => {
               const st = r?.sprites[s.id];
               const x = st?.x ?? s.x;
@@ -293,11 +307,11 @@ export default function FreeStudio() {
                   style={{
                     left: x * scale - size / 2, top: y * scale - size / 2, width: size, height: size,
                     opacity: visible ? 1 : 0, pointerEvents: visible ? "auto" : "none",
-                    transform: `rotate(${st?.spin ?? 0}deg)`,
+                    transform: `translateY(${(st?.jy ?? 0) * scale}px) rotate(${st?.spin ?? 0}deg)`,
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={s.src} alt={s.name} draggable={false} className="size-full select-none object-contain" />
+                  <img src={s.src} alt={s.name} draggable={false} className="size-full select-none object-contain" style={{ transform: st?.dir === 3 ? "scaleX(-1)" : undefined }} />
                   {st?.say && (
                     <motion.span
                       initial={{ scale: 0 }} animate={{ scale: 1 }}

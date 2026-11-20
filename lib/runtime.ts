@@ -22,6 +22,22 @@ export type Project = { bg: string; sprites: SpriteDef[] };
 export type SpriteState = {
   id: string; x: number; y: number; size: number; visible: boolean;
   say: string | null; sayUntil: number; spin: number;
+  /** Direction : 0 haut, 1 droite, 2 bas, 3 gauche (pour avancer / tourner / sauter). */
+  dir: number;
+  /** Décalage vertical pendant un saut. */
+  jy: number;
+};
+
+export type Plank = { x: number; y: number; horizontal: boolean };
+
+const STEP = 32;
+const DIR = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }];
+/** Conditions « … devant » : un personnage dont le nom correspond est juste devant. */
+const NAMED: Record<string, RegExp> = {
+  eau: /eau|vague|mer|lac|rivi/i,
+  rocher: /rocher|pierre|caillou/i,
+  lave: /lave|feu|volcan/i,
+  porte: /porte/i,
 };
 
 type Thread = { hatId: string; spriteId: string; gen: Generator<void, void>; waitUntil: number };
@@ -31,13 +47,14 @@ export class Runtime {
   score = 0;
   ended: "win" | "lose" | null = null;
   scoreBump = 0;
+  planks: Plank[] = [];
   private threads: Thread[] = [];
   private touching = new Set<string>();
   private now = 0;
 
   constructor(private project: Project, private onEnd: (r: "win" | "lose") => void) {
     for (const s of project.sprites) {
-      this.sprites[s.id] = { id: s.id, x: s.x, y: s.y, size: s.size, visible: true, say: null, sayUntil: 0, spin: 0 };
+      this.sprites[s.id] = { id: s.id, x: s.x, y: s.y, size: s.size, visible: true, say: null, sayUntil: 0, spin: 0, dir: 1, jy: 0 };
     }
   }
 
@@ -78,6 +95,46 @@ export class Runtime {
     return ra.l < rb.r && ra.r > rb.l && ra.t < rb.b && ra.b > rb.t;
   }
 
+  private clamp(s: SpriteState) {
+    const half = (BASE * s.size) / 200;
+    s.x = Math.max(half * 0.5, Math.min(STAGE_W - half * 0.5, s.x));
+    s.y = Math.max(half * 0.5, Math.min(STAGE_H - half * 0.5, s.y));
+  }
+
+  private nameOf(id: string) {
+    return this.project.sprites.find((x) => x.id === id)?.name ?? "";
+  }
+
+  /** Premier autre personnage visible touché. */
+  private touchingAny(id: string) {
+    return this.project.sprites.find((o) => this.touches(id, o.id))?.id ?? null;
+  }
+
+  /** Personnages présents dans la case juste devant (ou à droite / à gauche) du personnage. */
+  private ahead(id: string, turn = 0) {
+    const s = this.sprites[id];
+    const d = DIR[(s.dir + turn + 4) % 4];
+    const r = this.rect(id);
+    const box = { l: r.l + d.x * STEP, r: r.r + d.x * STEP, t: r.t + d.y * STEP, b: r.b + d.y * STEP };
+    const inside = box.l >= 0 && box.t >= 0 && box.r <= STAGE_W && box.b <= STAGE_H;
+    const hits = this.project.sprites.filter((o) => {
+      const st = this.sprites[o.id];
+      if (o.id === id || !st?.visible) return false;
+      const ro = this.rect(o.id);
+      return box.l < ro.r && box.r > ro.l && box.t < ro.b && box.b > ro.t;
+    });
+    return { inside, hits };
+  }
+
+  private test(id: string, what: string) {
+    if (what === "chemin" || what === "droite" || what === "gauche") {
+      const a = this.ahead(id, what === "droite" ? 1 : what === "gauche" ? -1 : 0);
+      return a.inside && a.hits.length === 0;
+    }
+    const re = NAMED[what];
+    return !!re && this.ahead(id).hits.some((o) => re.test(o.name));
+  }
+
   private *exec(id: string, list: Block[]): Generator<void, void> {
     const s = this.sprites[id];
     for (const bl of list) {
@@ -96,6 +153,63 @@ export class Runtime {
           yield;
           break;
         }
+        // --- Blocs de l'aventure ---
+        case "avancer": {
+          const d = DIR[s.dir];
+          for (let i = 0; i < 8; i++) { s.x += (d.x * STEP) / 8; s.y += (d.y * STEP) / 8; this.clamp(s); yield; }
+          break;
+        }
+        case "gauche": s.dir = (s.dir + 3) % 4; yield; break;
+        case "droite": s.dir = (s.dir + 1) % 4; yield; break;
+        case "demitour": s.dir = (s.dir + 2) % 4; yield; break;
+        case "sauter": {
+          const d = DIR[s.dir];
+          sfx("jump");
+          for (let i = 1; i <= 16; i++) {
+            s.x += (d.x * STEP * 2) / 16; s.y += (d.y * STEP * 2) / 16; this.clamp(s);
+            s.jy = -Math.sin((Math.PI * i) / 16) * 48;
+            yield;
+          }
+          s.jy = 0;
+          break;
+        }
+        case "ramasser":
+        case "casser":
+        case "ouvrir": {
+          const t = this.touchingAny(id);
+          if (t) {
+            this.sprites[t].visible = false;
+            if (bl.type === "ramasser") { this.score += 1; this.scoreBump++; sfx("coin"); }
+            else sfx(bl.type === "casser" ? "crack" : "magic");
+          }
+          yield;
+          break;
+        }
+        case "pont": {
+          const d = DIR[s.dir];
+          this.planks.push({ x: s.x + d.x * STEP * 1.2, y: s.y + d.y * STEP * 1.2, horizontal: d.x !== 0 });
+          sfx("plank");
+          yield;
+          break;
+        }
+        case "repeter": {
+          const n = Number(p.n) || 0;
+          for (let i = 0; i < n; i++) { yield* this.exec(id, bl.children ?? []); yield; }
+          break;
+        }
+        case "jusqua":
+          // « répéter jusqu'au coffre » : jusqu'à toucher un personnage nommé « Coffre ».
+          while (!this.ended && !this.project.sprites.some((o) => /coffre/i.test(o.name) && this.touches(id, o.id))) {
+            yield* this.exec(id, bl.children ?? []);
+            yield;
+          }
+          break;
+        case "si":
+          if (this.test(id, String(p.what))) yield* this.exec(id, bl.children ?? []);
+          break;
+        case "sisinon":
+          yield* this.exec(id, (this.test(id, String(p.what)) ? bl.children : bl.alt) ?? []);
+          break;
         case "random":
           s.x = 40 + Math.random() * (STAGE_W - 80);
           s.y = 40 + Math.random() * (STAGE_H - 80);

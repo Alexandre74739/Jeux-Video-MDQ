@@ -312,6 +312,24 @@
     "src": "/sprites/1f9f2.svg"
   },
   {
+    "id": "coffre",
+    "name": "Coffre",
+    "category": "Objets",
+    "src": "/sprites/coffre.svg"
+  },
+  {
+    "id": "1f6aa",
+    "name": "Porte",
+    "category": "Objets",
+    "src": "/sprites/1f6aa.svg"
+  },
+  {
+    "id": "1fab5",
+    "name": "Bois",
+    "category": "Objets",
+    "src": "/sprites/1fab5.svg"
+  },
+  {
     "id": "1f34e",
     "name": "Pomme",
     "category": "Miam",
@@ -550,5 +568,11 @@
     "name": "Terre",
     "category": "Nature",
     "src": "/sprites/1f30d.svg"
+  },
+  {
+    "id": "1f30a",
+    "name": "Eau",
+    "category": "Nature",
+    "src": "/sprites/1f30a.svg"
   }
 ]

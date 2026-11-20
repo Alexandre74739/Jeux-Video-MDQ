@@ -27,6 +27,7 @@ const LIST = {
     ["1F3C6", "Trophée"], ["1F511", "Clé"], ["2764", "Cœur"], ["1F388", "Ballon"],
     ["26BD", "Foot"], ["1F3C0", "Basket"], ["1F4A3", "Bombe"], ["1F6A9", "Drapeau"],
     ["1F451", "Couronne"], ["1F344", "Champignon"], ["1F4E6", "Caisse"], ["1F9F2", "Aimant"],
+    ["COFFRE", "Coffre"], ["1F6AA", "Porte"], ["1FAB5", "Bois"],
   ],
   Miam: [
     ["1F34E", "Pomme"], ["1F34C", "Banane"], ["1F353", "Fraise"], ["1F355", "Pizza"],
@@ -43,6 +44,7 @@ const LIST = {
     ["26A1", "Éclair"], ["2744", "Flocon"], ["1F525", "Feu"], ["1FAA8", "Rocher"],
     ["1F30B", "Volcan"], ["1F340", "Trèfle"], ["2600", "Soleil"], ["2601", "Nuage"],
     ["1FA90", "Planète"], ["1F319", "Lune"], ["2604", "Comète"], ["1F30D", "Terre"],
+    ["1F30A", "Eau"],
   ],
 };
 
