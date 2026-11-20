@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { ArrowRight, Check, Palette, Puzzle, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Info, Palette, Sparkles, X } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useRef } from "react";
 import World2D from "./World2D";
@@ -51,7 +51,7 @@ function CoursePreview({ course, open, onToggle, onClose }: { course: Course; op
         className="relative h-52 overflow-hidden rounded-2xl border-[3px] border-ink"
         style={{ background: "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)" }}
       >
-        <div className="pointer-events-none absolute inset-0 p-3 pr-14" aria-hidden="true">
+        <div className="pointer-events-none absolute inset-0 p-3" aria-hidden="true">
           <World2D world={world} />
         </div>
         <span className="absolute bottom-2 left-2 rounded-full border-2 border-ink bg-paper px-2.5 py-0.5 text-xs font-extrabold">
@@ -60,26 +60,26 @@ function CoursePreview({ course, open, onToggle, onClose }: { course: Course; op
         <span className="sr-only">Aperçu du niveau {level.id} : {level.title}</span>
       </div>
 
-      {/* Bouton sur le côté */}
+      {/* Bouton « i » dans le coin bas droit */}
       <motion.button
-        whileHover={{ x: -3 }} whileTap={{ scale: 0.92 }}
+        whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
         onClick={onToggle}
         aria-expanded={open}
         aria-label={`Voir les nouveaux blocs de ${course.title}`}
-        className="absolute top-1/2 right-2 flex -translate-y-1/2 flex-col items-center gap-1 rounded-2xl border-[3px] border-ink px-1.5 py-2.5 font-display text-xs font-bold shadow-pop"
+        title="Nouveaux blocs"
+        className="absolute right-2 bottom-2 z-10 grid size-9 place-items-center rounded-full border-[3px] border-ink shadow-pop"
         style={{ background: course.color }}
       >
-        <Puzzle size={20} strokeWidth={2.75} aria-hidden="true" />
-        <span className="[writing-mode:vertical-rl] rotate-180">Blocs</span>
+        <Info size={20} strokeWidth={3} aria-hidden="true" />
       </motion.button>
 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, x: 16, scale: 0.92 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 16, scale: 0.92 }}
+            initial={{ opacity: 0, y: 12, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 380, damping: 26 }}
             role="dialog" aria-label={`Nouveaux blocs de ${course.title}`}
-            className="absolute top-1/2 right-14 z-20 w-[min(300px,calc(100%-4rem))] origin-right -translate-y-1/2 rounded-3xl border-[3px] border-ink bg-paper p-4 shadow-pop-lg"
+            className="absolute right-2 bottom-14 z-20 w-[min(300px,calc(100%-1rem))] origin-bottom-right rounded-3xl border-[3px] border-ink bg-paper p-4 shadow-pop-lg"
           >
             <button onClick={onClose} className="absolute top-2 right-2 grid size-8 place-items-center rounded-full hover:bg-cream" aria-label="Fermer">
               <X size={18} strokeWidth={3} aria-hidden="true" />
@@ -147,13 +147,13 @@ export default function CourseHub() {
                 animate={{ opacity: 1, y: 0, rotate: 0 }}
                 transition={{ delay: i * 0.1, type: "spring", stiffness: 140, damping: 16 }}
                 whileHover={{ y: -6 }}
-                className="relative flex flex-col overflow-hidden rounded-[30px] border-[3px] border-ink bg-paper"
+                className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[30px] border-[3px] border-ink bg-paper focus-within:outline-4 focus-within:outline-offset-4 focus-within:outline-grape"
                 style={{ boxShadow: "8px 9px 0 0 #16123A" }}
               >
                 {i === 0 && (
                   <motion.span
                     animate={{ rotate: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 2 }}
-                    className="toon absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-sun px-3 py-1 font-display text-sm font-bold"
+                    className="toon pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-sun px-3 py-1 font-display text-sm font-bold"
                   >
                     <Sparkles size={15} strokeWidth={2.75} aria-hidden="true" /> Commence ici !
                   </motion.span>
@@ -180,7 +180,8 @@ export default function CourseHub() {
                   <Link
                     href={`/jouer/${c.slug}/`}
                     onClick={() => sfx("click")}
-                    className="btn flex items-center justify-center gap-2 py-3 text-xl"
+                    className="btn flex items-center justify-center gap-2 py-3 text-xl after:absolute after:inset-0 after:rounded-[27px] after:content-['']"
+                    aria-label={`${label} : ${c.title}`}
                     style={{ background: c.color }}
                   >
                     {label} <ArrowRight size={22} strokeWidth={3} aria-hidden="true" />
