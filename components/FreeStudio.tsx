@@ -265,7 +265,7 @@ export default function FreeStudio() {
           >
             <WandSparkles size={19} strokeWidth={2.75} aria-hidden="true" /><span className="hidden xl:inline">Nouveau</span>
           </button>
-          <Link href="/jouer/" title="Les défis" aria-label="Les défis" className="btn flex items-center gap-2 bg-sun px-3 py-2 xl:px-4"><MapIcon size={19} strokeWidth={2.75} aria-hidden="true" /><span className="hidden xl:inline">Défis</span></Link>
+          <Link href="/jouer/" title="Les défis" aria-label="Les défis" className="btn flex items-center gap-2 bg-sun px-3 py-2 xl:px-4"><MapIcon size={19} strokeWidth={2.75} aria-hidden="true" /><span className="hidden xl:inline">Jouer</span></Link>
           <SoundToggle />
         </div>
       </header>

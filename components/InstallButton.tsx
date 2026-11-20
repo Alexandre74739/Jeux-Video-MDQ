@@ -32,8 +32,9 @@ const STEPS: Record<Platform, { title: string; steps: string[] }> = {
 
 /** Bouton « Installer l'appli » : installation directe quand le navigateur le permet, sinon aide adaptée au navigateur. */
 export default function InstallButton({ className = "", full = false }: { className?: string; full?: boolean }) {
-  const [standalone, setStandalone] = useState(true);
-  const [platform, setPlatform] = useState<Platform>("chromium");
+  // Initialisation immédiate côté navigateur : le bouton s'affiche en même temps que le reste.
+  const [standalone, setStandalone] = useState(() => typeof window !== "undefined" && isStandalone());
+  const [platform, setPlatform] = useState<Platform>(() => (typeof window !== "undefined" ? detect() : "chromium"));
   const [, force] = useState(0);
   const [help, setHelp] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -76,7 +77,7 @@ export default function InstallButton({ className = "", full = false }: { classN
           <motion.div
             initial={{ opacity: 0, y: -8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.95 }}
             role="dialog" aria-label="Comment installer l'application"
-            className={`absolute top-14 z-[95] w-[min(320px,calc(100vw-2rem))] rounded-3xl border-[3px] border-ink bg-paper p-4 text-left shadow-pop-lg ${full ? "left-0" : "right-0"}`}
+            className={`rounded-3xl border-[3px] border-ink bg-paper p-4 text-left shadow-pop-lg ${full ? "relative mt-3 w-full" : "absolute top-14 right-0 z-[95] w-[min(320px,calc(100vw-2rem))]"}`}
           >
             <button onClick={() => setHelp(false)} className="absolute top-2 right-2 grid size-8 place-items-center rounded-full hover:bg-cream" aria-label="Fermer">
               <X size={18} strokeWidth={3} aria-hidden="true" />

@@ -58,9 +58,9 @@ export default function SiteHeader() {
           <motion.nav
             id="menu-mobile"
             aria-label="Menu"
-            initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 28 }}
-            className="overflow-hidden border-t-[3px] border-ink bg-cream lg:hidden"
+            initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            className="max-h-[calc(100dvh-80px)] overflow-y-auto border-t-[3px] border-ink bg-cream lg:hidden"
           >
             <ul className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 sm:px-6">
               {LINKS.map((l, i) => (
