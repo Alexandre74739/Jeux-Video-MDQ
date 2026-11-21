@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import {
-  ArrowRight, Blocks, Check, Clock, Download, Flame, Gamepad2, GraduationCap, ImagePlus, Laptop,
+  ArrowRight, Blocks, Check, Clock, Download, Flame, Gamepad2, GraduationCap, ImagePlus, Laptop, Lock,
   Map as MapIcon, Music, Palette, Puzzle, Rocket, ShieldCheck, Sparkles, Trophy, Users, Volume2, WifiOff,
   type LucideIcon,
 } from "lucide-react";
@@ -19,6 +19,13 @@ import { sfx } from "@/lib/sound";
 import LIBRARY from "@/lib/sprites.json";
 
 const sw = 2.75;
+/** Nombre de badges montrés en exemple sur l'accueil (les autres sont à découvrir en jouant). */
+const BADGE_SAMPLE = 5;
+/** Parcours affichés en étiquettes sous l'exemple (au-delà : « + N autres parcours »). */
+const COURSE_CHIPS = 6;
+const LEVEL_COUNTS = COURSES.map((c) => c.levels.length);
+const MIN_LEVELS = Math.min(...LEVEL_COUNTS);
+const MAX_LEVELS = Math.max(...LEVEL_COUNTS);
 
 // Étiquettes flottantes autour de Cubo : collées aux bords sur mobile, débordent un peu sur grand écran.
 const floatChips = [
@@ -214,12 +221,15 @@ export default function Home() {
         <section id="aventure" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-20 sm:px-6">
           <SectionTitle kicker="L'aventure" title={`${COURSES.length} parcours, ${COURSES.reduce((n, c) => n + c.levels.length, 0)} niveaux`} />
 
-          {/* Les parcours */}
-          <div className="mx-auto mt-12 grid max-w-4xl gap-4">
-            {COURSES.map((c, ci) => (
+          {/* Un parcours en exemple (le tutoriel), les autres en étiquettes */}
+          <p className="mx-auto mt-10 max-w-2xl text-center text-lg font-bold text-ink-soft">
+            Chaque parcours compte {MIN_LEVELS === MAX_LEVELS ? MAX_LEVELS : `de ${MIN_LEVELS} à ${MAX_LEVELS}`} niveaux, de plus en plus difficiles. Par exemple, le tutoriel :
+          </p>
+          <div className="mx-auto mt-6 grid max-w-4xl gap-4">
+            {COURSES.slice(0, 1).map((c) => (
               <motion.div
                 key={c.slug}
-                initial={{ opacity: 0, x: ci % 2 ? 40 : -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: 0.5 }}
+                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.5 }}
                 transition={{ type: "spring", stiffness: 120, damping: 16 }}
                 className="toon flex flex-col gap-3 rounded-3xl p-4 sm:flex-row sm:items-center"
                 style={{ background: c.color }}
@@ -242,6 +252,19 @@ export default function Home() {
                 </ol>
               </motion.div>
             ))}
+          </div>
+          <div className="mx-auto mt-5 flex max-w-4xl flex-wrap items-center justify-center gap-2">
+            <span className="font-bold text-ink-soft">Puis :</span>
+            {COURSES.slice(1, 1 + COURSE_CHIPS).map((c) => (
+              <span key={c.slug} className="rounded-full border-2 border-ink px-3 py-1 text-sm font-extrabold" style={{ background: c.color }}>
+                {c.title}
+              </span>
+            ))}
+            {COURSES.length - 1 > COURSE_CHIPS && (
+              <Link href="/jouer/" className="rounded-full border-2 border-ink bg-paper px-3 py-1 text-sm font-extrabold hover:bg-cream">
+                + {COURSES.length - 1 - COURSE_CHIPS} autres parcours
+              </Link>
+            )}
           </div>
 
           <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -288,7 +311,8 @@ export default function Home() {
                 <motion.span animate={{ rotate: [-8, 8, -8] }} transition={{ repeat: Infinity, duration: 0.6 }}><Flame size={30} strokeWidth={sw} fill="#FFD23F" aria-hidden="true" /></motion.span>
                 5
               </div>
-              {Object.entries(BADGES).map(([k, bd], i) => (
+              {/* Quelques badges en exemple, un badge secret, puis le nombre restant */}
+              {Object.entries(BADGES).filter(([, bd]) => !bd.secret).slice(0, BADGE_SAMPLE).map(([k, bd], i) => (
                 <motion.span
                   key={k}
                   title={bd.name}
@@ -301,6 +325,18 @@ export default function Home() {
                   <span className="sr-only">{bd.name}</span>
                 </motion.span>
               ))}
+              <motion.span
+                title="Badge secret"
+                initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }}
+                transition={{ delay: 0.2 + BADGE_SAMPLE * 0.1, type: "spring", stiffness: 400, damping: 12 }}
+                whileHover={{ rotate: 12, scale: 1.15 }}
+                className="grid size-14 place-items-center rounded-full border-[3px] border-ink bg-grape text-white shadow-pop"
+              >
+                <Lock size={24} strokeWidth={sw} aria-hidden="true" /><span className="sr-only">Badge secret</span>
+              </motion.span>
+              <span className="toon rounded-full bg-paper px-4 py-2 font-display text-lg font-bold">
+                + {Object.keys(BADGES).length - BADGE_SAMPLE - 1} badges à découvrir
+              </span>
             </div>
           </motion.div>
         </section>
