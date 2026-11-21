@@ -1,20 +1,16 @@
 // Appelée chaque jour par une tâche planifiée Vercel (voir "crons" dans vercel.json).
 // Une connexion quotidienne empêche MongoDB Atlas (offre gratuite) de mettre la base en pause
 // après 30 jours sans activité, par exemple pendant les vacances scolaires.
-import { MongoClient } from "mongodb";
-import { mongoUri } from "./_mongo";
+// Vercel envoie « Authorization: Bearer <CRON_SECRET> » : tout autre appel est refusé.
+import { database, json } from "./_mongo";
 
-export async function GET(): Promise<Response> {
-  const uri = mongoUri();
-  if (!uri) return Response.json({ ok: false, error: "MONGODB_URI manquant" }, { status: 503 });
-  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 8000 });
+export async function GET(req: Request): Promise<Response> {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return json({ ok: false }, 401);
   try {
-    await client.connect();
-    await client.db("cubocode").command({ ping: 1 });
-    return Response.json({ ok: true, at: new Date().toISOString() });
+    await (await database()).command({ ping: 1 });
+    return json({ ok: true, at: new Date().toISOString() });
   } catch {
-    return Response.json({ ok: false }, { status: 503 });
-  } finally {
-    await client.close().catch(() => {});
+    return json({ ok: false }, 503);
   }
 }

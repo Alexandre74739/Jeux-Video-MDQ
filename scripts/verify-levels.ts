@@ -1,5 +1,5 @@
 // Vérifie que la solution de chaque niveau de chaque parcours gagne bien.
-import { COURSES, buildWorld, runProgram, countBlocks, type Outcome } from "../lib/levels.ts";
+import { COURSES, buildWorld, runProgram, countBlocks, type Outcome } from "../src/lib/levels.ts";
 
 let failed = 0;
 for (const course of COURSES) {
