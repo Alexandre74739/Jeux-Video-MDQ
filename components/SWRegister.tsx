@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import "@/lib/install"; // écoute l'événement d'installation dès le chargement
 import { warmVoice } from "@/lib/sound";
+import { startAutoSync } from "@/lib/profiles";
 
 const CHECK_EVERY = 15 * 60 * 1000; // vérifie les mises à jour toutes les 15 minutes
 
@@ -13,6 +14,9 @@ const CHECK_EVERY = 15 * 60 * 1000; // vérifie les mises à jour toutes les 15 
  */
 export default function SWRegister() {
   const [updating, setUpdating] = useState(false);
+
+  // Sauvegarde en ligne du joueur en cours (si son compte est relié)
+  useEffect(() => { startAutoSync(); }, []);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) { warmVoice(); return; }

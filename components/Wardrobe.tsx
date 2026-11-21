@@ -5,12 +5,14 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Check, LayoutGrid, Lock } from "lucide-react";
 import BackButton from "./BackButton";
+import ProfileMenu from "./ProfileMenu";
+import { DATA_EVENT } from "@/lib/profiles";
 import { Cubo, Logo, SoundToggle } from "./ui";
 import { StarIcon } from "./Icon";
 import { load, save } from "@/lib/storage";
 import { getOutfit, setOutfit } from "@/lib/outfit";
 import {
-  BADGES, DEFAULT_OUTFIT, SLOTS, TRAILS, emptyProgress, nextItem, totalStars,
+  BADGES, DEFAULT_OUTFIT, SLOTS, TRAILS, emptyProgress, isUnlocked, nextItem, totalStars,
   type Item, type Outfit, type Progress, type Slot,
 } from "@/lib/rewards";
 import { badgeLine } from "@/lib/lines";
@@ -41,15 +43,17 @@ export default function Wardrobe() {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    setProgress(load<Progress>("progress", emptyProgress));
-    setO(getOutfit());
+    const reload = () => { setProgress(load<Progress>("progress", emptyProgress)); setO(getOutfit()); };
+    reload();
+    window.addEventListener(DATA_EVENT, reload);
+    return () => window.removeEventListener(DATA_EVENT, reload);
   }, []);
 
   const stars = totalStars(progress);
   const gift = nextItem(stars);
 
   const choose = (slot: Slot, item: Item) => {
-    if (item.stars > stars) { sfx("bump"); return; }
+    if (!isUnlocked(item, progress)) { sfx("bump"); return; }
     sfx("pop");
     setO(setOutfit({ [slot]: item.id }));
     // Badge secret « Styliste » au premier changement de tenue
@@ -73,6 +77,7 @@ export default function Wardrobe() {
             <span className="hidden sm:block"><Logo small /></span>
           </div>
           <div className="flex items-center gap-2">
+            <ProfileMenu />
             <span className="toon flex items-center gap-1.5 rounded-full bg-sun px-3 py-1.5 font-display text-lg font-bold" title="Étoiles gagnées">
               <StarIcon size={22} /> {stars}<span className="sr-only">étoiles</span>
             </span>
@@ -84,7 +89,7 @@ export default function Wardrobe() {
 
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <h1 className="text-4xl font-bold sm:text-5xl">Mon Cubo</h1>
-        <p className="mt-1 text-lg font-semibold text-ink-soft">Gagne des étoiles dans les défis pour débloquer des couleurs, des chapeaux et des traînées magiques !</p>
+        <p className="mt-1 text-lg font-semibold text-ink-soft">Gagne des étoiles et des badges pour débloquer des couleurs, des chapeaux, des lunettes, des capes et des traînées magiques !</p>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           <section className="flex min-w-0 flex-col gap-4" aria-label="Aperçu">
@@ -110,17 +115,17 @@ export default function Wardrobe() {
           </section>
 
           <section className="min-w-0" aria-label="Garde-robe">
-            <div className="flex gap-2" role="tablist" aria-label="Catégories">
+            <div className="flex flex-wrap gap-2" role="tablist" aria-label="Catégories">
               {(Object.keys(SLOTS) as Slot[]).map((k) => (
                 <button key={k} role="tab" aria-selected={tab === k} onClick={() => { setTab(k); sfx("click"); }}
-                  className={`btn min-w-0 flex-1 px-2 py-2 text-sm sm:px-3 sm:text-lg ${tab === k ? "bg-grape text-white" : "bg-paper"}`}>
+                  className={`btn min-w-[30%] flex-1 px-2 py-2 text-sm sm:min-w-0 sm:px-3 sm:text-lg ${tab === k ? "bg-grape text-white" : "bg-paper"}`}>
                   {SLOTS[k].label}
                 </button>
               ))}
             </div>
             <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4" role="tabpanel">
               {SLOTS[tab].items.map((item) => {
-                const open = item.stars <= stars;
+                const open = isUnlocked(item, progress);
                 const on = outfit[tab] === item.id;
                 return (
                   <li key={item.id}>
@@ -128,7 +133,7 @@ export default function Wardrobe() {
                       whileHover={open ? { y: -4 } : undefined} whileTap={open ? { scale: 0.94 } : undefined}
                       onClick={() => choose(tab, item)}
                       aria-pressed={on}
-                      aria-label={`${item.name}${open ? "" : `, verrouillé : ${item.stars} étoiles`}`}
+                      aria-label={`${item.name}${open ? "" : item.badge ? `, verrouillé : badge ${BADGES[item.badge]?.secret ? "secret" : BADGES[item.badge]?.name}` : `, verrouillé : ${item.stars} étoiles`}`}
                       className={`relative flex w-full flex-col items-center gap-1 rounded-3xl border-[3px] p-3 text-center ${
                         on ? "border-ink bg-mint shadow-pop" : open ? "border-ink bg-paper shadow-pop" : "border-ink/25 bg-[#EEEAF5]"
                       }`}
@@ -137,7 +142,8 @@ export default function Wardrobe() {
                       <span className={`font-display text-base leading-tight font-bold ${open ? "" : "text-ink-soft"}`}>{item.name}</span>
                       {!open && (
                         <span className="flex items-center gap-1 rounded-full border-2 border-ink/30 bg-paper px-2 text-sm font-extrabold">
-                          <Lock size={13} strokeWidth={3} aria-hidden="true" /> <StarIcon size={14} /> {item.stars}
+                          <Lock size={13} strokeWidth={3} aria-hidden="true" />
+                          {item.badge ? <span className="text-xs">Badge {BADGES[item.badge]?.secret ? "secret" : `« ${BADGES[item.badge]?.name} »`}</span> : <><StarIcon size={14} /> {item.stars}</>}
                         </span>
                       )}
                       {on && <span className="absolute top-2 right-2 grid size-7 place-items-center rounded-full border-2 border-ink bg-paper"><Check size={16} strokeWidth={3.5} aria-hidden="true" /></span>}

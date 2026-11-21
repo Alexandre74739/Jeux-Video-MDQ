@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "next dev",
     "build": "next build && node scripts/build-sw.mjs",
     "start": "npx serve out",
     "sprites": "node scripts/fetch-sprites.mjs",
@@ -14,6 +15,7 @@
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
     "lucide-react": "^1.77.0",
+    "mongodb": "^6.22.0",
     "motion": "^14.14.0",
     "next": "^16.4.6",
     "react": "^19.3.1",
@@ -28,6 +30,7 @@
     "@types/three": "^0.187.0",
     "msedge-tts": "^2.1.1",
     "tailwindcss": "^4.3.5",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }
 }

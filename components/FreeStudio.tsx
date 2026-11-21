@@ -16,10 +16,10 @@ import LIBRARY from "@/lib/sprites.json";
 const GROUPS: { category: Category; types: string[] }[] = [
   { category: "event", types: ["ev_start", "ev_key", "ev_click", "ev_touch"] },
   { category: "motion", types: ["avancer", "gauche", "droite", "demitour", "sauter", "move", "random", "goto_center"] },
-  { category: "action", types: ["ramasser", "casser", "ouvrir", "pont"] },
+  { category: "action", types: ["ramasser", "casser", "ouvrir", "pont", "frapper"] },
   { category: "looks", types: ["say", "grow", "shrink", "spin", "hide", "show"] },
   { category: "sound", types: ["sound"] },
-  { category: "control", types: ["wait", "repeat", "forever", "jusqua", "if_touch", "si", "sisinon"] },
+  { category: "control", types: ["wait", "attendre", "repeat", "forever", "jusqua", "if_touch", "si", "sisinon"] },
   { category: "score", types: ["score_add", "score_reset", "win", "lose"] },
 ];
 

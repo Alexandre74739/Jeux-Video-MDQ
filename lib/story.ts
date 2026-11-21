@@ -64,6 +64,52 @@ export const STORY: Record<string, Chapter> = {
     },
     piece: 2,
   },
+  riviere: {
+    intro: {
+      title: "La rivière des castors",
+      pages: [
+        { text: "Les castors ont construit des barrages partout : la rivière déborde sur le chemin !", mood: "think" },
+        { text: "Avec des ponts, des boucles et des conditions, on va traverser. Et les gemmes brillent au bord de l'eau !", mood: "happy" },
+      ],
+    },
+    outro: {
+      title: "Merci, les castors !",
+      pages: [{ text: "Le barrage est réparé et la rivière coule tranquillement. Les castors te tapent dans la patte !", mood: "wow" }],
+    },
+  },
+  chateau: {
+    intro: {
+      title: "Le château du dragon",
+      pages: [
+        { text: "Voici le château du dragon. On raconte qu'un trésor fabuleux est caché tout en haut du donjon…", mood: "wow" },
+        { text: "Douves, lave, couloirs secrets et gardes monstres : ici, seuls les meilleurs algorithmes passent !", mood: "think" },
+      ],
+    },
+    outro: {
+      title: "Le trésor du dragon !",
+      pages: [
+        { text: "On a trouvé le trésor du dragon ! Et le dragon ? Il dormait sur son tas d'or depuis le début…", mood: "wow" },
+        { text: "Tu es maintenant un vrai expert du code. Bravo, champion !", mood: "happy" },
+      ],
+    },
+  },
+  village: {
+    intro: {
+      title: "Le village des monstres",
+      pages: [
+        { text: "Oh non, des monstres ont envahi le village ! Il y en a deux sortes, et ils bougent à chaque pas que je fais.", mood: "think" },
+        { text: "Grognon, le violet à cornes, est invincible : il faut l'esquiver en attendant qu'il passe.", mood: "sad" },
+        { text: "Gloups, le vert tout gluant, on peut le battre avec « frapper » quand il est juste devant moi. Mais attention : je ne dois jamais marcher sur un monstre !", mood: "happy" },
+      ],
+    },
+    outro: {
+      title: "Le village est libéré !",
+      pages: [
+        { text: "On a traversé tout le village : les Gloups sont partis et Grognon n'a jamais réussi à m'attraper !", mood: "wow" },
+        { text: "Tu sais maintenant choisir : esquiver ou combattre. Comme un vrai héros de jeu vidéo !", mood: "happy" },
+      ],
+    },
+  },
   labyrinthe: {
     intro: {
       title: "Le labyrinthe du maître",

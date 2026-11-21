@@ -42,6 +42,8 @@ const CONDITIONS = [
   { value: "chemin", label: "chemin devant" },
   { value: "droite", label: "chemin à droite" },
   { value: "gauche", label: "chemin à gauche" },
+  { value: "monstre", label: "monstre devant" },
+  { value: "gloups", label: "Gloups devant" },
 ];
 
 const KEYS = [
@@ -77,6 +79,8 @@ export const BLOCKS: Record<string, BlockDef> = {
   demitour: { type: "demitour", category: "motion", icon: "Undo2", label: "faire demi-tour" },
   sauter: { type: "sauter", category: "motion", icon: "ChevronsUp", label: "sauter" },
   ouvrir: { type: "ouvrir", category: "action", icon: "KeyRound", label: "ouvrir la porte" },
+  attendre: { type: "attendre", category: "motion", icon: "Hourglass", label: "attendre" },
+  frapper: { type: "frapper", category: "action", icon: "Swords", label: "frapper" },
   jusqua: { type: "jusqua", category: "control", icon: "Repeat2", label: "répéter jusqu'au coffre", container: true },
   repeter: {
     type: "repeter", category: "control", icon: "Repeat", label: "répéter {n} fois", container: true,

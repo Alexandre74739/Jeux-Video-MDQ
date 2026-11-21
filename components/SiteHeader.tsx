@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { Logo } from "./ui";
 import InstallButton from "./InstallButton";
+import ProfileMenu from "./ProfileMenu";
 import { sfx } from "@/lib/sound";
 
 const LINKS = [
@@ -35,13 +36,16 @@ export default function SiteHeader() {
           {LINKS.map((l) => <a key={l.href} href={l.href} className="hover:text-grape">{l.label}</a>)}
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
+          <ProfileMenu />
           <InstallButton />
           <Link href="/jouer/" className="btn flex items-center gap-2 bg-sun px-5 py-2.5 text-lg" onClick={() => sfx("click")}>
             Jouer <ArrowRight size={20} strokeWidth={3} aria-hidden="true" />
           </Link>
         </div>
+        <div className="flex items-center gap-2 lg:hidden">
+        <ProfileMenu />
         <button
-          className="btn grid size-12 place-items-center bg-paper lg:hidden"
+          className="btn grid size-12 place-items-center bg-paper"
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={open}
           aria-controls="menu-mobile"
@@ -51,6 +55,7 @@ export default function SiteHeader() {
             {open ? <X size={26} strokeWidth={3} aria-hidden="true" /> : <Menu size={26} strokeWidth={3} aria-hidden="true" />}
           </motion.span>
         </button>
+        </div>
       </div>
 
       <AnimatePresence>

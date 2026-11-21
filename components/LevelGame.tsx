@@ -11,13 +11,15 @@ import { BumpNumber, Confetti, Cubo, Logo, SoundToggle, useVoiceOn } from "./ui"
 import { Icon, StarIcon } from "./Icon";
 import { ArrowRight, BookOpen, Blocks, Flame, Gem, Gift, Hourglass, KeyRound, LayoutGrid, Lightbulb, Lock, Palette, Play, Shirt, Trophy, Rabbit, RotateCcw, Trash2, Turtle, Volume2 } from "lucide-react";
 import StoryModal from "./StoryModal";
+import ProfileMenu from "./ProfileMenu";
+import { DATA_EVENT } from "@/lib/profiles";
 import { BLOCKS, type Block, type Category } from "@/lib/blocks";
 import {
   COURSES, DIFFICULTY, FAIL_MESSAGES, buildWorld, countBlocks, runProgram, starsFor,
   type Outcome, type Step, type World,
 } from "@/lib/levels";
 import { load, loadSession, save, saveSession } from "@/lib/storage";
-import { BADGES, badgesFor, emptyProgress, newItems, totalStars as allStars, type Item, type Progress } from "@/lib/rewards";
+import { BADGES, badgeItems, badgesFor, emptyProgress, newItems, totalStars as allStars, type Item, type Progress } from "@/lib/rewards";
 import { CHEERS, LINES, badgeLine, giftLine, tipLine, winLine } from "@/lib/lines";
 import { MAP_COURSES, STORY } from "@/lib/story";
 import { getVoicePrefs, sfx, speak } from "@/lib/sound";
@@ -39,6 +41,7 @@ const STEP_SFX: Partial<Record<Step["kind"], Parameters<typeof sfx>[0]>> = {
   move: "step", turn: "turn", collect: "gem", break: "crack", bridge: "plank",
   bump: "bump", splash: "splash", nothing: "click",
   key: "coin", open: "magic", jump: "jump", burn: "fail",
+  hit: "crack", wait: "turn", caught: "boing",
 };
 
 
@@ -95,6 +98,13 @@ export default function LevelGame({ slug }: { slug: string }) {
     setReady(true);
   }, []);
 
+  // Progression mise à jour par une synchronisation en ligne
+  useEffect(() => {
+    const reload = () => setProgress(load<Progress>("progress", emptyProgress));
+    window.addEventListener(DATA_EVENT, reload);
+    return () => window.removeEventListener(DATA_EVENT, reload);
+  }, []);
+
   const stop = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
   useEffect(() => stop, []);
 
@@ -145,7 +155,7 @@ export default function LevelGame({ slug }: { slug: string }) {
         optimal: level.optimal, program, after, coursesDone: coursesDone(after),
       }, progress.badges);
       const next: Progress = { ...after, badges: [...progress.badges, ...newBadges] };
-      const gifts = newItems(allStars(progress), allStars(next)).map((g) => g.item);
+      const gifts = [...newItems(allStars(progress), allStars(next)), ...badgeItems(newBadges)].map((g) => g.item);
       const isLast = idx === LEVELS.length - 1;
       const outro = isLast && !!STORY[course.slug] && !load<string[]>("story", []).includes(`${course.slug}:outro`);
       setProgress(next);
@@ -185,7 +195,7 @@ export default function LevelGame({ slug }: { slug: string }) {
       const s = STEP_SFX[st.kind];
       if (s) sfx(s);
       const base = fast ? 0.5 : 1;
-      const d = st.kind === "check" ? 320 : st.kind === "turn" ? 380 : st.kind === "splash" || st.kind === "burn" ? 900 : st.kind === "jump" ? 700 : st.kind === "win" ? 300 : 560;
+      const d = st.kind === "check" ? 320 : st.kind === "turn" ? 380 : st.kind === "splash" || st.kind === "burn" ? 900 : st.kind === "jump" ? 700 : st.kind === "caught" ? 900 : st.kind === "win" ? 300 : 560;
       timer.current = setTimeout(tick, d * base);
     };
     timer.current = setTimeout(tick, 300);
@@ -260,8 +270,9 @@ export default function LevelGame({ slug }: { slug: string }) {
           <div className="toon flex items-center gap-1.5 rounded-full bg-lilac px-3 py-1.5 font-display text-lg font-bold" title={Object.entries(BADGES).filter(([k]) => progress.badges.includes(k)).map(([, b]) => b.name).join(", ") || "Aucun badge pour l'instant"}>
             <Trophy size={20} strokeWidth={2.75} aria-hidden="true" /><BumpNumber value={progress.badges.length} /><span className="sr-only">badges</span>
           </div>
-          <Link href="/cubo/" className="btn flex items-center gap-2 whitespace-nowrap bg-sky px-3 py-2 text-base" title="Change le look de Cubo"><Shirt size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden sm:inline">Mon Cubo</span></Link>
-          <Link href="/creer/" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-3 py-2 text-base"><Palette size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden sm:inline">Créer</span></Link>
+          <ProfileMenu />
+          <Link href="/cubo/" aria-label="Mon Cubo" className="btn flex items-center gap-2 whitespace-nowrap bg-sky px-3 py-2 text-base" title="Change le look de Cubo"><Shirt size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden 2xl:inline">Mon Cubo</span></Link>
+          <Link href="/creer/" aria-label="Créer" title="Création libre" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-3 py-2 text-base"><Palette size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden 2xl:inline">Créer</span></Link>
           <SoundToggle />
         </div>
       </header>
@@ -305,7 +316,7 @@ export default function LevelGame({ slug }: { slug: string }) {
             <div className="absolute inset-0">
               {ready && (view3d ? <World3D world={world} event={event} fallback={fallback2D} /> : fallback2D)}
             </div>
-            <div className="absolute top-2 left-2 flex gap-2">
+            <div className="absolute top-2 left-2 flex flex-wrap gap-2">
               {initial.keys.length > 0 && (
                 <span className="toon flex items-center gap-1.5 rounded-full bg-paper px-3 py-1 font-display font-bold" title="Clés dans le sac">
                   <KeyRound size={18} strokeWidth={2.75} color="#7A5A00" aria-hidden="true" /> <BumpNumber value={world.keysHeld} />
@@ -317,6 +328,7 @@ export default function LevelGame({ slug }: { slug: string }) {
                   <Gem size={18} strokeWidth={2.75} color="#0A6F86" aria-hidden="true" /> <BumpNumber value={initial.totalGems - world.gems.length} /> / {initial.totalGems}
                 </span>
               )}
+
             </div>
             <button
               onClick={() => { const v = !view3d; setView3d(v); save("view3d", v); sfx("click"); }}

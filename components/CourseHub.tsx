@@ -2,12 +2,12 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, Check, Info, Lock, Palette, Shirt, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Info, Lock, Palette, Shirt, Sparkles, X } from "lucide-react";
 import StoryModal, { TreasureMap } from "./StoryModal";
 import { AnimatePresence } from "motion/react";
 import { useRef } from "react";
 import World2D from "./World2D";
-import InstallButton from "./InstallButton";
+import ProfileMenu from "./ProfileMenu";
 import BackButton from "./BackButton";
 import { Cubo, Logo, SoundToggle } from "./ui";
 import { Icon, StarIcon } from "./Icon";
@@ -15,10 +15,39 @@ import { BlockView } from "./BlockView";
 import { createBlock } from "@/lib/blocks";
 import { BLOCKS } from "@/lib/blocks";
 import { COURSES, DIFFICULTY, buildWorld, type Course } from "@/lib/levels";
-import { load } from "@/lib/storage";
+import { load, loadSession, saveSession } from "@/lib/storage";
 import { BADGES, emptyProgress, nextItem, totalStars, type Progress } from "@/lib/rewards";
 import { ISLAND_STARS, MAP_COURSES, STORY } from "@/lib/story";
 import { sfx } from "@/lib/sound";
+import { DATA_EVENT } from "@/lib/profiles";
+
+/** Défis affichés par page : seuls les aperçus de la page en cours sont dessinés. */
+const PAGE_SIZE = 4;
+
+function Pager({ page, pages, onPage }: { page: number; pages: number; onPage: (p: number) => void }) {
+  if (pages <= 1) return null;
+  return (
+    <nav className="mt-8 flex items-center justify-center gap-3" aria-label="Pages des défis">
+      <button onClick={() => onPage(page - 1)} disabled={page === 0} className="btn grid size-12 place-items-center bg-paper disabled:opacity-40" aria-label="Page précédente">
+        <ArrowLeft size={22} strokeWidth={3} aria-hidden="true" />
+      </button>
+      {Array.from({ length: pages }, (_, i) => (
+        <button
+          key={i}
+          onClick={() => onPage(i)}
+          aria-current={i === page ? "page" : undefined}
+          aria-label={`Page ${i + 1}`}
+          className={`btn grid size-12 place-items-center font-display text-xl ${i === page ? "bg-grape text-white" : "bg-paper"}`}
+        >
+          {i + 1}
+        </button>
+      ))}
+      <button onClick={() => onPage(page + 1)} disabled={page === pages - 1} className="btn grid size-12 place-items-center bg-paper disabled:opacity-40" aria-label="Page suivante">
+        <ArrowRight size={22} strokeWidth={3} aria-hidden="true" />
+      </button>
+    </nav>
+  );
+}
 
 function DifficultyMeter({ level }: { level: number }) {
   return (
@@ -114,7 +143,24 @@ export default function CourseHub() {
   const got = MAP_COURSES.map(done);
   const gift = nextItem(total);
   const [seen, setSeen] = useState<string[]>([]);
-  useEffect(() => { setProgress(load<Progress>("progress", emptyProgress)); setSeen(load<string[]>("story", [])); }, []);
+  const pages = Math.ceil(COURSES.length / PAGE_SIZE);
+  const [page, setPage] = useState(0);
+  const grid = useRef<HTMLDivElement>(null);
+  const goPage = (p: number) => {
+    const n = Math.max(0, Math.min(pages - 1, p));
+    sfx("click");
+    setPage(n);
+    setOpenInfo(null);
+    saveSession("hubPage", n);
+    grid.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  useEffect(() => {
+    const reload = () => { setProgress(load<Progress>("progress", emptyProgress)); setSeen(load<string[]>("story", [])); };
+    reload();
+    setPage(Math.min(pages - 1, loadSession("hubPage", 0)));
+    window.addEventListener(DATA_EVENT, reload);
+    return () => window.removeEventListener(DATA_EVENT, reload);
+  }, [pages]);
 
   return (
     <div className="min-h-dvh bg-cream">
@@ -125,12 +171,12 @@ export default function CourseHub() {
             <span className="hidden sm:block"><Logo small /></span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="hidden md:block"><InstallButton /></span>
-            <Link href="/cubo/" className="btn flex items-center gap-2 whitespace-nowrap bg-sky px-4 py-2">
-              <Shirt size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden sm:inline">Mon Cubo</span>
+            <ProfileMenu />
+            <Link href="/cubo/" aria-label="Mon Cubo" title="Mon Cubo" className="btn flex items-center gap-2 whitespace-nowrap bg-sky px-4 py-2">
+              <Shirt size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden lg:inline">Mon Cubo</span>
             </Link>
-            <Link href="/creer/" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-4 py-2">
-              <Palette size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden sm:inline">Création libre</span>
+            <Link href="/creer/" aria-label="Création libre" title="Création libre" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-4 py-2">
+              <Palette size={20} strokeWidth={2.75} aria-hidden="true" /> <span className="hidden lg:inline">Création libre</span>
             </Link>
             <SoundToggle />
           </div>
@@ -182,8 +228,8 @@ export default function CourseHub() {
           </div>
         </section>
 
-        <div className="mt-10 grid gap-8 md:grid-cols-2">
-          {COURSES.map((c, i) => {
+        <div ref={grid} className="mt-10 grid scroll-mt-24 gap-8 md:grid-cols-2">
+          {COURSES.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE).map((c, i) => {
             const done = c.levels.filter((l) => progress.stars[`${c.slug}:${l.id}`]).length;
             const stars = c.levels.reduce((a, l) => a + (progress.stars[`${c.slug}:${l.id}`] ?? 0), 0);
             const max = c.levels.length * 3;
@@ -205,15 +251,15 @@ export default function CourseHub() {
               <motion.article
                 key={c.slug}
                 initial={{ opacity: 0, y: 30, rotate: i % 2 ? 2 : -2 }}
+                style={{ boxShadow: "8px 9px 0 0 #16123A", zIndex: openInfo === c.slug ? 30 : undefined }}
                 animate={{ opacity: 1, y: 0, rotate: 0 }}
                 transition={{ delay: i * 0.1, type: "spring", stiffness: 140, damping: 16 }}
                 whileHover={{ y: -6 }}
-                className="group relative flex cursor-pointer flex-col overflow-hidden rounded-[30px] border-[3px] border-ink bg-paper focus-within:outline-4 focus-within:outline-offset-4 focus-within:outline-grape"
-                style={{ boxShadow: "8px 9px 0 0 #16123A" }}
+                className="group relative flex cursor-pointer flex-col rounded-[30px] border-[3px] border-ink bg-paper focus-within:outline-4 focus-within:outline-offset-4 focus-within:outline-grape"
               >
                 {/* Toute la carte est cliquable */}
-                <Link href={`/jouer/${c.slug}/`} onClick={() => sfx("click")} className="absolute inset-0 z-0" tabIndex={-1} aria-hidden="true" />
-                {i === 0 && (
+                <Link href={`/jouer/${c.slug}/`} onClick={() => sfx("click")} className="absolute inset-0 z-0 rounded-[27px]" tabIndex={-1} aria-hidden="true" />
+                {c.slug === COURSES[0].slug && (
                   <motion.span
                     animate={{ rotate: [-4, 4, -4] }} transition={{ repeat: Infinity, duration: 2 }}
                     className="toon pointer-events-none absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-sun px-3 py-1 font-display text-sm font-bold"
@@ -221,7 +267,7 @@ export default function CourseHub() {
                     <Sparkles size={15} strokeWidth={2.75} aria-hidden="true" /> Commence ici !
                   </motion.span>
                 )}
-                <div className="border-b-[3px] border-ink px-6 pt-5 pb-4" style={{ background: c.color }}>
+                <div className="rounded-t-[27px] border-b-[3px] border-ink px-6 pt-5 pb-4" style={{ background: c.color }}>
                   <DifficultyMeter level={c.difficulty} />
                   <h2 className="mt-2 text-3xl font-bold">{c.title}</h2>
                   <p className="font-bold">{c.subtitle}</p>
@@ -254,6 +300,7 @@ export default function CourseHub() {
             );
           })}
         </div>
+        <Pager page={page} pages={pages} onPage={goPage} />
 
         <section className="toon mt-12 rounded-[30px] bg-paper p-6">
           <h2 className="text-2xl font-bold">Mes badges <span className="text-lg text-ink-soft">({progress.badges.length} / {Object.keys(BADGES).length})</span></h2>

@@ -1,6 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "out",
   "git": { "deploymentEnabled": { "main": true } },
+  "crons": [{ "path": "/api/keepalive", "schedule": "0 6 * * *" }],
   "headers": [
     {
       "source": "/sw.js",

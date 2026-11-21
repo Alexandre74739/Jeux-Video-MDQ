@@ -38,6 +38,8 @@ const NAMED: Record<string, RegExp> = {
   rocher: /rocher|pierre|caillou/i,
   lave: /lave|feu|volcan/i,
   porte: /porte/i,
+  monstre: /monstre|gloups|grognon|fant[oô]me|alien|dragon|dino|t-rex|requin|vampire|zombie/i,
+  gloups: /gloups|monstre|fant[oô]me|alien|vampire|zombie/i,
 };
 
 type Thread = { hatId: string; spriteId: string; gen: Generator<void, void>; waitUntil: number };
@@ -237,6 +239,20 @@ export class Runtime {
           break;
         }
         case "sound": sfx(String(p.s) as SfxName); yield; break;
+        // --- Blocs du village ---
+        case "attendre": {
+          // Attendre un « tour » (le temps d'un pas)
+          const until = this.now + 600;
+          while (this.now < until) yield;
+          break;
+        }
+        case "frapper": {
+          // Frappe le personnage juste devant (ou touché) : il disparaît, comme un Gloups battu.
+          const t = this.ahead(id).hits[0]?.id ?? this.touchingAny(id);
+          if (t) { this.sprites[t].visible = false; sfx("crack"); } else sfx("boing");
+          yield;
+          break;
+        }
         case "wait": {
           const until = this.now + (Number(p.n) || 0) * 1000;
           while (this.now < until) yield;

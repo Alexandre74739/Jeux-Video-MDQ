@@ -12,7 +12,15 @@ export type Block = {
 export type Dir = 0 | 1 | 2 | 3; // 0 Nord, 1 Est, 2 Sud, 3 Ouest
 // Tuiles : "." chemin, "f" fleurs, "T" arbre, "W" eau, "R" rocher, "B" pont,
 //          "L" lave, "D" porte fermée, "O" porte ouverte
+// Monstres (posés sur un chemin, ils avancent d'une case à chaque pas de Cubo) :
+//          "M" / "m" Grognon (à esquiver) qui patrouille de gauche à droite / de haut en bas,
+//          "N" / "n" Gloups (on peut le battre avec « frapper ») qui patrouille de gauche à droite / de haut en bas
 export type Tile = "." | "f" | "T" | "W" | "R" | "B" | "L" | "D" | "O";
+
+/** Grognon : costaud et invincible, il faut l'esquiver. Gloups : on peut le battre avec « frapper » quand il est juste devant. */
+export type MobKind = "gloups" | "grognon";
+/** Monstre du niveau : il avance d'une case à chaque pas de Cubo et fait demi-tour contre un obstacle. On ne passe jamais sur lui. */
+export type Mob = { id: number; kind: MobKind; x: number; y: number; dir: Dir };
 
 export type World = {
   w: number;
@@ -24,6 +32,7 @@ export type World = {
   keysHeld: number;
   goal: { x: number; y: number };
   cubo: { x: number; y: number; dir: Dir };
+  mobs: Mob[];
 };
 
 export type LevelDef = {
@@ -78,6 +87,8 @@ const rep = (n: number, children: Block[]) => b("repeter", { n }, children);
 const jusqua = (children: Block[]) => b("jusqua", {}, children);
 const si = (what: string, children: Block[]) => b("si", { what }, children);
 const sisinon = (what: string, yes: Block[], no: Block[]) => b("sisinon", { what }, yes, no);
+const att = () => b("attendre");
+const frap = () => b("frapper");
 
 type RawLevel = Omit<LevelDef, "optimal" | "id"> & { optimal?: number };
 const numbered = (raw: RawLevel[]): LevelDef[] =>
@@ -86,6 +97,7 @@ const numbered = (raw: RawLevel[]): LevelDef[] =>
 const BASE = ["avancer", "gauche", "droite"];
 const B1 = [...BASE, "demitour", "ramasser", "casser", "pont", "ouvrir", "repeter"];
 const B2 = [...BASE, "demitour", "ramasser", "casser", "pont", "sauter", "repeter", "jusqua", "si"];
+const B4 = [...BASE, "demitour", "ramasser", "ouvrir", "sauter", "attendre", "frapper", "repeter", "jusqua", "si", "sisinon"];
 const B3 = [...BASE, "demitour", "ramasser", "casser", "pont", "ouvrir", "sauter", "repeter", "jusqua", "si", "sisinon"];
 
 // ---------------------------------------------------------------- TUTORIEL
@@ -312,6 +324,82 @@ const VOLCAN: RawLevel[] = [
   },
 ];
 
+// ---------------------------------------------------------------- DÉFI BONUS : LE VILLAGE DES CUBES
+// Deux monstres qui se déplacent : Grognon (M / m, à esquiver) et Gloups (N / n, on peut le battre avec « frapper »).
+// On ne peut jamais passer sur un monstre.
+const VILLAGE: RawLevel[] = [
+  {
+    title: "Voici Gloups", concept: "Frapper",
+    goal: "Voici Gloups, le monstre vert tout gluant ! Lui, on peut le battre : quand il est JUSTE devant Cubo, utilise « frapper ».",
+    tip: "Avance 4 fois, attends que Gloups arrive juste devant toi, frappe-le, puis avance 2 fois.",
+    grid: ["TTTTTTTTT", "TS.N...FT", "TTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [rep(4, [av()]), att(), frap(), rep(2, [av()])],
+  },
+  {
+    title: "Attends ton tour", concept: "Attendre",
+    goal: "Voici Grognon, le monstre violet à cornes : lui, on ne peut pas le battre ! À chaque pas de Cubo, il fait un pas. Utilise « attendre » pour le laisser passer : on ne peut jamais marcher sur lui.",
+    tip: "Avance une fois, attends 2 fois que Grognon passe, puis avance 4 fois.",
+    grid: ["TTTTTTTT", "TS....FT", "TTTT.TTT", "TTTT.TTT", "TTTTmTTT", "TTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [av(), rep(2, [att()]), rep(4, [av()])],
+  },
+  {
+    title: "Deux Gloups", concept: "Frapper",
+    goal: "Deux Gloups se promènent dans le couloir. Attends le bon moment pour les frapper, sans jamais marcher sur eux !",
+    tip: "Avance 5 fois et frappe le premier Gloups. Avance, attends le deuxième, frappe-le, puis avance 2 fois.",
+    grid: ["TTTTTTTTTTT", "TS.N..N..FT", "TTTTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [rep(5, [av()]), frap(), av(), att(), frap(), rep(2, [av()])],
+  },
+  {
+    title: "La ronde de Grognon", concept: "Attendre",
+    goal: "Grognon se promène de gauche à droite. Traverse son chemin sans jamais te trouver sur sa case !",
+    tip: "Avance une fois, attends 2 fois, puis avance 3 fois.",
+    grid: ["TTTTTTTT", "TTTFTTTT", "TTT.TTTT", "TM.....T", "TTT.TTTT", "TTTSTTTT", "TTTTTTTT"], startDir: 0,
+    blocks: B4, solution: [av(), rep(2, [att()]), rep(3, [av()])],
+  },
+  {
+    title: "Si monstre devant… sinon", concept: "Condition",
+    goal: "Deux Grognons gardent le chemin. Nouveau bloc « si… sinon » : SI un monstre arrive devant, Cubo attend, SINON il avance.",
+    tip: "Jusqu'au coffre : si monstre devant → attendre, sinon → avancer.",
+    grid: ["TTTTTTTTTTT", "TS..m....FT", "TTTT.TTmTTT", "TTTT.TT.TTT", "TTTT.TT.TTT", "TTTTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [jusqua([sisinon("monstre", [att()], [av()])])],
+  },
+  {
+    title: "Lave et Grognon", concept: "Conditions imbriquées",
+    goal: "De la lave ET un Grognon ! Cubo vérifie d'abord le monstre, puis la lave.",
+    tip: "Jusqu'au coffre : si monstre → attendre, sinon (si lave → sauter, sinon → avancer).",
+    grid: ["TTTTTTTTTT", "TS.L...LFT", "TTTTT.TTTT", "TTTTT.TTTT", "TTTTTmTTTT", "TTTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [jusqua([sisinon("monstre", [att()], [sisinon("lave", [saut()], [av()])])])],
+  },
+  {
+    title: "Grognon ou Gloups ?", concept: "Conditions imbriquées",
+    goal: "Un Grognon ET un Gloups ! Gloups devant ? On le frappe. Sinon, un monstre arrive ? On attend. Sinon, on avance.",
+    tip: "Jusqu'au coffre : ramasser, puis si Gloups devant → frapper, sinon (si monstre devant → attendre, sinon → avancer).",
+    grid: ["TTTTTTTTTTTT", "TS.Gm.GN.GFT", "TTTT.TT.TTTT", "TTTT.TT.TTTT", "TTTT.TT.TTTT", "TTTTTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [jusqua([ram(), sisinon("gloups", [frap()], [sisinon("monstre", [att()], [av()])])])],
+  },
+  {
+    title: "Clé, porte et Grognon", concept: "Condition",
+    goal: "Une porte, puis Grognon qui fait sa ronde derrière. Il faudra être patient !",
+    tip: "Avance, ramasse la clé, ouvre la porte. Puis jusqu'au coffre : si monstre → attendre, sinon → avancer.",
+    grid: ["TTTTTTTTTT", "TSKD....FT", "TTTTTTmTTT", "TTTTTT.TTT", "TTTTTT.TTT", "TTTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [av(), ram(), ouv(), jusqua([sisinon("monstre", [att()], [av()])])],
+  },
+  {
+    title: "La cueillette", concept: "Boucle + condition",
+    goal: "Ramasse les 3 gemmes sans te faire attraper par les deux Grognons !",
+    tip: "Jusqu'au coffre : ramasser, puis si monstre → attendre, sinon → avancer.",
+    grid: ["TTTTTTTTTTTT", "TS.Gm.Gm.GFT", "TTTT.TT.TTTT", "TTTT.TT.TTTT", "TTTT.TT.TTTT", "TTTTTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [jusqua([ram(), sisinon("monstre", [att()], [av()])])],
+  },
+  {
+    title: "La nuit au village", concept: "Algorithme",
+    goal: "Le grand final ! Clé, porte, gemmes, un Grognon à esquiver et un Gloups à battre. Écris UNE boucle qui sait tout faire !",
+    tip: "Jusqu'au coffre : ramasser, si porte → ouvrir, puis si Gloups → frapper, sinon (si monstre → attendre, sinon → avancer).",
+    grid: ["TTTTTTTTTTTTTT", "TSGKDGm.GN..FT", "TTTTTT.TT.T.TT", "TTTTTT.TT.T.TT", "TTTTTT.TT.T.TT", "TTTTTTTTTTTTTT"], startDir: 1,
+    blocks: B4, solution: [jusqua([ram(), si("porte", [ouv()]), sisinon("gloups", [frap()], [sisinon("monstre", [att()], [av()])])])],
+  },
+];
+
 // ---------------------------------------------------------------- DÉFI 3 : LE LABYRINTHE DU MAÎTRE
 const MAITRE: RawLevel[] = [
   {
@@ -426,6 +514,34 @@ const ILE: RawLevel[] = [
     blocks: B3, solution: [jusqua([ram(), sisinon("porte", [ouv()], [sisinon("chemin", [av()], [td()])])])],
   },
   {
+    title: "Le ponton", concept: "Boucle",
+    goal: "Le lagon est profond ! Construis un long ponton planche par planche jusqu'à la plage.",
+    tip: "Répète 4 fois « poser un pont, avancer », puis ramasse la gemme et avance.",
+    grid: ["WWWWWWWWW", "WSWWWWGFW", "WWWWWWWWW"], startDir: 1,
+    blocks: B3, solution: [rep(4, [pont(), av()]), av(), ram(), av()],
+  },
+  {
+    title: "Rochers et lave", concept: "Conditions",
+    goal: "Sur le sentier du volcan de l'île, il y a des rochers et de la lave. Laisse Cubo décider tout seul !",
+    tip: "Jusqu'au coffre : si rocher → casser. Puis si lave → sauter, sinon → avancer.",
+    grid: ["WWWWWWWWWWWW", "WS.R.L.RL.FW", "WWWWWWWWWWWW"], startDir: 1,
+    blocks: B3, solution: [jusqua([si("rocher", [cas()]), sisinon("lave", [saut()], [av()])])],
+  },
+  {
+    title: "Le tour du phare", concept: "Boucles imbriquées",
+    goal: "Fais le tour du phare en posant des ponts, et ramasse la gemme de chaque coin.",
+    tip: "Un côté : répète 3 fois « si eau → pont, avancer », puis ramasser et tourner à droite. Répète les 4 côtés.",
+    grid: ["WWWWWWW", "WS.W.GW", "WFTTT.W", "WWTTTWW", "W.TTT.W", "WG.W.GW", "WWWWWWW"], startDir: 1,
+    blocks: B3, solution: [rep(4, [rep(4, [si("eau", [pont()]), av()]), ram(), td()])],
+  },
+  {
+    title: "La crique en spirale", concept: "Algorithme",
+    goal: "Le sentier s'enroule autour de la crique. Ramasse les gemmes et trouve le coffre au centre !",
+    tip: "Jusqu'au coffre : ramasser, puis si chemin devant → avancer, sinon → tourner à droite.",
+    grid: ["WWWWWWWW", "WS..G..W", "WWWWWW.W", "W.G.FW.W", "W.WWWWGW", "W..G...W", "WWWWWWWW"], startDir: 1,
+    blocks: B3, solution: [jusqua([ram(), sisinon("chemin", [av()], [td()])])],
+  },
+  {
     title: "Le trésor de l'île", concept: "Tout ensemble",
     goal: "Le grand final ! Clé, porte, rocher, rivière, lave et gemmes : écris le programme qui sait tout faire.",
     tip: "Jusqu'au coffre : ramasser, si eau → pont, si rocher → casser, si porte → ouvrir, puis si lave → sauter, sinon (si chemin → avancer, sinon → tourner à droite).",
@@ -435,6 +551,160 @@ const ILE: RawLevel[] = [
       ram(), si("eau", [pont()]), si("rocher", [cas()]), si("porte", [ouv()]),
       sisinon("lave", [saut()], [sisinon("chemin", [av()], [td()])]),
     ])],
+  },
+];
+
+// ---------------------------------------------------------------- DÉFI MOYEN : LA RIVIÈRE DES CASTORS
+const BR = [...BASE, "demitour", "ramasser", "casser", "pont", "repeter", "si"];
+const RIVIERE: RawLevel[] = [
+  {
+    title: "Le gué", concept: "Boucle",
+    goal: "Les castors ont laissé deux trous d'eau sur le chemin. Trouve le motif qui se répète !",
+    tip: "Répète 2 fois « avancer, poser un pont, avancer », puis avance 2 fois.",
+    grid: ["TTTTTTTTT", "TS.W.W.FT", "TTTTTTTTT"], startDir: 1,
+    blocks: BR, solution: [rep(2, [av(), pont(), av()]), rep(2, [av()])],
+  },
+  {
+    title: "Les galets brillants", concept: "Boucle",
+    goal: "Une gemme toutes les deux cases au bord de la rivière. Une boucle fera le travail !",
+    tip: "Répète 3 fois « avancer, ramasser, avancer », puis un dernier pas.",
+    grid: ["TTTTTTTTTT", "TSG.G.G.FT", "TTTTTTTTTT"], startDir: 1,
+    blocks: BR, solution: [rep(3, [av(), ram(), av()]), av()],
+  },
+  {
+    title: "Le barrage", concept: "Actions",
+    goal: "Rochers et eau bloquent le chemin des castors. Dans quel ordre faut-il agir ?",
+    tip: "Avance, casse, avance 2 fois, pose un pont, avance 2 fois, casse, puis avance 3 fois.",
+    grid: ["TTTTTTTTTTT", "TS.R.W.R.FT", "TTTTTTTTTTT"], startDir: 1,
+    blocks: BR, solution: [av(), cas(), rep(2, [av()]), pont(), rep(2, [av()]), cas(), rep(3, [av()])],
+  },
+  {
+    title: "L'escalier du moulin", concept: "Boucle",
+    goal: "Chaque marche de l'escalier tombe dans l'eau. Trouve la marche qui se répète !",
+    tip: "Une marche : avancer, tourner à droite, poser un pont, avancer, tourner à gauche. Répète 3 fois, puis avance.",
+    grid: ["TTTTTTT", "TS.TTTT", "TTW.TTT", "TTTW.TT", "TTTTWFT", "TTTTTTT"], startDir: 1,
+    blocks: BR, solution: [rep(3, [av(), td(), pont(), av(), tg()]), av()],
+  },
+  {
+    title: "La gemme du castor", concept: "Demi-tour",
+    goal: "Le castor a caché une gemme derrière Cubo. Va la chercher avant de traverser !",
+    tip: "Demi-tour, avance, ramasse, demi-tour, avance 2 fois, pose un pont, puis avance 4 fois.",
+    grid: ["TTTTTTTTT", "TGS.W..FT", "TTTTTTTTT"], startDir: 1,
+    blocks: BR, solution: [dt(), av(), ram(), dt(), rep(2, [av()]), pont(), rep(4, [av()])],
+  },
+  {
+    title: "Le tour de la hutte", concept: "Boucles imbriquées",
+    goal: "Fais le tour de la hutte des castors : chaque côté a son trou d'eau et une gemme au coin.",
+    tip: "Un côté : avancer, poser un pont, avancer 3 fois, ramasser, tourner à droite. Répète 4 fois.",
+    grid: ["TTTTTTT", "TS.W.GT", "TFTTT.T", "TWTTTWT", "T.TTT.T", "TG.W.GT", "TTTTTTT"], startDir: 1,
+    blocks: BR, solution: [rep(4, [av(), pont(), rep(3, [av()]), ram(), td()])],
+  },
+  {
+    title: "Si eau devant", concept: "Condition",
+    goal: "L'eau est n'importe où ! Cubo doit vérifier à chaque pas : SI il y a de l'eau, ALORS il pose un pont.",
+    tip: "Répète 8 fois : « si eau devant → poser un pont », puis « avancer ».",
+    grid: ["TTTTTTTTTTT", "TS.W.WW..FT", "TTTTTTTTTTT"], startDir: 1,
+    blocks: BR, solution: [rep(8, [si("eau", [pont()]), av()])],
+  },
+  {
+    title: "Rochers ou rivière ?", concept: "Conditions",
+    goal: "Un rocher ? On le casse. De l'eau ? On pose un pont. Cubo doit tout vérifier avant chaque pas.",
+    tip: "Répète 8 fois : si eau → pont, si rocher → casser, puis avancer.",
+    grid: ["TTTTTTTTTTT", "TSRW.R.W.FT", "TTTTTTTTTTT"], startDir: 1,
+    blocks: BR, solution: [rep(8, [si("eau", [pont()]), si("rocher", [cas()]), av()])],
+  },
+  {
+    title: "Le grand méandre", concept: "Boucles imbriquées",
+    goal: "La rivière fait des virages comme un serpent. Repère le grand motif et répète-le !",
+    tip: "Avance 4 fois, droite, avance 2 fois, droite, avance 4 fois, gauche, avance 2 fois, gauche. Répète tout 2 fois.",
+    grid: ["TTTTTTT", "TS....T", "TTTTT.T", "T.....T", "T.TTTTT", "T....FT", "TTTTTTT"], startDir: 1,
+    blocks: BR,
+    solution: [rep(2, [rep(4, [av()]), td(), rep(2, [av()]), td(), rep(4, [av()]), tg(), rep(2, [av()]), tg()])],
+  },
+  {
+    title: "Le barrage des castors", concept: "Tout ensemble",
+    goal: "Le grand final de la rivière : fais le tour du barrage, casse les rochers, pose les ponts et ramasse les gemmes !",
+    tip: "Un côté : répète 4 fois (si eau → pont, si rocher → casser, avancer), puis ramasser et tourner à droite. Répète les 4 côtés.",
+    grid: ["TTTTTTT", "TS.R.GT", "TFTTT.T", "TWTTTRT", "T.TTT.T", "TG.W.GT", "TTTTTTT"], startDir: 1,
+    blocks: BR, solution: [rep(4, [rep(4, [si("eau", [pont()]), si("rocher", [cas()]), av()]), ram(), td()])],
+  },
+];
+
+// ---------------------------------------------------------------- DÉFI EXPERT : LE CHÂTEAU DU DRAGON
+const BX = [...BASE, "demitour", "ramasser", "casser", "pont", "ouvrir", "sauter", "attendre", "frapper", "repeter", "jusqua", "si", "sisinon"];
+const CHATEAU: RawLevel[] = [
+  {
+    title: "Le pont-levis", concept: "Conditions",
+    goal: "Clés, portes et douves : une seule boucle doit savoir tout faire pour entrer dans le château !",
+    tip: "Jusqu'au coffre : ramasser, si porte → ouvrir, si eau → pont, puis avancer.",
+    grid: ["TTTTTTTTTTTT", "TSK.DWW.KDFT", "TTTTTTTTTTTT"], startDir: 1,
+    blocks: BX, solution: [jusqua([ram(), si("porte", [ouv()]), si("eau", [pont()]), av()])],
+  },
+  {
+    title: "La tour en spirale", concept: "Algorithme",
+    goal: "L'escalier de la tour tourne en spirale. Casse les rochers, ramasse les gemmes et monte jusqu'au coffre !",
+    tip: "Jusqu'au coffre : ramasser, si rocher → casser, puis si chemin devant → avancer, sinon → tourner à droite.",
+    grid: ["TTTTTTT", "TS.R..T", "TTTTT.T", "T..FT.T", "T.TTTGT", "T..G..T", "TTTTTTT"], startDir: 1,
+    blocks: BX, solution: [jusqua([ram(), si("rocher", [cas()]), sisinon("chemin", [av()], [td()])])],
+  },
+  {
+    title: "Les couloirs secrets", concept: "Algorithme",
+    goal: "Un labyrinthe dans les murs du château, avec une porte fermée. Garde la main droite sur le mur !",
+    tip: "Jusqu'au coffre : ramasser, si porte → ouvrir, puis si chemin à droite → (droite, avancer), sinon (si chemin devant → avancer, sinon → gauche).",
+    grid: ["TTTTTTT", "TSK.T.T", "TTT.T.T", "T..D..T", "T.TTTTT", "T..FTTT", "TTTTTTT"], startDir: 1,
+    blocks: BX,
+    solution: [jusqua([ram(), si("porte", [ouv()]), sisinon("droite", [td(), av()], [sisinon("chemin", [av()], [tg()])])])],
+  },
+  {
+    title: "La garde du château", concept: "Conditions imbriquées",
+    goal: "Un Gloups et deux Grognons gardent la cour. Gloups devant ? On frappe. Un monstre arrive ? On attend. Sinon, on avance !",
+    tip: "Jusqu'au coffre : si Gloups devant → frapper, sinon (si monstre devant → attendre, sinon → avancer).",
+    grid: ["TTTTTTTTTTTT", "TS.N.m..m.FT", "TTT.T.TT.TTT", "TTT.T.TT.TTT", "TTTTTTTTTTTT"], startDir: 1,
+    blocks: BX, solution: [jusqua([sisinon("gloups", [frap()], [sisinon("monstre", [att()], [av()])])])],
+  },
+  {
+    title: "Les douves de lave", concept: "Conditions imbriquées",
+    goal: "De la lave, un Grognon et un Gloups ! D'abord les monstres, ensuite la lave.",
+    tip: "Jusqu'au coffre : si Gloups → frapper, sinon (si monstre → attendre, sinon (si lave → sauter, sinon → avancer)).",
+    grid: ["TTTTTTTTTTTT", "TS.L.m.L..FT", "TTTTT.TT.TTT", "TTTTT.TT.TTT", "TTTTTnTT.TTT", "TTTTTTTTTTTT"], startDir: 1,
+    blocks: BX, solution: [jusqua([sisinon("gloups", [frap()], [sisinon("monstre", [att()], [sisinon("lave", [saut()], [av()])])])])],
+  },
+  {
+    title: "La salle des gemmes", concept: "Algorithme",
+    goal: "Trois gemmes, deux Gloups à battre et un Grognon à esquiver. Ne laisse aucune gemme derrière toi !",
+    tip: "Jusqu'au coffre : ramasser, puis si Gloups → frapper, sinon (si monstre → attendre, sinon → avancer).",
+    grid: ["TTTTTTTTTTTT", "TSGN.Gm.GNFT", "TTT.TT.TT.TT", "TTT.TT.TT.TT", "TTTTTTTTTTTT"], startDir: 1,
+    blocks: BX, solution: [jusqua([ram(), sisinon("gloups", [frap()], [sisinon("monstre", [att()], [av()])])])],
+  },
+  {
+    title: "L'escalier brûlant", concept: "Boucle",
+    goal: "Chaque marche du donjon a son trou de lave et sa gemme. Trouve la marche qui se répète !",
+    tip: "Une marche : sauter, ramasser, tourner à droite, avancer, tourner à gauche. Répète 4 fois.",
+    grid: ["TTTTTTTTTTT", "TSLGTTTTTTT", "TTT.LGTTTTT", "TTTTT.LGTTT", "TTTTTTT.LFT", "TTTTTTTTTTT"], startDir: 1,
+    blocks: BX, solution: [rep(4, [saut(), ram(), td(), av(), tg()])],
+  },
+  {
+    title: "Le pont des gardes", concept: "Conditions imbriquées",
+    goal: "Les douves, un Grognon qui fait sa ronde et un Gloups sur le pont. Garde ton calme !",
+    tip: "Jusqu'au coffre : si eau → pont. Puis si Gloups → frapper, sinon (si monstre → attendre, sinon → avancer).",
+    grid: ["TTTTTTTTTTTT", "TS.W.m.WN.FT", "TTTTT.TT.TTT", "TTTTT.TT.TTT", "TTTTT.TT.TTT", "TTTTTTTTTTTT"], startDir: 1,
+    blocks: BX, solution: [jusqua([si("eau", [pont()]), sisinon("gloups", [frap()], [sisinon("monstre", [att()], [av()])])])],
+  },
+  {
+    title: "Les oubliettes", concept: "Algorithme",
+    goal: "Le grand labyrinthe des oubliettes, avec un rocher et des gemmes cachées. La main droite te guidera !",
+    tip: "Jusqu'au coffre : ramasser, si rocher → casser, puis si chemin à droite → (droite, avancer), sinon (si chemin devant → avancer, sinon → gauche).",
+    grid: ["TTTTTTTTT", "TS.T...GT", "TT.T.TT.T", "T..R.TG.T", "T.TTTT.TT", "TGTF...TT", "TTTTTTTTT"], startDir: 1,
+    blocks: BX,
+    solution: [jusqua([ram(), si("rocher", [cas()]), sisinon("droite", [td(), av()], [sisinon("chemin", [av()], [tg()])])])],
+  },
+  {
+    title: "Le trésor du dragon", concept: "Tout ensemble",
+    goal: "Le défi ultime : clé, porte, lave, gemmes, un Grognon à esquiver et un Gloups à battre. Écris LA boucle parfaite !",
+    tip: "Jusqu'au coffre : ramasser, si porte → ouvrir, puis si Gloups → frapper, sinon (si monstre → attendre, sinon (si lave → sauter, sinon → avancer)).",
+    grid: ["TTTTTTTTTTTTTTT", "TSGKDG..L.Gm.FT", "TTTTTTnTTTT.TTT", "TTTTTT.TTTT.TTT", "TTTTTT.TTTT.TTT", "TTTTTTTTTTTTTTT"], startDir: 1,
+    blocks: BX,
+    solution: [jusqua([ram(), si("porte", [ouv()]), sisinon("gloups", [frap()], [sisinon("monstre", [att()], [sisinon("lave", [saut()], [av()])])])])],
   },
 ];
 
@@ -448,12 +718,24 @@ export const COURSES: Course[] = [
     difficulty: 2, color: "#7BD88F", newBlocks: ["ouvrir", "demitour"], preview: 9, levels: numbered(CLES),
   },
   {
+    slug: "riviere", title: "La rivière des castors", subtitle: "Ponts, rochers et méandres : entraîne-toi aux boucles et aux conditions.",
+    difficulty: 2, color: "#7FDBDA", newBlocks: [], preview: 6, levels: numbered(RIVIERE),
+  },
+  {
     slug: "volcan", title: "Le volcan", subtitle: "Saute par-dessus la lave et répète jusqu'au coffre.",
     difficulty: 3, color: "#FFA94D", newBlocks: ["sauter", "jusqua"], preview: 9, levels: numbered(VOLCAN),
   },
   {
+    slug: "village", title: "Le village des monstres", subtitle: "Esquive Grognon, le monstre à cornes, et bats Gloups, le monstre gluant !",
+    difficulty: 3, color: "#B9E769", newBlocks: ["attendre", "frapper", "sisinon"], preview: 10, levels: numbered(VILLAGE),
+  },
+  {
     slug: "labyrinthe", title: "Le labyrinthe du maître", subtitle: "Si… sinon, labyrinthes et vrais algorithmes de pro.",
     difficulty: 4, color: "#C3A6FF", newBlocks: ["sisinon"], preview: 10, levels: numbered(MAITRE),
+  },
+  {
+    slug: "chateau", title: "Le château du dragon", subtitle: "Algorithmes, lave et gardes monstres : le défi des vrais experts !",
+    difficulty: 4, color: "#FF8FC7", newBlocks: [], preview: 10, levels: numbered(CHATEAU),
   },
   {
     slug: "ile-secrete", title: "L'île secrète", subtitle: "Le monde caché de la carte au trésor. Tous tes blocs pour une seule aventure !",
@@ -468,6 +750,7 @@ export function buildWorld(level: LevelDef): World {
   const tiles: Tile[][] = [];
   const gems: string[] = [];
   const keys: string[] = [];
+  const mobs: Mob[] = [];
   let start = { x: 0, y: 0 };
   let goal = { x: 0, y: 0 };
   level.grid.forEach((row, y) => {
@@ -477,13 +760,17 @@ export function buildWorld(level: LevelDef): World {
         if (c === "F") { goal = { x, y }; return "."; }
         if (c === "G") { gems.push(`${x},${y}`); return "."; }
         if (c === "K") { keys.push(`${x},${y}`); return "."; }
+        if ("MmNn".includes(c)) {
+          mobs.push({ id: mobs.length, kind: c === "M" || c === "m" ? "grognon" : "gloups", x, y, dir: c === "M" || c === "N" ? 1 : 2 });
+          return ".";
+        }
         return c as Tile;
       })
     );
   });
   return {
     w: level.grid[0].length, h: level.grid.length, tiles, gems, totalGems: gems.length,
-    keys, keysHeld: 0, goal, cubo: { ...start, dir: level.startDir },
+    keys, keysHeld: 0, goal, cubo: { ...start, dir: level.startDir }, mobs,
   };
 }
 
@@ -494,6 +781,7 @@ export const cloneWorld = (w: World): World => ({
   keys: [...w.keys],
   goal: { ...w.goal },
   cubo: { ...w.cubo },
+  mobs: w.mobs.map((m) => ({ ...m })),
 });
 
 export const DIRS = [
@@ -507,13 +795,13 @@ export const WALKABLE = (t: Tile) => t === "." || t === "f" || t === "B" || t ==
 
 export type StepKind =
   | "move" | "turn" | "collect" | "key" | "nothing" | "break" | "bridge" | "open" | "jump"
-  | "check" | "bump" | "splash" | "burn" | "win";
+  | "check" | "bump" | "splash" | "burn" | "win" | "wait" | "hit" | "caught";
 
 export type Step = { kind: StepKind; blockId: string; world: World; at?: { x: number; y: number } };
 
 export type Outcome =
   | { ok: true }
-  | { ok: false; reason: "water" | "lava" | "blocked" | "notAtGoal" | "gemsMissing" | "tooLong" | "empty" };
+  | { ok: false; reason: "water" | "lava" | "blocked" | "monster" | "notAtGoal" | "gemsMissing" | "tooLong" | "empty" };
 
 class Stop extends Error {
   outcome: Outcome;
@@ -557,9 +845,44 @@ export function* runProgram(world0: World, program: Block[]): Generator<Step, Ou
       throw new Stop({ ok: true });
     }
   };
+  const monsters = () => w.mobs;
+  const monsterAt = (x: number, y: number) => monsters().some((m) => m.x === x && m.y === y);
+  const free = (x: number, y: number) => WALKABLE(tileAt(x, y));
+  /** Prochaine case d'un monstre : tout droit, ou demi-tour s'il est bloqué. */
+  const nextOf = (m: Mob) => {
+    for (const dir of [m.dir, ((m.dir + 2) % 4) as Dir]) {
+      const x = m.x + DIRS[dir].x;
+      const y = m.y + DIRS[dir].y;
+      if (free(x, y)) return { x, y, dir };
+    }
+    return { x: m.x, y: m.y, dir: m.dir };
+  };
+  /** Les monstres font un pas. Vrai si l'un d'eux attrape Cubo (même case, ou ils se croisent). */
+  // Règle : Cubo ne peut jamais passer par la case d'un monstre (ni marcher, ni sauter dessus).
+  const tick = (from: { x: number; y: number }) => {
+    let caught = false;
+    for (const m of monsters()) {
+      const n = nextOf(m);
+      const swap = n.x === from.x && n.y === from.y && m.x === w.cubo.x && m.y === w.cubo.y;
+      Object.assign(m, n);
+      if (swap || (m.x === w.cubo.x && m.y === w.cubo.y)) caught = true;
+    }
+    return caught;
+  };
   const test = (what: string | number) => {
     const f = ahead().tile;
     switch (what) {
+      case "gloups": {
+        const a = ahead();
+        return w.mobs.some((m) => m.kind === "gloups" && m.x === a.x && m.y === a.y);
+      }
+      case "monstre": {
+        const a = ahead();
+        return monsters().some((m) => {
+          const n = nextOf(m);
+          return (m.x === a.x && m.y === a.y) || (n.x === a.x && n.y === a.y);
+        });
+      }
       case "eau": return f === "W";
       case "rocher": return f === "R";
       case "lave": return f === "L";
@@ -577,12 +900,27 @@ export function* runProgram(world0: World, program: Block[]): Generator<Step, Ou
       yield snap("bump", id, { x, y });
       throw new Stop({ ok: false, reason: "blocked" });
     }
+    if (monsterAt(x, y)) {
+      // Interdit de marcher (ou d'atterrir) sur un monstre
+      w.cubo.x = x;
+      w.cubo.y = y;
+      yield snap("caught", id);
+      throw new Stop({ ok: false, reason: "monster" });
+    }
+    const from = { x: w.cubo.x, y: w.cubo.y };
     w.cubo.x = x;
     w.cubo.y = y;
     if (t === "W") { yield snap("splash", id); throw new Stop({ ok: false, reason: "water" }); }
     if (t === "L") { yield snap("burn", id); throw new Stop({ ok: false, reason: "lava" }); }
-    yield snap(kind, id);
+    yield* step(kind, id, from);
     yield* winCheck(id);
+  }
+
+  /** Cubo a agi (pas, saut ou attente) : les monstres bougent en même temps que lui. */
+  function* step(kind: StepKind, id: string, from: { x: number; y: number }): Generator<Step, void> {
+    const caught = tick(from);
+    yield snap(kind, id);
+    if (caught) { yield snap("caught", id); throw new Stop({ ok: false, reason: "monster" }); }
   }
 
   function* exec(list: Block[]): Generator<Step, void> {
@@ -599,6 +937,11 @@ export function* runProgram(world0: World, program: Block[]): Generator<Step, Ou
           if (over === "T" || over === "D") {
             yield snap("bump", bl.id, ahead(1));
             throw new Stop({ ok: false, reason: "blocked" });
+          }
+          if (monsterAt(ahead(1).x, ahead(1).y)) {
+            // Impossible de sauter par-dessus un monstre : il attrape Cubo au passage
+            yield snap("caught", bl.id, ahead(1));
+            throw new Stop({ ok: false, reason: "monster" });
           }
           const f = ahead(2);
           yield* land(f.x, f.y, bl.id, "jump");
@@ -646,6 +989,19 @@ export function* runProgram(world0: World, program: Block[]): Generator<Step, Ou
           } else yield snap("nothing", bl.id);
           break;
         }
+        case "attendre":
+          yield* step("wait", bl.id, { x: w.cubo.x, y: w.cubo.y });
+          break;
+        case "frapper": {
+          // Seul un Gloups juste devant peut être battu ; Grognon est trop costaud (le coup rebondit).
+          const f = ahead();
+          const g = w.mobs.find((m) => m.kind === "gloups" && m.x === f.x && m.y === f.y);
+          if (g) {
+            w.mobs = w.mobs.filter((m) => m !== g);
+            yield snap("hit", bl.id, f);
+          } else yield snap("nothing", bl.id);
+          break;
+        }
         case "repeter": {
           const n = Math.max(0, Math.min(20, Number(bl.params.n) || 0));
           for (let k = 0; k < n; k++) yield* exec(bl.children ?? []);
@@ -689,6 +1045,7 @@ export const FAIL_MESSAGES: Record<string, string> = {
   water: "Plouf ! Cubo est tombé dans l'eau. Il ne sait pas nager…",
   lava: "Ouille, la lave est brûlante ! Il fallait sauter par-dessus.",
   blocked: "Aïe ! Il y a un obstacle devant Cubo.",
+  monster: "Un monstre a attrapé Cubo ! On ne passe jamais sur un monstre : esquive Grognon, frappe Gloups.",
   notAtGoal: "Presque ! Cubo n'est pas encore arrivé au coffre.",
   gemsMissing: "Il manque des gemmes ! Ramasse-les toutes avant le coffre.",
   tooLong: "Ton programme tourne en rond ou est trop long ! Vérifie tes boucles.",

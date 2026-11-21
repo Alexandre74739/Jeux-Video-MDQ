@@ -70,6 +70,63 @@ function Hat2D({ id }: { id: string }) {
   }
 }
 
+/** Accessoire de dos en 2D (dessiné derrière le cube, côté droit). */
+function Back2D({ id }: { id: string }) {
+  const S = { stroke: "#16123A", strokeWidth: 4, strokeLinejoin: "round" as const };
+  switch (id) {
+    case "rien": return null;
+    case "cape": return <path d="M90 38 L112 50 L116 104 L100 98 L92 76 Z" fill="#FF6B57" {...S} />;
+    case "ailes":
+      return (
+        <g>
+          <path d="M94 44 Q122 14 118 54 Q108 62 94 54 Z" fill="#C9B8FF" {...S} />
+          <path d="M94 58 Q120 64 110 88 Q98 86 94 70 Z" fill="#FF8FC7" {...S} />
+        </g>
+      );
+    case "carapace": return <path d="M90 40 Q118 46 112 86 L92 80 Z" fill="#3DDC97" {...S} />;
+    case "jetpack":
+      return (
+        <g>
+          <path d="M92 42 L108 50 L108 84 L92 76 Z" fill="#A5ADC0" {...S} />
+          <path d="M96 80 L100 98 L104 82 Z" fill="#FFA94D" stroke="#16123A" strokeWidth="2.5" strokeLinejoin="round" />
+        </g>
+      );
+    default: return <path d="M92 44 L106 52 L106 80 L92 72 Z" fill="#4FC3F7" {...S} />;
+  }
+}
+
+/** Accessoire du visage en 2D. Les yeux sont en (34, y) et (50, y + 8) sur la face gauche. */
+function Face2D({ id, y, under }: { id: string; y: number; under: boolean }) {
+  const S = { stroke: "#16123A", strokeWidth: 3, strokeLinejoin: "round" as const };
+  if (under) return id === "masque" ? <path d="M21 47 L60 66 L60 80 L21 61 Z" fill="#9B7BFF" {...S} /> : null;
+  switch (id) {
+    case "lunettes":
+      return (
+        <g fill="none" {...S}>
+          <circle cx="34" cy={y} r="8.5" /><circle cx="50" cy={y + 8} r="8.5" />
+          <path d={`M42 ${y + 3} L42 ${y + 5}`} /><path d={`M25.5 ${y - 2} L20 ${y - 5}`} />
+        </g>
+      );
+    case "soleil":
+      return (
+        <g {...S}>
+          <rect x="25" y={y - 7} width="18" height="13" rx="5" fill="#16123A" transform={`rotate(26 34 ${y})`} />
+          <rect x="41" y={y + 1} width="18" height="13" rx="5" fill="#16123A" transform={`rotate(26 50 ${y + 8})`} />
+          <path d={`M43 ${y + 2} L41 ${y + 6}`} fill="none" />
+          <path d={`M29 ${y - 3} l4 2`} stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        </g>
+      );
+    case "monocle":
+      return (
+        <g fill="none" {...S}>
+          <circle cx="50" cy={y + 8} r="9" stroke="#E0AE10" strokeWidth="3.5" />
+          <path d={`M54 ${y + 16} Q56 ${y + 30} 48 ${y + 38}`} stroke="#E0AE10" strokeWidth="2" />
+        </g>
+      );
+    default: return null;
+  }
+}
+
 /** Cubo, la mascotte : un petit cube explorateur (SVG isométrique), avec la tenue choisie. */
 export function Cubo({ size = 120, mood = "happy", className = "", outfit }: { size?: number; mood?: Mood; className?: string; outfit?: Outfit }) {
   const current = useOutfit();
@@ -79,13 +136,14 @@ export function Cubo({ size = 120, mood = "happy", className = "", outfit }: { s
   return (
     <svg viewBox="0 0 120 130" width={size} height={size * 1.08} className={className} style={{ overflow: "visible" }} aria-hidden="true">
       <ellipse cx="60" cy="122" rx="38" ry="6" fill="#16123A" opacity="0.18" />
-      {/* sac à dos */}
-      <path d="M92 44 L106 52 L106 80 L92 72 Z" fill="#4FC3F7" stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
+      {/* accessoire de dos */}
+      <Back2D id={o.back} />
       {/* faces du cube */}
       <path d="M60 14 L100 34 L60 54 L20 34 Z" fill={top} stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
       <path d="M20 34 L60 54 L60 108 L20 88 Z" fill={left} stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
       <path d="M100 34 L60 54 L60 108 L100 88 Z" fill={right} stroke="#16123A" strokeWidth="4" strokeLinejoin="round" />
       <Hat2D id={o.hat} />
+      <Face2D id={o.face} y={eyeY} under />
       {/* yeux */}
       {mood === "wow" ? (
         <>
@@ -100,6 +158,7 @@ export function Cubo({ size = 120, mood = "happy", className = "", outfit }: { s
           <circle cx={mood === "think" ? 49 : 51} cy={eyeY + (mood === "think" ? 6 : 9)} r="2.6" fill="#16123A" />
         </>
       )}
+      <Face2D id={o.face} y={eyeY} under={false} />
       {/* bouche */}
       {mood === "sad" ? (
         <path d="M34 84 q8 -6 14 4" fill="none" stroke="#16123A" strokeWidth="4" strokeLinecap="round" />

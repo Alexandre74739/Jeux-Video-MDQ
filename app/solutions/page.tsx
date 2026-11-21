@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { BlockView } from "@/components/BlockView";
 import { Logo } from "@/components/ui";
 import BackButton from "@/components/BackButton";
@@ -9,6 +10,13 @@ import { COURSES, DIFFICULTY } from "@/lib/levels";
 import { BLOCKS } from "@/lib/blocks";
 
 export default function Solutions() {
+  // Un seul parcours affiché à la fois (page plus légère) ; le choix est gardé dans l'adresse (#slug).
+  const [slug, setSlug] = useState(COURSES[0].slug);
+  useEffect(() => {
+    const h = window.location.hash.slice(1);
+    if (COURSES.some((c) => c.slug === h)) setSlug(h);
+  }, []);
+  const pick = (s: string) => { setSlug(s); history.replaceState(null, "", `#${s}`); };
   return (
     <div className="min-h-dvh bg-cream">
       <header className="sticky top-0 z-40 flex items-center justify-between border-b-[3px] border-ink bg-paper px-4 py-3 sm:px-6">
@@ -26,11 +34,11 @@ export default function Solutions() {
         </p>
         <nav className="mt-6 flex flex-wrap gap-3" aria-label="Parcours">
           {COURSES.map((c) => (
-            <a key={c.slug} href={`#${c.slug}`} className="btn px-4 py-2" style={{ background: c.color }}>{c.title}</a>
+            <button key={c.slug} onClick={() => pick(c.slug)} aria-pressed={slug === c.slug} className={`btn px-4 py-2 ${slug === c.slug ? "outline-4 outline-offset-2 outline-grape" : "opacity-80"}`} style={{ background: c.color }}>{c.title}</button>
           ))}
         </nav>
 
-        {COURSES.map((c) => (
+        {COURSES.filter((c) => c.slug === slug).map((c) => (
           <section key={c.slug} id={c.slug} className="mt-12 scroll-mt-24">
             <h2 className="flex flex-wrap items-baseline gap-3 text-3xl font-bold">
               {c.title}

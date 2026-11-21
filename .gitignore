@@ -3,3 +3,9 @@ node_modules
 out
 *.tsbuildinfo
 next-env.d.ts
+
+# Secrets (MONGODB_URI, etc.)
+.env
+.env.*
+!.env.example
+.vercel

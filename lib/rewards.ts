@@ -52,8 +52,12 @@ export const BADGES: Record<string, Badge> = {
   student: { icon: "Award", name: "Diplômé", text: "Tu as terminé le tutoriel !", at: "tutoriel:10" },
   keys: { icon: "KeyRound", name: "Maître des clés", text: "Tu as traversé la vallée des clés !", at: "vallee-des-cles:10" },
   volcano: { icon: "Flame", name: "Dompteur de volcan", text: "Tu as vaincu le volcan !", at: "volcan:10" },
+  castors: { icon: "Fence", name: "Ami des castors", text: "Tu as réparé le barrage de la rivière !", at: "riviere:10" },
+  dragon: { icon: "Trophy", name: "Vainqueur du dragon", text: "Tu as trouvé le trésor du château du dragon !", at: "chateau:10" },
+  frappeur: { icon: "Swords", name: "Tape-Gloups", text: "Tu as battu ton premier Gloups !", at: "village:1" },
+  village: { icon: "Hourglass", name: "Plus rusé que Grognon", text: "Tu as libéré le village des monstres !", at: "village:10" },
   master: { icon: "Crown", name: "Grand maître du code", text: "Tu as résolu le labyrinthe du maître !", at: "labyrinthe:10" },
-  legend: { icon: "Palmtree", name: "Légende de l'île", text: "Tu as trouvé le trésor de l'île secrète !", at: "ile-secrete:6" },
+  legend: { icon: "Palmtree", name: "Légende de l'île", text: "Tu as trouvé le trésor de l'île secrète !", at: "ile-secrete:10" },
   stars30: { icon: "Star", name: "Chasseur d'étoiles", text: "Tu as gagné 30 étoiles !", check: (c) => totalStars(c.after) >= 30 },
   stars60: { icon: "TowerControl", name: "Gardien du phare", text: "60 étoiles : le phare de l'île est allumé !", check: (c) => totalStars(c.after) >= 60 },
   stars100: { icon: "Sparkles", name: "Pluie d'étoiles", text: "Tu as gagné 100 étoiles. Incroyable !", check: (c) => totalStars(c.after) >= 100 },
@@ -101,8 +105,9 @@ export function badgesFor(c: WinContext, owned: string[]): string[] {
 }
 
 // ---------------------------------------------------------------- GARDE-ROBE
-export type Slot = "color" | "hat" | "trail";
-export type Item = { id: string; name: string; stars: number };
+export type Slot = "color" | "hat" | "face" | "back" | "trail";
+/** Objet de la garde-robe : débloqué avec des étoiles, ou avec un badge précis. */
+export type Item = { id: string; name: string; stars: number; badge?: string };
 export type ColorItem = Item & { faces: [string, string, string] };
 export type TrailItem = Item & { colors: string[] };
 
@@ -128,6 +133,23 @@ export const HATS: Item[] = [
   { id: "licorne", name: "Corne de licorne", stars: 70 },
 ];
 
+export const FACES: Item[] = [
+  { id: "aucun", name: "Rien", stars: 0 },
+  { id: "lunettes", name: "Lunettes rondes", stars: 8 },
+  { id: "soleil", name: "Lunettes de soleil", stars: 20 },
+  { id: "monocle", name: "Monocle", stars: 38 },
+  { id: "masque", name: "Masque de héros", stars: 0, badge: "tenace" },
+];
+
+export const BACKS: Item[] = [
+  { id: "sac", name: "Sac à dos", stars: 0 },
+  { id: "rien", name: "Rien", stars: 0 },
+  { id: "cape", name: "Cape de héros", stars: 16 },
+  { id: "ailes", name: "Ailes de papillon", stars: 30 },
+  { id: "carapace", name: "Carapace de tortue", stars: 48 },
+  { id: "jetpack", name: "Jetpack", stars: 0, badge: "village" },
+];
+
 export const TRAILS: TrailItem[] = [
   { id: "aucune", name: "Aucune", stars: 0, colors: [] },
   { id: "paillettes", name: "Paillettes", stars: 12, colors: ["#FFD23F", "#FFF1BF"] },
@@ -140,11 +162,17 @@ export const TRAILS: TrailItem[] = [
 export const SLOTS: Record<Slot, { label: string; items: Item[] }> = {
   color: { label: "Couleurs", items: COLORS },
   hat: { label: "Chapeaux", items: HATS },
+  face: { label: "Visage", items: FACES },
+  back: { label: "Dos", items: BACKS },
   trail: { label: "Traînées", items: TRAILS },
 };
 
-export type Outfit = { color: string; hat: string; trail: string };
-export const DEFAULT_OUTFIT: Outfit = { color: "orange", hat: "casquette", trail: "aucune" };
+export type Outfit = { color: string; hat: string; face: string; back: string; trail: string };
+export const DEFAULT_OUTFIT: Outfit = { color: "orange", hat: "casquette", face: "aucun", back: "sac", trail: "aucune" };
+
+/** L'objet est-il débloqué pour cette progression ? */
+export const isUnlocked = (item: Item, p: Progress) =>
+  item.badge ? p.badges.includes(item.badge) : item.stars <= totalStars(p);
 
 export const colorOf = (id: string) => COLORS.find((c) => c.id === id) ?? COLORS[0];
 export const trailOf = (id: string) => TRAILS.find((t) => t.id === id) ?? TRAILS[0];
@@ -152,12 +180,19 @@ export const trailOf = (id: string) => TRAILS.find((t) => t.id === id) ?? TRAILS
 /** Objets débloqués en passant de `before` à `after` étoiles. */
 export function newItems(before: number, after: number): { slot: Slot; item: Item }[] {
   return (Object.keys(SLOTS) as Slot[]).flatMap((slot) =>
-    SLOTS[slot].items.filter((i) => i.stars > before && i.stars <= after).map((item) => ({ slot, item }))
+    SLOTS[slot].items.filter((i) => !i.badge && i.stars > before && i.stars <= after).map((item) => ({ slot, item }))
+  );
+}
+
+/** Objets offerts par ces badges. */
+export function badgeItems(badges: string[]): { slot: Slot; item: Item }[] {
+  return (Object.keys(SLOTS) as Slot[]).flatMap((slot) =>
+    SLOTS[slot].items.filter((i) => i.badge && badges.includes(i.badge)).map((item) => ({ slot, item }))
   );
 }
 
 /** Prochain objet à débloquer. */
 export function nextItem(stars: number): { slot: Slot; item: Item } | null {
   const all = (Object.keys(SLOTS) as Slot[]).flatMap((slot) => SLOTS[slot].items.map((item) => ({ slot, item })));
-  return all.filter((x) => x.item.stars > stars).sort((a, b) => a.item.stars - b.item.stars)[0] ?? null;
+  return all.filter((x) => !x.item.badge && x.item.stars > stars).sort((a, b) => a.item.stars - b.item.stars)[0] ?? null;
 }

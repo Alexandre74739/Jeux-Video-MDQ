@@ -3,7 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Edges } from "@react-three/drei";
 import { Component, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
-import type { StepKind, World } from "@/lib/levels";
+import type { Mob, StepKind, World } from "@/lib/levels";
 import { useOutfit } from "@/lib/outfit";
 import { colorOf, trailOf, type Outfit } from "@/lib/rewards";
 
@@ -293,7 +293,83 @@ function Hat3D({ id }: { id: string }) {
   }
 }
 
-/** Corps de Cubo (cube, yeux, sac à dos, chapeau) avec la tenue choisie. */
+const ACC = {
+  cape: mat("#FF6B57"), wingA: new THREE.MeshLambertMaterial({ color: "#C9B8FF", transparent: true, opacity: 0.9 }),
+  wingB: new THREE.MeshLambertMaterial({ color: "#FF8FC7", transparent: true, opacity: 0.9 }),
+  shell: mat("#3DDC97"), shell2: mat("#22B377"), metal: mat("#A5ADC0"), flame: new THREE.MeshBasicMaterial({ color: "#FFA94D" }),
+  purple: mat("#9B7BFF"), gold: mat("#E0AE10"),
+};
+
+/** Accessoire de dos en 3D (le dos du cube est en z = -0.32). */
+function Back3D({ id }: { id: string }) {
+  const flame = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => { if (flame.current) flame.current.scale.y = 0.8 + Math.sin(clock.elapsedTime * 20) * 0.25; });
+  switch (id) {
+    case "rien": return null;
+    case "cape":
+      return <mesh position={[0, -0.04, -0.37]} rotation={[0.18, 0, 0]} material={ACC.cape} castShadow><boxGeometry args={[0.6, 0.66, 0.04]} /><Edges color={INK} /></mesh>;
+    case "ailes":
+      return (
+        <group position={[0, 0.1, -0.36]}>
+          {[-1, 1].map((s) => (
+            <group key={s}>
+              <mesh position={[s * 0.3, 0.1, 0]} rotation={[0, s * 0.5, s * 0.5]} material={ACC.wingA}><boxGeometry args={[0.42, 0.3, 0.03]} /><Edges color={INK} /></mesh>
+              <mesh position={[s * 0.26, -0.18, 0]} rotation={[0, s * 0.5, -s * 0.4]} material={ACC.wingB}><boxGeometry args={[0.3, 0.22, 0.03]} /><Edges color={INK} /></mesh>
+            </group>
+          ))}
+        </group>
+      );
+    case "carapace":
+      return (
+        <group position={[0, 0.02, -0.38]}>
+          <Box size={[0.58, 0.58, 0.14]} pos={[0, 0, 0]} material={ACC.shell} />
+          <Box size={[0.26, 0.26, 0.06]} pos={[0, 0, -0.09]} material={ACC.shell2} edges={false} />
+        </group>
+      );
+    case "jetpack":
+      return (
+        <group position={[0, 0.02, -0.42]}>
+          {[-0.12, 0.12].map((x) => (
+            <group key={x}>
+              <mesh position={[x, 0, 0]} material={ACC.metal} castShadow><cylinderGeometry args={[0.1, 0.1, 0.44, 12]} /><Edges color={INK} threshold={30} /></mesh>
+              <group ref={x < 0 ? flame : undefined} position={[x, -0.28, 0]}>
+                <mesh rotation={[Math.PI, 0, 0]} material={ACC.flame}><coneGeometry args={[0.07, 0.18, 8]} /></mesh>
+              </group>
+            </group>
+          ))}
+        </group>
+      );
+    default:
+      return <Box size={[0.42, 0.42, 0.16]} pos={[0, 0.02, -0.38]} material={M.pack} />;
+  }
+}
+
+/** Accessoire du visage en 3D (yeux en x = ±0.14, y = 0.06, face avant en z = 0.32). */
+function Face3D({ id }: { id: string }) {
+  switch (id) {
+    case "lunettes":
+      return (
+        <group position={[0, 0.06, 0.36]}>
+          {[-0.14, 0.14].map((x) => <mesh key={x} position={[x, 0, 0]} material={M.black}><torusGeometry args={[0.11, 0.022, 6, 16]} /></mesh>)}
+          <Box size={[0.08, 0.03, 0.03]} pos={[0, 0.02, 0]} material={M.black} edges={false} />
+        </group>
+      );
+    case "soleil":
+      return (
+        <group position={[0, 0.06, 0.37]}>
+          {[-0.14, 0.14].map((x) => <Box key={x} size={[0.22, 0.16, 0.03]} pos={[x, 0, 0]} material={M.black} edges={false} />)}
+          <Box size={[0.08, 0.03, 0.03]} pos={[0, 0.03, 0]} material={M.black} edges={false} />
+        </group>
+      );
+    case "monocle":
+      return <mesh position={[0.14, 0.06, 0.37]} material={ACC.gold}><torusGeometry args={[0.12, 0.025, 6, 16]} /></mesh>;
+    case "masque":
+      return <Box size={[0.66, 0.2, 0.02]} pos={[0, 0.06, 0.33]} material={ACC.purple} edges={false} />;
+    default: return null;
+  }
+}
+
+/** Corps de Cubo (cube, yeux, accessoires, chapeau) avec la tenue choisie. */
 export function CuboBody({ outfit }: { outfit: Outfit }) {
   const body = useMemo(() => mat(colorOf(outfit.color).faces[1]), [outfit.color]);
   return (
@@ -305,7 +381,8 @@ export function CuboBody({ outfit }: { outfit: Outfit }) {
       <Box size={[0.07, 0.09, 0.03]} pos={[-0.13, 0.04, 0.355]} material={M.black} edges={false} />
       <Box size={[0.07, 0.09, 0.03]} pos={[0.15, 0.04, 0.355]} material={M.black} edges={false} />
       <Box size={[0.18, 0.05, 0.03]} pos={[0, -0.12, 0.335]} material={M.black} edges={false} />
-      <Box size={[0.42, 0.42, 0.16]} pos={[0, 0.02, -0.38]} material={M.pack} />
+      <Face3D id={outfit.face} />
+      <Back3D id={outfit.back} />
     </>
   );
 }
@@ -377,10 +454,10 @@ function CuboModel({ world, event, cx, cz }: { world: World; event: WorldEvent; 
 
   useEffect(() => {
     const f = fx.current;
-    if (event.kind === "bump") f.bump = 1;
+    if (event.kind === "bump" || event.kind === "caught") f.bump = 1;
     if (event.kind === "splash" || event.kind === "burn") f.splash = 0.001;
     if (event.kind === "win") f.win = 0.001;
-    if (["collect", "break", "bridge", "key", "open"].includes(event.kind)) f.nod = 1;
+    if (["collect", "break", "bridge", "key", "open", "hit", "wait"].includes(event.kind)) f.nod = 1;
     if (event.kind === "reset") { f.bump = 0; f.splash = 0; f.win = 0; first.current = true; }
   }, [event]);
 
@@ -436,6 +513,77 @@ function CuboModel({ world, event, cx, cz }: { world: World; event: WorldEvent; 
   );
 }
 
+const MOB = {
+  slime: new THREE.MeshLambertMaterial({ color: "#7BD88F", transparent: true, opacity: 0.85, flatShading: true }),
+  slimeCore: mat("#3FAE4A"),
+  grognon: mat("#9B7BFF"),
+  grognonDark: mat("#7356E0"),
+  horn: mat("#FFF1BF"),
+};
+
+/** Gloups : cube gluant qui rebondit (on peut le battre). Grognon : cube violet à cornes qui se dandine (à esquiver). */
+function MobModel({ mob, cx, cz }: { mob: Mob; cx: number; cz: number }) {
+  const ref = useRef<THREE.Group>(null);
+  const body = useRef<THREE.Group>(null);
+  const first = useRef(true);
+  useFrame(({ clock }, dt) => {
+    const g = ref.current;
+    if (!g) return;
+    const tx = mob.x - cx;
+    const tz = mob.y - cz;
+    if (first.current) { g.position.set(tx, 0, tz); g.rotation.y = ANGLE[mob.dir]; first.current = false; }
+    g.position.x = THREE.MathUtils.damp(g.position.x, tx, 9, dt);
+    g.position.z = THREE.MathUtils.damp(g.position.z, tz, 9, dt);
+    const diff = ((ANGLE[mob.dir] - g.rotation.y + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+    g.rotation.y += diff * Math.min(1, dt * 10);
+    const b = body.current;
+    if (b) {
+      const t = clock.elapsedTime * (mob.kind === "gloups" ? 6 : 5) + mob.id;
+      b.position.y = mob.kind === "gloups" ? Math.abs(Math.sin(t)) * 0.18 : 0;
+      b.rotation.z = mob.kind === "grognon" ? Math.sin(t) * 0.15 : 0;
+      if (mob.kind === "gloups") { const k = Math.sin(t * 2) * 0.05; b.scale.set(1 + k, 1 - k, 1 + k); }
+    }
+  });
+  return (
+    <group ref={ref}>
+      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.3, 20]} />
+        <meshBasicMaterial color={INK} transparent opacity={0.2} />
+      </mesh>
+      <group ref={body}>
+        {mob.kind === "gloups" ? (
+          <>
+            <Box size={[0.3, 0.3, 0.3]} pos={[0, 0.27, 0]} material={MOB.slimeCore} edges={false} />
+            <Box size={[0.6, 0.56, 0.6]} pos={[0, 0.28, 0]} material={MOB.slime} />
+            <Box size={[0.14, 0.14, 0.04]} pos={[-0.14, 0.36, 0.31]} material={M.white} edges={false} />
+            <Box size={[0.14, 0.14, 0.04]} pos={[0.14, 0.36, 0.31]} material={M.white} edges={false} />
+            <Box size={[0.07, 0.07, 0.03]} pos={[-0.12, 0.34, 0.335]} material={M.black} edges={false} />
+            <Box size={[0.07, 0.07, 0.03]} pos={[0.16, 0.34, 0.335]} material={M.black} edges={false} />
+            <Box size={[0.2, 0.05, 0.03]} pos={[0, 0.18, 0.315]} material={M.black} edges={false} />
+          </>
+        ) : (
+          <>
+            <Box size={[0.56, 0.5, 0.5]} pos={[0, 0.27, 0]} material={MOB.grognon} />
+            <Box size={[0.4, 0.12, 0.4]} pos={[0, 0.02, 0]} material={MOB.grognonDark} edges={false} />
+            {[-0.18, 0.18].map((x) => (
+              <mesh key={x} position={[x, 0.62, 0]} rotation={[0, 0, x < 0 ? 0.35 : -0.35]} material={MOB.horn}>
+                <coneGeometry args={[0.07, 0.24, 6]} /><Edges color={INK} threshold={30} />
+              </mesh>
+            ))}
+            <Box size={[0.13, 0.13, 0.04]} pos={[-0.13, 0.34, 0.26]} material={M.white} edges={false} />
+            <Box size={[0.13, 0.13, 0.04]} pos={[0.13, 0.34, 0.26]} material={M.white} edges={false} />
+            <Box size={[0.06, 0.06, 0.03]} pos={[-0.12, 0.33, 0.285]} material={M.black} edges={false} />
+            <Box size={[0.06, 0.06, 0.03]} pos={[0.14, 0.33, 0.285]} material={M.black} edges={false} />
+            <Box size={[0.14, 0.035, 0.03]} pos={[-0.13, 0.43, 0.27]} rot={0} material={M.black} edges={false} />
+            <Box size={[0.14, 0.035, 0.03]} pos={[0.13, 0.43, 0.27]} material={M.black} edges={false} />
+            <Box size={[0.22, 0.05, 0.03]} pos={[0, 0.16, 0.26]} material={M.black} edges={false} />
+          </>
+        )}
+      </group>
+    </group>
+  );
+}
+
 type BurstDef = { id: number; x: number; z: number; y: number; color: string; n: number };
 
 function Burst({ def, onDone }: { def: BurstDef; onDone: (id: number) => void }) {
@@ -484,7 +632,7 @@ function Fit({ w, h }: { w: number; h: number }) {
 }
 
 const BURST_COLORS: Partial<Record<StepKind, string>> = {
-  collect: "#36E2F5", break: "#A5ADC0", bridge: "#D69A5B", splash: "#3FA9F5", win: "#FFD23F",
+  collect: "#36E2F5", hit: "#9B7BFF", caught: "#7BD88F", break: "#A5ADC0", bridge: "#D69A5B", splash: "#3FA9F5", win: "#FFD23F",
   key: "#FFD23F", open: "#A0612E", burn: "#FF6A1F",
 };
 
@@ -521,6 +669,7 @@ function Scene({ world, event }: { world: World; event: WorldEvent }) {
           </group>
         ))
       )}
+      {world.mobs.map((m) => <MobModel key={m.id} mob={m} cx={cx} cz={cz} />)}
       <CuboModel world={world} event={event} cx={cx} cz={cz} />
       {bursts.map((b) => (
         <Burst key={b.id} def={b} onDone={(id) => setBursts((l) => l.filter((x) => x.id !== id))} />

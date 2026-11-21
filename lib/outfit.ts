@@ -13,7 +13,8 @@ export function getOutfit(): Outfit {
 
 export function setOutfit(o: Partial<Outfit>) {
   const next = { ...getOutfit(), ...o };
-  save("outfit", next);
+  save("outfit", next, { silent: true });
+  save("outfitAt", Date.now()); // la tenue la plus récente gagne lors de la synchronisation
   window.dispatchEvent(new Event(EVENT));
   return next;
 }
