@@ -22,7 +22,7 @@ export default function NotFound() {
         <div className="relative mx-auto aspect-square w-full max-w-[280px]">
           <div className="absolute inset-[6%] rounded-full border-[3px] border-ink bg-lilac" style={{ boxShadow: "8px 10px 0 0 #16123A" }} />
           <div className="absolute inset-0 grid place-items-center">
-            <Cubo size={170} mood="think" className="h-auto w-[58%] animate-bounce [animation-duration:2.4s]" />
+            <Cubo size={170} mood="think" className="h-auto w-[58%] motion-safe:animate-bounce motion-safe:[animation-duration:2.4s]" />
           </div>
           <span aria-hidden="true" className="toon absolute top-[4%] right-0 rounded-2xl bg-sun px-3 py-1 font-display text-2xl font-bold rotate-6">?</span>
         </div>
