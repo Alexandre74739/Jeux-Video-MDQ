@@ -1,12 +1,16 @@
-/* Service worker CuboCode : tout le site est mis en cache à la première visite. */
+/* Service worker CuboCode : site hors-ligne.
+ * - installation : seulement les fichiers légers (pages, styles, polices, petits scripts) ;
+ * - message « warm » (envoyé quand l'enfant entre dans le jeu) : tout le reste (3D, images).
+ * Ainsi, 15 postes qui ouvrent l'accueil en même temps ne saturent pas la connexion de l'école. */
 const CACHE = "cubocode-__VERSION__";
 const URLS = __URLS__;
+const CORE = __CORE__;
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then(async (cache) => {
       // Ajout un par un : un fichier en échec ne bloque pas les autres.
-      await Promise.all(URLS.map((u) => cache.add(u).catch(() => null)));
+      await Promise.all(CORE.map((u) => cache.add(u).catch(() => null)));
     })
   );
   self.skipWaiting();
@@ -18,6 +22,18 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
+});
+
+// Ajout un par un, en sautant ce qui est déjà en cache.
+async function warm() {
+  const cache = await caches.open(CACHE);
+  for (const u of URLS) {
+    if (!(await cache.match(u))) await cache.add(u).catch(() => null);
+  }
+}
+
+self.addEventListener("message", (event) => {
+  if (event.data === "warm") event.waitUntil(warm());
 });
 
 self.addEventListener("fetch", (event) => {

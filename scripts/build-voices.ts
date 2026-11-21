@@ -5,10 +5,10 @@ import { mkdir, readdir, unlink, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
-import { COURSES, FAIL_MESSAGES } from "../lib/levels.ts";
-import { BADGES, SLOTS } from "../lib/rewards.ts";
-import { STORY } from "../lib/story.ts";
-import { CHEERS, LINES, badgeLine, giftLine, lineId, spoken, tipLine, winLine } from "../lib/lines.ts";
+import { COURSES, FAIL_MESSAGES } from "../src/lib/levels.ts";
+import { BADGES, SLOTS } from "../src/lib/rewards.ts";
+import { STORY } from "../src/lib/story.ts";
+import { CHEERS, LINES, badgeLine, giftLine, lineId, spoken, tipLine, winLine } from "../src/lib/lines.ts";
 
 // La voix unique de Cubo.
 const VOICES: Record<string, { name: string; rate: string; pitch: string }> = {

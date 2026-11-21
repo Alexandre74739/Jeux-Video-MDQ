@@ -30,6 +30,9 @@ for (const f of [...files]) {
 files.sort();
 const hash = createHash("sha1");
 const urls = [];
+// Fichiers légers mis en cache dès la première visite ; le reste (3D, images) quand l'enfant commence à jouer.
+const CORE_MAX = 150 * 1024;
+const core = [];
 for (const f of files) {
   const rel = "/" + relative(OUT, f).split(sep).join("/");
   if (rel === "/sw.js" || rel === "/404.html") continue;
@@ -37,8 +40,9 @@ for (const f of files) {
   if (rel.startsWith("/voice/")) continue;
   hash.update(rel);
   hash.update(await readFile(f));
-  if (rel.endsWith("/index.html")) urls.push(rel.slice(0, -"index.html".length));
-  else urls.push(rel);
+  const url = rel.endsWith("/index.html") ? rel.slice(0, -"index.html".length) : rel;
+  urls.push(url);
+  if ((await stat(f)).size <= CORE_MAX && !rel.startsWith("/sprites/") && !rel.startsWith("/screens/")) core.push(url);
 }
 // Le numéro de commit (fourni par Vercel) garantit une nouvelle version à chaque push.
 hash.update(process.env.VERCEL_GIT_COMMIT_SHA ?? "");
@@ -46,6 +50,6 @@ const version = hash.digest("hex").slice(0, 10);
 const tpl = await readFile("scripts/sw-template.js", "utf8");
 await writeFile(
   join(OUT, "sw.js"),
-  tpl.replace("__VERSION__", version).replace("__URLS__", JSON.stringify(urls))
+  tpl.replace("__VERSION__", version).replace("__URLS__", JSON.stringify(urls)).replace("__CORE__", JSON.stringify(core))
 );
-console.log(`sw.js : ${urls.length} fichiers en cache (v${version})`);
+console.log(`sw.js : ${core.length} fichiers dès la 1re visite, ${urls.length} au total (v${version})`);
