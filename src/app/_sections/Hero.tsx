@@ -21,7 +21,7 @@ export default function Hero() {
       <div className="mx-auto grid w-full max-w-6xl items-center gap-14 px-4 py-16 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
         <div>
           <motion.h1 {...appear(0)} className="text-5xl leading-[1.02] font-bold tracking-tight text-balance sm:text-6xl xl:text-7xl">
-            Programme Cubo, puis invente ton jeu vidéo.
+            Programme Cubo, et invente ton jeu vidéo.
           </motion.h1>
           <motion.p {...appear(0.1)} className="mt-6 max-w-lg text-xl leading-relaxed font-semibold text-ink-soft">
             On empile des blocs, on appuie sur Lancer, et Cubo exécute le programme dans son monde en cubes.

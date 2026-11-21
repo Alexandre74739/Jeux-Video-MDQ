@@ -2,7 +2,7 @@
 // Une connexion quotidienne empêche MongoDB Atlas (offre gratuite) de mettre la base en pause
 // après 30 jours sans activité, par exemple pendant les vacances scolaires.
 // Vercel envoie « Authorization: Bearer <CRON_SECRET> » : tout autre appel est refusé.
-import { database, json } from "./_mongo";
+import { database, json } from "./_mongo.js";
 
 export async function GET(req: Request): Promise<Response> {
   const secret = process.env.CRON_SECRET;

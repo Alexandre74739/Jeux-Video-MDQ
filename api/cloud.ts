@@ -10,12 +10,12 @@
 //   delete { pseudo, token }                  → { ok }        (droit à l'effacement)
 import type { Collection } from "mongodb";
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { database, json } from "./_mongo";
-import { allow, clientIp } from "./_ratelimit";
+import { database, json } from "./_mongo.js";
+import { allow, clientIp } from "./_ratelimit.js";
 import {
   DEFAULT_AVATAR, cleanPseudo, emptyCloudData, isSpriteId, isValidCode, mergeData, pseudoKey, sanitizeData,
   type CloudData,
-} from "../src/lib/cloud";
+} from "../src/lib/cloud.js";
 
 type Account = {
   _id: string; // pseudo sans accents ni majuscules
