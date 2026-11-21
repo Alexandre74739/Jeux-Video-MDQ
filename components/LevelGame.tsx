@@ -94,7 +94,10 @@ export default function LevelGame({ slug }: { slug: string }) {
     const lockedNow = !!course.unlockStars && allStars(p) < course.unlockStars;
     if (!lockedNow && STORY[course.slug] && !load<string[]>("story", []).includes(`${course.slug}:intro`)) setStory("intro");
     const firstTodo = LEVELS.findIndex((l) => !p.stars[sk(l.id)]);
-    setIdx(firstTodo === -1 ? LEVELS.length - 1 : firstTodo);
+    // « ?niveau=N » dans l'adresse ouvre directement ce niveau (s'il est débloqué), sinon le premier à faire.
+    const asked = Number(new URLSearchParams(window.location.search).get("niveau")) - 1;
+    const askedOk = Number.isInteger(asked) && asked >= 0 && asked < LEVELS.length && (asked === 0 || !!p.stars[sk(LEVELS[asked - 1].id)]);
+    setIdx(askedOk ? asked : firstTodo === -1 ? LEVELS.length - 1 : firstTodo);
     setReady(true);
   }, []);
 
@@ -104,6 +107,14 @@ export default function LevelGame({ slug }: { slug: string }) {
     window.addEventListener(DATA_EVENT, reload);
     return () => window.removeEventListener(DATA_EVENT, reload);
   }, []);
+
+  // Échap ferme la fenêtre de victoire
+  useEffect(() => {
+    if (!win) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setWin(null); };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [win]);
 
   const stop = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
   useEffect(() => stop, []);
@@ -392,6 +403,8 @@ export default function LevelGame({ slug }: { slug: string }) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[90] flex justify-center overflow-y-auto bg-ink/50 px-4 pt-20 pb-6 sm:items-center sm:py-16"
             role="dialog" aria-modal="true" aria-labelledby="win-title"
+            // Un clic à côté de la carte ferme la fenêtre (le niveau reste affiché tel quel)
+            onPointerDown={(e) => { if (e.target === e.currentTarget) { setWin(null); sfx("click"); } }}
           >
             <WinCard
               info={win}
