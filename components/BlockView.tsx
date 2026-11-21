@@ -98,6 +98,8 @@ export function BlockView(props: Props) {
       data-block-id={mode === "edit" ? block.id : undefined}
       onPointerDown={onPointerDown ? (e) => onPointerDown(e, block) : undefined}
       className={`relative w-fit max-w-full select-none font-display text-[17px] font-semibold text-ink ${mode !== "static" ? "cursor-grab active:cursor-grabbing" : ""}`}
+      // Au doigt : défilement vertical laissé au navigateur, glissé horizontal ou appui long = attraper le bloc
+      style={mode !== "static" ? { touchAction: "pan-y", WebkitTouchCallout: "none", WebkitUserSelect: "none" } : undefined}
     >
       <div
         className={`border-[3px] border-ink ${radius} ${active ? "running-glow" : ""}`}
@@ -156,7 +158,7 @@ function InnerList({ listId, items, soft, ...props }: Props & { listId: string; 
 }
 
 /** Version animée pour la zone de programme. */
-export function AnimatedBlock({ children, id }: { children: ReactNode; id: string }) {
+export function AnimatedBlock({ children, id, hidden }: { children: ReactNode; id: string; hidden?: boolean }) {
   return (
     <motion.div
       key={id}
@@ -165,7 +167,7 @@ export function AnimatedBlock({ children, id }: { children: ReactNode; id: strin
       initial={{ scale: 0.6, opacity: 0, rotate: -4 }}
       animate={{ scale: 1, opacity: 1, rotate: 0 }}
       transition={{ type: "spring", stiffness: 600, damping: 22 }}
-      className="w-fit max-w-full"
+      className={`w-fit max-w-full ${hidden ? "hidden" : ""}`}
     >
       {children}
     </motion.div>
