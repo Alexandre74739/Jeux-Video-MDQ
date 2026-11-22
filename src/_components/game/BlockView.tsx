@@ -16,25 +16,47 @@ type Props = {
   renderChild?: (b: Block) => ReactNode;
 };
 
-const chip = "rounded-full border-2 border-ink bg-paper px-2 py-0.5 font-bold text-ink leading-tight";
+const chip =
+  "rounded-full border-2 border-ink bg-paper px-2 py-0.5 font-bold text-ink leading-tight";
 
-function ParamField({ p, block, mode, sprites, onParam }: { p: ParamDef; block: Block; mode: Props["mode"]; sprites?: SpriteOpt[]; onParam?: Props["onParam"] }) {
+function ParamField({
+  p,
+  block,
+  mode,
+  sprites,
+  onParam,
+}: {
+  p: ParamDef;
+  block: Block;
+  mode: Props["mode"];
+  sprites?: SpriteOpt[];
+  onParam?: Props["onParam"];
+}) {
   const value = block.params[p.key];
   const stop = (e: React.PointerEvent) => e.stopPropagation();
   if (mode !== "edit") {
     let label = String(value ?? "");
-    if (p.kind === "select") label = p.options.find((o) => o.value === value)?.label ?? label;
-    if (p.kind === "sprite") label = sprites?.find((s) => s.id === value)?.name ?? "…";
+    if (p.kind === "select")
+      label = p.options.find((o) => o.value === value)?.label ?? label;
+    if (p.kind === "sprite")
+      label = sprites?.find((s) => s.id === value)?.name ?? "…";
     return <span className={chip}>{label}</span>;
   }
   if (p.kind === "number") {
     return (
       <input
-        type="number" inputMode="numeric" min={p.min} max={p.max} value={value}
+        type="number"
+        inputMode="numeric"
+        min={p.min}
+        max={p.max}
+        value={value}
         aria-label="nombre"
         onPointerDown={stop}
         onChange={(e) => {
-          const n = Math.max(p.min, Math.min(p.max, Math.round(Number(e.target.value) || 0)));
+          const n = Math.max(
+            p.min,
+            Math.min(p.max, Math.round(Number(e.target.value) || 0)),
+          );
           onParam?.(block.id, p.key, n);
         }}
         className={`${chip} w-14 text-center`}
@@ -44,23 +66,36 @@ function ParamField({ p, block, mode, sprites, onParam }: { p: ParamDef; block: 
   if (p.kind === "text") {
     return (
       <input
-        type="text" value={String(value)} maxLength={30} aria-label="texte"
+        type="text"
+        value={String(value)}
+        maxLength={30}
+        aria-label="texte"
         onPointerDown={stop}
         onChange={(e) => onParam?.(block.id, p.key, e.target.value)}
         className={`${chip} w-36`}
       />
     );
   }
-  const options = p.kind === "select" ? p.options : (sprites ?? []).map((s) => ({ value: s.id, label: s.name }));
+  const options =
+    p.kind === "select"
+      ? p.options
+      : (sprites ?? []).map((s) => ({ value: s.id, label: s.name }));
   return (
     <select
-      value={String(value)} aria-label="choix"
+      value={String(value)}
+      aria-label="choix"
       onPointerDown={stop}
       onChange={(e) => onParam?.(block.id, p.key, e.target.value)}
       className={`${chip} cursor-pointer`}
     >
-      {p.kind === "sprite" && !options.some((o) => o.value === value) && <option value="">…</option>}
-      {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      {p.kind === "sprite" && !options.some((o) => o.value === value) && (
+        <option value="">…</option>
+      )}
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
     </select>
   );
 }
@@ -71,7 +106,10 @@ export function BlockHeader({ block, mode, sprites, onParam }: Props) {
   return (
     <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
       {def.icon && (
-        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-paper/70" aria-hidden="true">
+        <span
+          className="grid size-7 shrink-0 place-items-center rounded-lg bg-paper/70"
+          aria-hidden="true"
+        >
           <Icon name={def.icon} size={17} />
         </span>
       )}
@@ -79,7 +117,16 @@ export function BlockHeader({ block, mode, sprites, onParam }: Props) {
         const m = part.match(/^\{(\w+)\}$/);
         if (!m) return <span key={i}>{part.trim()}</span>;
         const p = def.params!.find((x) => x.key === m[1])!;
-        return <ParamField key={i} p={p} block={block} mode={mode} sprites={sprites} onParam={onParam} />;
+        return (
+          <ParamField
+            key={i}
+            p={p}
+            block={block}
+            mode={mode}
+            sprites={sprites}
+            onParam={onParam}
+          />
+        );
       })}
     </span>
   );
@@ -99,7 +146,15 @@ export function BlockView(props: Props) {
       onPointerDown={onPointerDown ? (e) => onPointerDown(e, block) : undefined}
       className={`relative w-fit max-w-full select-none font-display text-[17px] font-semibold text-ink ${mode !== "static" ? "cursor-grab active:cursor-grabbing" : ""}`}
       // Au doigt : défilement vertical laissé au navigateur, glissé horizontal ou appui long = attraper le bloc
-      style={mode !== "static" ? { touchAction: "pan-y", WebkitTouchCallout: "none", WebkitUserSelect: "none" } : undefined}
+      style={
+        mode !== "static"
+          ? {
+              touchAction: "pan-y",
+              WebkitTouchCallout: "none",
+              WebkitUserSelect: "none",
+            }
+          : undefined
+      }
     >
       <div
         className={`border-[3px] border-ink ${radius} ${active ? "running-glow" : ""}`}
@@ -110,27 +165,43 @@ export function BlockView(props: Props) {
         </div>
         {def.container && mode === "palette" && (
           <div className="px-2 pb-2">
-            <div className="h-4 w-24 rounded-lg border-[3px] border-ink/50" style={{ background: cat.soft }} />
+            <div
+              className="h-4 w-24 rounded-lg border-[3px] border-ink/50"
+              style={{ background: cat.soft }}
+            />
           </div>
         )}
         {def.container && mode === "palette" && def.hasElse && (
           <>
             <div className="px-3 pb-1 text-[15px]">sinon</div>
             <div className="px-2 pb-2">
-              <div className="h-4 w-24 rounded-lg border-[3px] border-ink/50" style={{ background: cat.soft }} />
+              <div
+                className="h-4 w-24 rounded-lg border-[3px] border-ink/50"
+                style={{ background: cat.soft }}
+              />
             </div>
           </>
         )}
         {def.container && mode !== "palette" && (
           <>
             <div className="px-2 pb-2.5">
-              <InnerList {...props} listId={block.id} items={block.children ?? []} soft={cat.soft} />
+              <InnerList
+                {...props}
+                listId={block.id}
+                items={block.children ?? []}
+                soft={cat.soft}
+              />
             </div>
             {def.hasElse && (
               <>
                 <div className="-mt-1 px-3 pb-1">sinon</div>
                 <div className="px-2 pb-2.5">
-                  <InnerList {...props} listId={`${block.id}:alt`} items={block.alt ?? []} soft={cat.soft} />
+                  <InnerList
+                    {...props}
+                    listId={`${block.id}:alt`}
+                    items={block.alt ?? []}
+                    soft={cat.soft}
+                  />
                 </div>
               </>
             )}
@@ -141,7 +212,12 @@ export function BlockView(props: Props) {
   );
 }
 
-function InnerList({ listId, items, soft, ...props }: Props & { listId: string; items: Block[]; soft: string }) {
+function InnerList({
+  listId,
+  items,
+  soft,
+  ...props
+}: Props & { listId: string; items: Block[]; soft: string }) {
   const { mode, renderChild } = props;
   return (
     <div
@@ -149,16 +225,32 @@ function InnerList({ listId, items, soft, ...props }: Props & { listId: string; 
       className="flex min-h-12 min-w-40 flex-col gap-1.5 rounded-xl border-[3px] border-ink/70 p-1.5"
       style={{ background: soft }}
     >
-      {items.map((c) => (renderChild ? renderChild(c) : <BlockView key={c.id} {...props} block={c} />))}
+      {items.map((c) =>
+        renderChild ? (
+          renderChild(c)
+        ) : (
+          <BlockView key={c.id} {...props} block={c} />
+        ),
+      )}
       {mode === "edit" && items.length === 0 && (
-        <span className="pointer-events-none px-2 py-1.5 text-sm font-bold text-ink-soft">dépose des blocs ici</span>
+        <span className="pointer-events-none px-2 py-1.5 text-sm font-bold text-ink-soft">
+          dépose des blocs ici
+        </span>
       )}
     </div>
   );
 }
 
 /** Version animée pour la zone de programme. */
-export function AnimatedBlock({ children, id, hidden }: { children: ReactNode; id: string; hidden?: boolean }) {
+export function AnimatedBlock({
+  children,
+  id,
+  hidden,
+}: {
+  children: ReactNode;
+  id: string;
+  hidden?: boolean;
+}) {
   return (
     <motion.div
       key={id}

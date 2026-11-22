@@ -8,9 +8,22 @@ import Link from "next/link";
 export function Logo({ small = false }: { small?: boolean }) {
   const size = small ? 40 : 48;
   return (
-    <Link href="/" className="flex items-center gap-2 select-none" aria-label="CuboCode, accueil">
-      <Image src="/icon.svg" alt="" width={size} height={size} priority draggable={false} />
-      <span className={`font-display font-bold tracking-tight ${small ? "text-2xl" : "text-3xl"}`}>
+    <Link
+      href="/"
+      className="flex items-center gap-2 select-none"
+      aria-label="CuboCode, accueil"
+    >
+      <Image
+        src="/icon.svg"
+        alt=""
+        width={size}
+        height={size}
+        priority
+        draggable={false}
+      />
+      <span
+        className={`font-display font-bold tracking-tight ${small ? "text-2xl" : "text-3xl"}`}
+      >
         Cubo<span className="text-grape">Code</span>
       </span>
     </Link>

@@ -18,11 +18,19 @@ let indexed = false;
 
 /** Adresse IP du visiteur (fournie par Vercel). */
 export function clientIp(req: Request): string {
-  return req.headers.get("x-real-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  return (
+    req.headers.get("x-real-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    "unknown"
+  );
 }
 
 /** Vrai si l'appel est autorisé ; compte l'appel dans tous les cas. */
-export async function allow(db: Db, action: string, ip: string): Promise<boolean> {
+export async function allow(
+  db: Db,
+  action: string,
+  ip: string,
+): Promise<boolean> {
   const rule = LIMITS[action];
   if (!rule) return true;
   const col = db.collection<Hit>("ratelimits");
@@ -33,7 +41,10 @@ export async function allow(db: Db, action: string, ip: string): Promise<boolean
   const window = Math.floor(Date.now() / rule.windowMs);
   const hit = await col.findOneAndUpdate(
     { _id: `${action}:${ip}:${window}` },
-    { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date((window + 1) * rule.windowMs) } },
+    {
+      $inc: { count: 1 },
+      $setOnInsert: { expiresAt: new Date((window + 1) * rule.windowMs) },
+    },
     { upsert: true, returnDocument: "after" },
   );
   return (hit?.count ?? 0) <= rule.max;

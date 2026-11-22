@@ -11,16 +11,21 @@ self.addEventListener("install", (event) => {
     caches.open(CACHE).then(async (cache) => {
       // Ajout un par un : un fichier en échec ne bloque pas les autres.
       await Promise.all(CORE.map((u) => cache.add(u).catch(() => null)));
-    })
+    }),
   );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+        ),
+      )
+      .then(() => self.clients.claim()),
   );
 });
 
@@ -55,29 +60,33 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(async () => {
-          const path = url.pathname.endsWith("/") ? url.pathname : url.pathname + "/";
+          const path = url.pathname.endsWith("/")
+            ? url.pathname
+            : url.pathname + "/";
           return (
             (await caches.match(path)) ||
             (await caches.match(req, { ignoreSearch: true })) ||
             (await caches.match("/"))
           );
-        })
+        }),
     );
     return;
   }
 
   // Fichiers : cache d'abord (instantané), sinon réseau puis mise en cache.
   event.respondWith(
-    caches.match(req, { ignoreSearch: url.pathname.startsWith("/_next/") }).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
-          }
-          return res;
-        })
-    )
+    caches
+      .match(req, { ignoreSearch: url.pathname.startsWith("/_next/") })
+      .then(
+        (hit) =>
+          hit ||
+          fetch(req).then((res) => {
+            if (res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE).then((c) => c.put(req, copy));
+            }
+            return res;
+          }),
+      ),
   );
 });

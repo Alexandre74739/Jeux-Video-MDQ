@@ -14,17 +14,51 @@ import { Logo } from "@/_components/ui/Logo";
 import { SoundToggle } from "@/_components/ui/SoundToggle";
 import { useVoiceOn } from "@/hooks/useVoiceOn";
 import { StarIcon } from "@/_components/icons/Icon";
-import { Blocks, Flame, Gem, Hourglass, KeyRound, Lock, Palette, Play, Shirt, Trophy, Rabbit, RotateCcw, Trash2, Turtle, Volume2 } from "lucide-react";
+import {
+  Blocks,
+  Flame,
+  Gem,
+  Hourglass,
+  KeyRound,
+  Lock,
+  Palette,
+  Play,
+  Shirt,
+  Trophy,
+  Rabbit,
+  RotateCcw,
+  Trash2,
+  Turtle,
+  Volume2,
+} from "lucide-react";
 import StoryModal from "@/_components/game/StoryModal";
 import ProfileMenu from "@/_components/profile/ProfileMenu";
 import { DATA_EVENT } from "@/lib/profiles";
 import { BLOCKS, type Block, type Category } from "@/lib/blocks";
 import {
-  COURSES, DIFFICULTY, FAIL_MESSAGES, buildWorld, countBlocks, mapPieces, runProgram, starsFor, worldLock,
-  type Outcome, type Step, type World,
+  COURSES,
+  DIFFICULTY,
+  FAIL_MESSAGES,
+  buildWorld,
+  countBlocks,
+  mapPieces,
+  runProgram,
+  starsFor,
+  worldLock,
+  type Outcome,
+  type Step,
+  type World,
 } from "@/lib/levels";
 import { load, loadSession, save, saveSession } from "@/lib/storage";
-import { BADGES, badgeItems, badgesFor, emptyProgress, newItems, totalStars as allStars, type Progress } from "@/lib/rewards";
+import {
+  BADGES,
+  badgeItems,
+  badgesFor,
+  emptyProgress,
+  newItems,
+  totalStars as allStars,
+  type Progress,
+} from "@/lib/rewards";
 import { CHEERS, LINES, tipLine } from "@/lib/lines";
 import { STORY } from "@/lib/story";
 import { getVoicePrefs, sfx, speak } from "@/lib/sound";
@@ -34,25 +68,55 @@ import { ICON_STROKE } from "@/lib/site";
 
 const World3D = dynamic(() => import("@/_components/game/World3D"), {
   ssr: false,
-  loading: () => <div className="grid h-full place-items-center font-display text-xl">Chargement du monde…</div>,
+  loading: () => (
+    <div className="grid h-full place-items-center font-display text-xl">
+      Chargement du monde…
+    </div>
+  ),
 });
 
 type Msg = { text: string; mood: Mood; say: string[] };
-const msgOf = (say: string[], mood: Mood): Msg => ({ text: say.join(" "), mood, say });
+const msgOf = (say: string[], mood: Mood): Msg => ({
+  text: say.join(" "),
+  mood,
+  say,
+});
 
 /** Parcours entièrement réussis. */
-const coursesDone = (p: Progress) => COURSES.filter((c) => c.levels.every((l) => p.stars[`${c.slug}:${l.id}`])).map((c) => c.slug);
+const coursesDone = (p: Progress) =>
+  COURSES.filter((c) =>
+    c.levels.every((l) => p.stars[`${c.slug}:${l.id}`]),
+  ).map((c) => c.slug);
 
 const STEP_SFX: Partial<Record<Step["kind"], Parameters<typeof sfx>[0]>> = {
-  move: "step", turn: "turn", collect: "gem", break: "crack", bridge: "plank",
-  bump: "bump", splash: "splash", nothing: "click",
-  key: "coin", open: "magic", jump: "jump", burn: "fail",
-  hit: "crack", wait: "turn", caught: "boing",
+  move: "step",
+  turn: "turn",
+  collect: "gem",
+  break: "crack",
+  bridge: "plank",
+  bump: "bump",
+  splash: "splash",
+  nothing: "click",
+  key: "coin",
+  open: "magic",
+  jump: "jump",
+  burn: "fail",
+  hit: "crack",
+  wait: "turn",
+  caught: "boing",
 };
 
 function groupsFor(types: string[]) {
   const order: Category[] = ["motion", "action", "control"];
-  return [{ category: order[0], types: [...types].sort((a, b) => order.indexOf(BLOCKS[a].category) - order.indexOf(BLOCKS[b].category)) }];
+  return [
+    {
+      category: order[0],
+      types: [...types].sort(
+        (a, b) =>
+          order.indexOf(BLOCKS[a].category) - order.indexOf(BLOCKS[b].category),
+      ),
+    },
+  ];
 }
 
 export default function LevelGame({ slug }: { slug: string }) {
@@ -97,11 +161,21 @@ export default function LevelGame({ slug }: { slug: string }) {
     setView3d(load("view3d", true));
     setStreak(loadSession("streak", 0));
     const lockedNow = !!worldLock(course, p.stars);
-    if (!lockedNow && STORY[course.slug] && !load<string[]>("story", []).includes(`${course.slug}:intro`)) setStory("intro");
+    if (
+      !lockedNow &&
+      STORY[course.slug] &&
+      !load<string[]>("story", []).includes(`${course.slug}:intro`)
+    )
+      setStory("intro");
     const firstTodo = LEVELS.findIndex((l) => !p.stars[sk(l.id)]);
     // « ?niveau=N » dans l'adresse ouvre directement ce niveau (s'il est débloqué), sinon le premier à faire.
-    const asked = Number(new URLSearchParams(window.location.search).get("niveau")) - 1;
-    const askedOk = Number.isInteger(asked) && asked >= 0 && asked < LEVELS.length && (asked === 0 || !!p.stars[sk(LEVELS[asked - 1].id)]);
+    const asked =
+      Number(new URLSearchParams(window.location.search).get("niveau")) - 1;
+    const askedOk =
+      Number.isInteger(asked) &&
+      asked >= 0 &&
+      asked < LEVELS.length &&
+      (asked === 0 || !!p.stars[sk(LEVELS[asked - 1].id)]);
     setIdx(askedOk ? asked : firstTodo === -1 ? LEVELS.length - 1 : firstTodo);
     setReady(true);
   }, []);
@@ -116,12 +190,17 @@ export default function LevelGame({ slug }: { slug: string }) {
   // Échap ferme la fenêtre de victoire
   useEffect(() => {
     if (!win) return;
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setWin(null); };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setWin(null);
+    };
     window.addEventListener("keydown", esc);
     return () => window.removeEventListener("keydown", esc);
   }, [win]);
 
-  const stop = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; };
+  const stop = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+  };
   useEffect(() => stop, []);
 
   // Changement de niveau
@@ -137,17 +216,25 @@ export default function LevelGame({ slug }: { slug: string }) {
     setFails(0);
   }, [ready, level, initial]);
 
-  const changeProgram = useCallback((p: Block[]) => {
-    setProgram(p);
-    save(`prog:${course.slug}:${level.id}`, p);
-  }, [level.id, course.slug]);
+  const changeProgram = useCallback(
+    (p: Block[]) => {
+      setProgram(p);
+      save(`prog:${course.slug}:${level.id}`, p);
+    },
+    [level.id, course.slug],
+  );
 
-  const unlocked = (i: number) => i === 0 || !!progress.stars[sk(LEVELS[i - 1].id)];
-  const totalStars = LEVELS.reduce((a, l) => a + (progress.stars[sk(l.id)] ?? 0), 0);
+  const unlocked = (i: number) =>
+    i === 0 || !!progress.stars[sk(LEVELS[i - 1].id)];
+  const totalStars = LEVELS.reduce(
+    (a, l) => a + (progress.stars[sk(l.id)] ?? 0),
+    0,
+  );
   const lock = ready ? worldLock(course, progress.stars) : null;
   const markSeen = (k: "intro" | "outro") => {
     const seen = load<string[]>("story", []);
-    if (!seen.includes(`${course.slug}:${k}`)) save("story", [...seen, `${course.slug}:${k}`]);
+    if (!seen.includes(`${course.slug}:${k}`))
+      save("story", [...seen, `${course.slug}:${k}`]);
   };
   const used = countBlocks(program);
 
@@ -165,31 +252,73 @@ export default function LevelGame({ slug }: { slug: string }) {
     if (out.ok) {
       const stars = starsFor(level, used);
       const prev = progress.stars[sk(level.id)] ?? 0;
-      const after: Progress = { ...progress, stars: { ...progress.stars, [sk(level.id)]: Math.max(prev, stars) } };
-      const newBadges = badgesFor({
-        slug: course.slug, levelId: level.id, difficulty: course.difficulty, stars, prevStars: prev, fails, used,
-        optimal: level.optimal, program, after, coursesDone: coursesDone(after),
-      }, progress.badges);
-      const next: Progress = { ...after, badges: [...progress.badges, ...newBadges] };
-      const gifts = [...newItems(allStars(progress), allStars(next)), ...badgeItems(newBadges)].map((g) => g.item);
+      const after: Progress = {
+        ...progress,
+        stars: { ...progress.stars, [sk(level.id)]: Math.max(prev, stars) },
+      };
+      const newBadges = badgesFor(
+        {
+          slug: course.slug,
+          levelId: level.id,
+          difficulty: course.difficulty,
+          stars,
+          prevStars: prev,
+          fails,
+          used,
+          optimal: level.optimal,
+          program,
+          after,
+          coursesDone: coursesDone(after),
+        },
+        progress.badges,
+      );
+      const next: Progress = {
+        ...after,
+        badges: [...progress.badges, ...newBadges],
+      };
+      const gifts = [
+        ...newItems(allStars(progress), allStars(next)),
+        ...badgeItems(newBadges),
+      ].map((g) => g.item);
       const isLast = idx === LEVELS.length - 1;
-      const outro = isLast && !!STORY[course.slug] && !load<string[]>("story", []).includes(`${course.slug}:outro`);
+      const outro =
+        isLast &&
+        !!STORY[course.slug] &&
+        !load<string[]>("story", []).includes(`${course.slug}:outro`);
       setProgress(next);
       save("progress", next);
-      setStreak((n) => { saveSession("streak", n + 1); return n + 1; });
+      setStreak((n) => {
+        saveSession("streak", n + 1);
+        return n + 1;
+      });
       sfx("win");
       setConfetti((c) => c + 1);
       const cheer = CHEERS[Math.floor(Math.random() * CHEERS.length)];
       setMsg(msgOf([cheer, LINES.treasure], "wow"));
-      setTimeout(() => setWin({ stars, used, best: stars > prev, badges: newBadges, gifts, outro }), 900);
+      setTimeout(
+        () =>
+          setWin({
+            stars,
+            used,
+            best: stars > prev,
+            badges: newBadges,
+            gifts,
+            outro,
+          }),
+        900,
+      );
     } else {
       sfx("fail");
       setShake((s) => s + 1);
       const n = fails + 1;
       setFails(n);
       const base = FAIL_MESSAGES[out.reason];
-      const say = out.reason === "empty" || n === 1 ? [base, LINES.retry]
-        : n === 3 ? [base, LINES.keepGoing] : [base, tipLine(level.tip)];
+      const say =
+        out.reason === "empty" || n === 1
+          ? [base, LINES.retry]
+          : n === 3
+            ? [base, LINES.keepGoing]
+            : [base, tipLine(level.tip)];
       setMsg(msgOf(say, "sad"));
     }
   };
@@ -203,7 +332,10 @@ export default function LevelGame({ slug }: { slug: string }) {
     const gen = runProgram(initial, program);
     const tick = () => {
       const r = gen.next();
-      if (r.done) { finish(r.value); return; }
+      if (r.done) {
+        finish(r.value);
+        return;
+      }
       const st = r.value;
       setWorld(st.world);
       setActiveId(st.blockId);
@@ -211,14 +343,30 @@ export default function LevelGame({ slug }: { slug: string }) {
       const s = STEP_SFX[st.kind];
       if (s) sfx(s);
       const base = fast ? 0.5 : 1;
-      const d = st.kind === "check" ? 320 : st.kind === "turn" ? 380 : st.kind === "splash" || st.kind === "burn" ? 900 : st.kind === "jump" ? 700 : st.kind === "caught" ? 900 : st.kind === "win" ? 300 : 560;
+      const d =
+        st.kind === "check"
+          ? 320
+          : st.kind === "turn"
+            ? 380
+            : st.kind === "splash" || st.kind === "burn"
+              ? 900
+              : st.kind === "jump"
+                ? 700
+                : st.kind === "caught"
+                  ? 900
+                  : st.kind === "win"
+                    ? 300
+                    : 560;
       timer.current = setTimeout(tick, d * base);
     };
     timer.current = setTimeout(tick, 300);
   };
 
   const goLevel = (i: number) => {
-    if (!unlocked(i) || running) { sfx("bump"); return; }
+    if (!unlocked(i) || running) {
+      sfx("bump");
+      return;
+    }
     sfx("click");
     setWin(null);
     setIdx(i);
@@ -236,30 +384,55 @@ export default function LevelGame({ slug }: { slug: string }) {
       <header className="sticky top-0 z-40 flex min-h-[72px] shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:px-4 lg:flex-nowrap">
         <BackButton fallback="/jouer/" label="Défis" />
         <Logo small />
-        <nav aria-label="Niveaux" className="order-last flex w-full items-center overflow-x-auto px-1 pt-1 pb-3 lg:order-none lg:mx-auto lg:w-auto lg:overflow-visible lg:p-0">
+        <nav
+          aria-label="Niveaux"
+          className="order-last flex w-full items-center overflow-x-auto px-1 pt-1 pb-3 lg:order-none lg:mx-auto lg:w-auto lg:overflow-visible lg:p-0"
+        >
           {LEVELS.map((l, i) => {
             const st = progress.stars[sk(l.id)] ?? 0;
             const open = unlocked(i);
             const cur = i === idx;
             return (
               <div key={l.id} className="flex items-center">
-                {i > 0 && <span className={`h-[5px] w-3 ${open ? "bg-ink" : "bg-ink/20"}`} aria-hidden="true" />}
+                {i > 0 && (
+                  <span
+                    className={`h-[5px] w-3 ${open ? "bg-ink" : "bg-ink/20"}`}
+                    aria-hidden="true"
+                  />
+                )}
                 <motion.button
                   whileHover={open ? { y: -3 } : undefined}
                   whileTap={open ? { scale: 0.9 } : undefined}
                   animate={cur ? { scale: [1, 1.1, 1] } : { scale: 1 }}
-                  transition={cur ? { repeat: Infinity, duration: 1.6 } : undefined}
+                  transition={
+                    cur ? { repeat: Infinity, duration: 1.6 } : undefined
+                  }
                   onClick={() => goLevel(i)}
                   aria-current={cur ? "step" : undefined}
                   aria-label={`Niveau ${l.id}${open ? "" : " (verrouillé)"}${st ? `, ${st} étoile${st > 1 ? "s" : ""}` : ""}`}
                   className={`relative grid size-11 place-items-center rounded-full border-[3px] border-ink font-display text-lg font-bold ${
-                    cur ? "bg-grape text-white shadow-pop" : st ? "bg-mint shadow-pop" : open ? "bg-paper shadow-pop" : "bg-[#E8E4F0] text-ink-soft"
+                    cur
+                      ? "bg-grape text-white shadow-pop"
+                      : st
+                        ? "bg-mint shadow-pop"
+                        : open
+                          ? "bg-paper shadow-pop"
+                          : "bg-[#E8E4F0] text-ink-soft"
                   }`}
                 >
-                  {open ? l.id : <Lock size={18} strokeWidth={3} aria-hidden="true" />}
+                  {open ? (
+                    l.id
+                  ) : (
+                    <Lock size={18} strokeWidth={3} aria-hidden="true" />
+                  )}
                   {st > 0 && (
-                    <span className="absolute -bottom-2.5 left-1/2 flex -translate-x-1/2" aria-hidden="true">
-                      {Array.from({ length: st }, (_, k) => <StarIcon key={k} size={13} />)}
+                    <span
+                      className="absolute -bottom-2.5 left-1/2 flex -translate-x-1/2"
+                      aria-hidden="true"
+                    >
+                      {Array.from({ length: st }, (_, k) => (
+                        <StarIcon key={k} size={13} />
+                      ))}
                     </span>
                   )}
                 </motion.button>
@@ -268,27 +441,67 @@ export default function LevelGame({ slug }: { slug: string }) {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <div className="toon flex items-center gap-1.5 rounded-full bg-sun px-3 py-1.5 font-display text-lg font-bold" title="Étoiles gagnées">
-            <StarIcon size={22} /><BumpNumber value={totalStars} /><span className="sr-only">étoiles</span>
+          <div
+            className="toon flex items-center gap-1.5 rounded-full bg-sun px-3 py-1.5 font-display text-lg font-bold"
+            title="Étoiles gagnées"
+          >
+            <StarIcon size={22} />
+            <BumpNumber value={totalStars} />
+            <span className="sr-only">étoiles</span>
           </div>
           <AnimatePresence>
             {streak >= 2 && (
               <motion.div
-                initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
                 className="toon flex items-center gap-1 rounded-full bg-orange px-3 py-1.5 font-display text-lg font-bold"
                 title="Niveaux réussis aujourd'hui. Se tromper n'efface rien !"
               >
-                <motion.span animate={{ rotate: [-8, 8, -8] }} transition={{ repeat: Infinity, duration: 0.6 }} aria-hidden="true"><Flame size={22} strokeWidth={ICON_STROKE} fill="#FFD23F" /></motion.span>
-                <BumpNumber value={streak} /><span className="sr-only">niveaux réussis aujourd'hui</span>
+                <motion.span
+                  animate={{ rotate: [-8, 8, -8] }}
+                  transition={{ repeat: Infinity, duration: 0.6 }}
+                  aria-hidden="true"
+                >
+                  <Flame size={22} strokeWidth={ICON_STROKE} fill="#FFD23F" />
+                </motion.span>
+                <BumpNumber value={streak} />
+                <span className="sr-only">niveaux réussis aujourd'hui</span>
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="toon flex items-center gap-1.5 rounded-full bg-lilac px-3 py-1.5 font-display text-lg font-bold" title={Object.entries(BADGES).filter(([k]) => progress.badges.includes(k)).map(([, b]) => b.name).join(", ") || "Aucun badge pour l'instant"}>
-            <Trophy size={20} strokeWidth={ICON_STROKE} aria-hidden="true" /><BumpNumber value={progress.badges.length} /><span className="sr-only">badges</span>
+          <div
+            className="toon flex items-center gap-1.5 rounded-full bg-lilac px-3 py-1.5 font-display text-lg font-bold"
+            title={
+              Object.entries(BADGES)
+                .filter(([k]) => progress.badges.includes(k))
+                .map(([, b]) => b.name)
+                .join(", ") || "Aucun badge pour l'instant"
+            }
+          >
+            <Trophy size={20} strokeWidth={ICON_STROKE} aria-hidden="true" />
+            <BumpNumber value={progress.badges.length} />
+            <span className="sr-only">badges</span>
           </div>
           <ProfileMenu />
-          <Link href="/cubo/" aria-label="Mon Cubo" className="btn flex items-center gap-2 whitespace-nowrap bg-sky px-3 py-2 text-base" title="Change le look de Cubo"><Shirt size={20} strokeWidth={ICON_STROKE} aria-hidden="true" /> <span className="hidden 2xl:inline">Mon Cubo</span></Link>
-          <Link href="/creer/" aria-label="Créer" title="Création libre" className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-3 py-2 text-base"><Palette size={20} strokeWidth={ICON_STROKE} aria-hidden="true" /> <span className="hidden 2xl:inline">Créer</span></Link>
+          <Link
+            href="/cubo/"
+            aria-label="Mon Cubo"
+            className="btn flex items-center gap-2 whitespace-nowrap bg-sky px-3 py-2 text-base"
+            title="Change le look de Cubo"
+          >
+            <Shirt size={20} strokeWidth={ICON_STROKE} aria-hidden="true" />{" "}
+            <span className="hidden 2xl:inline">Mon Cubo</span>
+          </Link>
+          <Link
+            href="/creer/"
+            aria-label="Créer"
+            title="Création libre"
+            className="btn flex items-center gap-2 whitespace-nowrap bg-pink px-3 py-2 text-base"
+          >
+            <Palette size={20} strokeWidth={ICON_STROKE} aria-hidden="true" />{" "}
+            <span className="hidden 2xl:inline">Créer</span>
+          </Link>
           <SoundToggle />
         </div>
       </header>
@@ -297,20 +510,38 @@ export default function LevelGame({ slug }: { slug: string }) {
         {/* Colonne monde */}
         <div className="flex w-full shrink-0 flex-col gap-3 lg:w-[min(40vw,560px)]">
           <div className="flex items-start gap-2">
-            <motion.div key={hop} initial={{ y: 0 }} animate={{ y: [0, -14, 0] }} transition={{ duration: 0.35 }} className="shrink-0">
+            <motion.div
+              key={hop}
+              initial={{ y: 0 }}
+              animate={{ y: [0, -14, 0] }}
+              transition={{ duration: 0.35 }}
+              className="shrink-0"
+            >
               <Cubo size={64} mood={msg.mood} />
             </motion.div>
             <div className="toon relative min-h-[76px] flex-1 rounded-3xl bg-paper px-4 py-2.5">
-              <span className="absolute top-6 -left-[11px] size-4 rotate-45 border-b-[3px] border-l-[3px] border-ink bg-paper" aria-hidden="true" />
+              <span
+                className="absolute top-6 -left-[11px] size-4 rotate-45 border-b-[3px] border-l-[3px] border-ink bg-paper"
+                aria-hidden="true"
+              />
               <p className="mb-0.5 font-display text-sm font-bold text-grape">
                 {course.title} · {level.id}. {level.title}{" "}
-                <span className="ml-1 rounded-full bg-lilac px-2 py-0.5 text-xs text-ink">{level.concept}</span>{" "}
-                <span className="rounded-full px-2 py-0.5 text-xs text-ink" style={{ background: course.color }}>{DIFFICULTY[course.difficulty]}</span>
+                <span className="ml-1 rounded-full bg-lilac px-2 py-0.5 text-xs text-ink">
+                  {level.concept}
+                </span>{" "}
+                <span
+                  className="rounded-full px-2 py-0.5 text-xs text-ink"
+                  style={{ background: course.color }}
+                >
+                  {DIFFICULTY[course.difficulty]}
+                </span>
               </p>
               <AnimatePresence mode="wait">
                 <motion.p
                   key={msg.text}
-                  initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
                   className="pr-10 text-[15px] font-bold leading-snug"
                   aria-live="polite"
                 >
@@ -318,7 +549,17 @@ export default function LevelGame({ slug }: { slug: string }) {
                 </motion.p>
               </AnimatePresence>
               {voiceOn && (
-                <button onClick={() => speak(msg.say)} className="btn absolute top-2 right-2 grid size-9 place-items-center bg-sky" aria-label="Écouter la consigne"><Volume2 size={18} strokeWidth={ICON_STROKE} aria-hidden="true" /></button>
+                <button
+                  onClick={() => speak(msg.say)}
+                  className="btn absolute top-2 right-2 grid size-9 place-items-center bg-sky"
+                  aria-label="Écouter la consigne"
+                >
+                  <Volume2
+                    size={18}
+                    strokeWidth={ICON_STROKE}
+                    aria-hidden="true"
+                  />
+                </button>
               )}
             </div>
           </div>
@@ -326,28 +567,56 @@ export default function LevelGame({ slug }: { slug: string }) {
           <div
             key={shake}
             className={`relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop sm:aspect-[16/10] lg:aspect-auto lg:min-h-0 lg:flex-1 ${shake ? "shake" : ""}`}
-            style={{ background: "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)" }}
+            style={{
+              background:
+                "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)",
+            }}
           >
             {/* La vue remplit exactement le cadre (taille définie aussi sur mobile/tablette) */}
             <div className="absolute inset-0">
-              {ready && (view3d ? <World3D world={world} event={event} fallback={fallback2D} /> : fallback2D)}
+              {ready &&
+                (view3d ? (
+                  <World3D world={world} event={event} fallback={fallback2D} />
+                ) : (
+                  fallback2D
+                ))}
             </div>
             <div className="absolute top-2 left-2 flex flex-wrap gap-2">
               {initial.keys.length > 0 && (
-                <span className="toon flex items-center gap-1.5 rounded-full bg-paper px-3 py-1 font-display font-bold" title="Clés dans le sac">
-                  <KeyRound size={18} strokeWidth={ICON_STROKE} color="#7A5A00" aria-hidden="true" /> <BumpNumber value={world.keysHeld} />
+                <span
+                  className="toon flex items-center gap-1.5 rounded-full bg-paper px-3 py-1 font-display font-bold"
+                  title="Clés dans le sac"
+                >
+                  <KeyRound
+                    size={18}
+                    strokeWidth={ICON_STROKE}
+                    color="#7A5A00"
+                    aria-hidden="true"
+                  />{" "}
+                  <BumpNumber value={world.keysHeld} />
                   <span className="sr-only">clés</span>
                 </span>
               )}
               {initial.totalGems > 0 && (
                 <span className="toon flex items-center gap-1.5 rounded-full bg-paper px-3 py-1 font-display font-bold">
-                  <Gem size={18} strokeWidth={ICON_STROKE} color="#0A6F86" aria-hidden="true" /> <BumpNumber value={initial.totalGems - world.gems.length} /> / {initial.totalGems}
+                  <Gem
+                    size={18}
+                    strokeWidth={ICON_STROKE}
+                    color="#0A6F86"
+                    aria-hidden="true"
+                  />{" "}
+                  <BumpNumber value={initial.totalGems - world.gems.length} /> /{" "}
+                  {initial.totalGems}
                 </span>
               )}
-
             </div>
             <button
-              onClick={() => { const v = !view3d; setView3d(v); save("view3d", v); sfx("click"); }}
+              onClick={() => {
+                const v = !view3d;
+                setView3d(v);
+                save("view3d", v);
+                sfx("click");
+              }}
               className="btn absolute top-2 right-2 bg-paper px-3 py-1 text-sm"
               aria-label={view3d ? "Passer en vue 2D" : "Passer en vue 3D"}
             >
@@ -357,21 +626,66 @@ export default function LevelGame({ slug }: { slug: string }) {
 
           <div className="flex items-center gap-3">
             <motion.button
-              whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}
-              onClick={run} disabled={running}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={run}
+              disabled={running}
               className="btn flex flex-1 items-center justify-center gap-2 bg-mint py-3 text-2xl"
             >
-              {running ? <><Hourglass size={24} strokeWidth={ICON_STROKE} aria-hidden="true" /> En cours…</> : <><Play size={24} strokeWidth={ICON_STROKE} fill="#16123A" aria-hidden="true" /> Lancer</>}
+              {running ? (
+                <>
+                  <Hourglass
+                    size={24}
+                    strokeWidth={ICON_STROKE}
+                    aria-hidden="true"
+                  />{" "}
+                  En cours…
+                </>
+              ) : (
+                <>
+                  <Play
+                    size={24}
+                    strokeWidth={ICON_STROKE}
+                    fill="#16123A"
+                    aria-hidden="true"
+                  />{" "}
+                  Lancer
+                </>
+              )}
             </motion.button>
-            <button onClick={() => { reset(); sfx("click"); }} className="btn bg-paper px-5 py-3" aria-label="Recommencer"><RotateCcw size={24} strokeWidth={3} aria-hidden="true" /></button>
             <button
-              onClick={() => { setFast(!fast); sfx("click"); }}
+              onClick={() => {
+                reset();
+                sfx("click");
+              }}
+              className="btn bg-paper px-5 py-3"
+              aria-label="Recommencer"
+            >
+              <RotateCcw size={24} strokeWidth={3} aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => {
+                setFast(!fast);
+                sfx("click");
+              }}
               className={`btn px-4 py-3 ${fast ? "bg-orange" : "bg-paper"}`}
               aria-pressed={fast}
               aria-label={fast ? "Vitesse rapide" : "Vitesse normale"}
               title="Vitesse"
             >
-              {fast ? <Rabbit size={24} strokeWidth={ICON_STROKE} aria-hidden="true" /> : <Turtle size={24} strokeWidth={ICON_STROKE} aria-hidden="true" />}
+              {fast ? (
+                <Rabbit
+                  size={24}
+                  strokeWidth={ICON_STROKE}
+                  aria-hidden="true"
+                />
+              ) : (
+                <Turtle
+                  size={24}
+                  strokeWidth={ICON_STROKE}
+                  aria-hidden="true"
+                />
+              )}
             </button>
           </div>
         </div>
@@ -388,14 +702,33 @@ export default function LevelGame({ slug }: { slug: string }) {
           title="Mon programme"
           toolbar={
             <>
-              <span className="toon flex items-center gap-1 rounded-full bg-paper px-3 py-0.5 text-sm font-extrabold whitespace-nowrap" title={`Blocs utilisés. 3 étoiles avec ${level.optimal} blocs ou moins.`}>
-                <Blocks size={16} strokeWidth={ICON_STROKE} aria-hidden="true" /> <BumpNumber value={used} /> / {level.optimal} <StarIcon size={16} />
+              <span
+                className="toon flex items-center gap-1 rounded-full bg-paper px-3 py-0.5 text-sm font-extrabold whitespace-nowrap"
+                title={`Blocs utilisés. 3 étoiles avec ${level.optimal} blocs ou moins.`}
+              >
+                <Blocks
+                  size={16}
+                  strokeWidth={ICON_STROKE}
+                  aria-hidden="true"
+                />{" "}
+                <BumpNumber value={used} /> / {level.optimal}{" "}
+                <StarIcon size={16} />
               </span>
               <button
-                onClick={() => { if (program.length) { changeProgram([]); sfx("trash"); } }}
+                onClick={() => {
+                  if (program.length) {
+                    changeProgram([]);
+                    sfx("trash");
+                  }
+                }}
                 className="btn flex items-center gap-1 bg-paper px-3 py-0.5 text-sm whitespace-nowrap"
               >
-                <Trash2 size={15} strokeWidth={ICON_STROKE} aria-hidden="true" /> Effacer
+                <Trash2
+                  size={15}
+                  strokeWidth={ICON_STROKE}
+                  aria-hidden="true"
+                />{" "}
+                Effacer
               </button>
             </>
           }
@@ -405,20 +738,35 @@ export default function LevelGame({ slug }: { slug: string }) {
       <AnimatePresence>
         {win && (
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="fixed inset-0 z-[90] flex justify-center overflow-y-auto bg-ink/50 px-4 pt-20 pb-6 sm:items-center sm:py-16"
-            role="dialog" aria-modal="true" aria-labelledby="win-title"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="win-title"
             // Un clic à côté de la carte ferme la fenêtre (le niveau reste affiché tel quel)
-            onPointerDown={(e) => { if (e.target === e.currentTarget) { setWin(null); sfx("click"); } }}
+            onPointerDown={(e) => {
+              if (e.target === e.currentTarget) {
+                setWin(null);
+                sfx("click");
+              }
+            }}
           >
             <WinCard
               info={win}
               levelId={level.id}
               optimal={level.optimal}
               last={idx === LEVELS.length - 1}
-              onReplay={() => { setWin(null); reset(); }}
+              onReplay={() => {
+                setWin(null);
+                reset();
+              }}
               onNext={() => goLevel(idx + 1)}
-              onStory={() => { setWin(null); setStory("outro"); }}
+              onStory={() => {
+                setWin(null);
+                setStory("outro");
+              }}
             />
           </motion.div>
         )}
@@ -429,16 +777,24 @@ export default function LevelGame({ slug }: { slug: string }) {
           <StoryModal
             key={story}
             scene={STORY[course.slug][story]}
-            map={STORY[course.slug].piece !== undefined ? {
-              got: mapPieces(progress.stars),
-              fresh: story === "outro" ? STORY[course.slug].piece : undefined,
-            } : undefined}
+            map={
+              STORY[course.slug].piece !== undefined
+                ? {
+                    got: mapPieces(progress.stars),
+                    fresh:
+                      story === "outro" ? STORY[course.slug].piece : undefined,
+                  }
+                : undefined
+            }
             cta={story === "intro" ? "C'est parti !" : "Super !"}
-            onClose={() => { markSeen(story); setStory(null); if (story === "intro") speak(level.goal); }}
+            onClose={() => {
+              markSeen(story);
+              setStory(null);
+              if (story === "intro") speak(level.goal);
+            }}
           />
         )}
       </AnimatePresence>
     </div>
   );
 }
-

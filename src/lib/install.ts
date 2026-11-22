@@ -1,5 +1,8 @@
 // Capture de l'événement d'installation PWA (il peut arriver avant l'affichage du bouton).
-type BIPEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed" }> };
+type BIPEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
 
 let deferred: BIPEvent | null = null;
 const listeners = new Set<() => void>();
@@ -21,12 +24,17 @@ export const canPrompt = () => !!deferred;
 
 export function isStandalone() {
   if (typeof window === "undefined") return false;
-  return window.matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as unknown as { standalone?: boolean }).standalone === true
+  );
 }
 
 export function onInstallChange(cb: () => void) {
   listeners.add(cb);
-  return () => { listeners.delete(cb); };
+  return () => {
+    listeners.delete(cb);
+  };
 }
 
 /** Ouvre la fenêtre d'installation du navigateur. Renvoie false si elle n'est pas disponible. */

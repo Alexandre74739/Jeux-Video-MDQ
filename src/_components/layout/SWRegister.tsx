@@ -20,24 +20,45 @@ export default function SWRegister() {
 
   const pathname = usePathname();
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator) || !GAME_PAGES.test(pathname)) return;
-    navigator.serviceWorker.ready.then((r) => r.active?.postMessage("warm")).catch(() => {});
+    if (
+      process.env.NODE_ENV !== "production" ||
+      !("serviceWorker" in navigator) ||
+      !GAME_PAGES.test(pathname)
+    )
+      return;
+    navigator.serviceWorker.ready
+      .then((r) => r.active?.postMessage("warm"))
+      .catch(() => {});
   }, [pathname]);
 
   // Sauvegarde en ligne du joueur en cours (si son compte est relié)
-  useEffect(() => { startAutoSync(); }, []);
+  useEffect(() => {
+    startAutoSync();
+  }, []);
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) { warmVoice(); return; }
+    if (
+      process.env.NODE_ENV !== "production" ||
+      !("serviceWorker" in navigator)
+    ) {
+      warmVoice();
+      return;
+    }
     let reg: ServiceWorkerRegistration | undefined;
     const hadController = !!navigator.serviceWorker.controller;
     let reloading = false;
 
-    const check = () => { if (navigator.onLine) reg?.update().catch(() => {}); };
+    const check = () => {
+      if (navigator.onLine) reg?.update().catch(() => {});
+    };
 
     navigator.serviceWorker
       .register("/sw.js", { updateViaCache: "none" })
-      .then((r) => { reg = r; check(); return navigator.serviceWorker.ready; })
+      .then((r) => {
+        reg = r;
+        check();
+        return navigator.serviceWorker.ready;
+      })
       .then(() => warmVoice())
       .catch(() => {});
 
@@ -45,18 +66,29 @@ export default function SWRegister() {
     const onControllerChange = () => {
       if (!hadController || reloading) return;
       reloading = true;
-      if (document.visibilityState === "hidden") { window.location.reload(); return; }
+      if (document.visibilityState === "hidden") {
+        window.location.reload();
+        return;
+      }
       setUpdating(true);
       setTimeout(() => window.location.reload(), 2500);
     };
-    const onVisible = () => { if (document.visibilityState === "visible") check(); };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") check();
+    };
 
-    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      onControllerChange,
+    );
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("online", check);
     const timer = setInterval(check, CHECK_EVERY);
     return () => {
-      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+      navigator.serviceWorker.removeEventListener(
+        "controllerchange",
+        onControllerChange,
+      );
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("online", check);
       clearInterval(timer);
@@ -67,11 +99,16 @@ export default function SWRegister() {
     <AnimatePresence>
       {updating && (
         <motion.div
-          initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
           role="status"
           className="fixed bottom-5 left-1/2 z-[120] flex -translate-x-1/2 items-center gap-3 rounded-full border-[3px] border-ink bg-ink px-5 py-3 font-display text-lg font-bold text-white shadow-pop"
         >
-          <motion.span animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
+          <motion.span
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          >
             <RefreshCw size={20} strokeWidth={3} aria-hidden="true" />
           </motion.span>
           Nouvelle version de CuboCode, mise à jour…

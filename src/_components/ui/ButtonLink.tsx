@@ -21,10 +21,23 @@ type Props = {
   size?: keyof typeof SIZES;
 };
 
-export default function ButtonLink({ href, children, variant = "primary", size = "md" }: Props) {
+export default function ButtonLink({
+  href,
+  children,
+  variant = "primary",
+  size = "md",
+}: Props) {
   return (
-    <motion.div whileHover={{ scale: 1.04, rotate: -1 }} whileTap={{ scale: 0.96 }} className="inline-block">
-      <Link href={href} onClick={() => sfx("click")} className={`btn inline-flex items-center ${VARIANTS[variant]} ${SIZES[size]}`}>
+    <motion.div
+      whileHover={{ scale: 1.04, rotate: -1 }}
+      whileTap={{ scale: 0.96 }}
+      className="inline-block"
+    >
+      <Link
+        href={href}
+        onClick={() => sfx("click")}
+        className={`btn inline-flex items-center ${VARIANTS[variant]} ${SIZES[size]}`}
+      >
         {children}
       </Link>
     </motion.div>

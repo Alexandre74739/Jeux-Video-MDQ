@@ -3,9 +3,7 @@
   "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "out",
-  "regions": [
-    "cdg1"
-  ],
+  "regions": ["cdg1"],
   "git": {
     "deploymentEnabled": {
       "main": true

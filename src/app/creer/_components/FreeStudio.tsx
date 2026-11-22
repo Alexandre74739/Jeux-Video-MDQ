@@ -10,11 +10,31 @@ import { Logo } from "@/_components/ui/Logo";
 import { SoundToggle } from "@/_components/ui/SoundToggle";
 import { StarIcon } from "@/_components/icons/Icon";
 import BackButton from "@/_components/ui/BackButton";
-import { Download, FolderOpen, Map as MapIcon, Palette, PartyPopper, Play, Plus, RotateCcw, Square, Trash2, WandSparkles } from "lucide-react";
+import {
+  Download,
+  FolderOpen,
+  Map as MapIcon,
+  Palette,
+  PartyPopper,
+  Play,
+  Plus,
+  RotateCcw,
+  Square,
+  Trash2,
+  WandSparkles,
+} from "lucide-react";
 import { BLOCKS, newId, type Category } from "@/lib/blocks";
 import { sanitizeProject } from "@/lib/project";
 
-import { BACKGROUNDS, BASE, Runtime, STAGE_H, STAGE_W, type Project, type SpriteDef } from "@/lib/runtime";
+import {
+  BACKGROUNDS,
+  BASE,
+  Runtime,
+  STAGE_H,
+  STAGE_W,
+  type Project,
+  type SpriteDef,
+} from "@/lib/runtime";
 import { load, save } from "@/lib/storage";
 import { sfx } from "@/lib/sound";
 
@@ -24,11 +44,41 @@ import { ICON_STROKE } from "@/lib/site";
 
 const GROUPS: { category: Category; types: string[] }[] = [
   { category: "event", types: ["ev_start", "ev_key", "ev_click", "ev_touch"] },
-  { category: "motion", types: ["avancer", "gauche", "droite", "demitour", "sauter", "move", "random", "goto_center"] },
-  { category: "action", types: ["ramasser", "casser", "ouvrir", "pont", "frapper"] },
-  { category: "looks", types: ["say", "grow", "shrink", "spin", "hide", "show"] },
+  {
+    category: "motion",
+    types: [
+      "avancer",
+      "gauche",
+      "droite",
+      "demitour",
+      "sauter",
+      "move",
+      "random",
+      "goto_center",
+    ],
+  },
+  {
+    category: "action",
+    types: ["ramasser", "casser", "ouvrir", "pont", "frapper"],
+  },
+  {
+    category: "looks",
+    types: ["say", "grow", "shrink", "spin", "hide", "show"],
+  },
   { category: "sound", types: ["sound"] },
-  { category: "control", types: ["wait", "attendre", "repeat", "forever", "jusqua", "if_touch", "si", "sisinon"] },
+  {
+    category: "control",
+    types: [
+      "wait",
+      "attendre",
+      "repeat",
+      "forever",
+      "jusqua",
+      "if_touch",
+      "si",
+      "sisinon",
+    ],
+  },
   { category: "score", types: ["score_add", "score_reset", "win", "lose"] },
 ];
 
@@ -39,7 +89,9 @@ export default function FreeStudio() {
   const [, setFrame] = useState(0);
   const [ended, setEnded] = useState<"win" | "lose" | null>(null);
   const [libOpen, setLibOpen] = useState(false);
-  const [notice, setNotice] = useState<{ text: string; key: number } | null>(null);
+  const [notice, setNotice] = useState<{ text: string; key: number } | null>(
+    null,
+  );
   const [confetti, setConfetti] = useState(0);
   const [scale, setScale] = useState(1);
   const rt = useRef<Runtime | null>(null);
@@ -67,7 +119,10 @@ export default function FreeStudio() {
     return () => ro.disconnect();
   }, [project === null]);
 
-  const notify = useCallback((text: string) => setNotice({ text, key: Date.now() }), []);
+  const notify = useCallback(
+    (text: string) => setNotice({ text, key: Date.now() }),
+    [],
+  );
   useEffect(() => {
     if (!notice) return;
     const t = setTimeout(() => setNotice(null), 2600);
@@ -87,7 +142,10 @@ export default function FreeStudio() {
     setEnded(null);
     const r = new Runtime(project, (res) => {
       setEnded(res);
-      if (res === "win") { sfx("win"); setConfetti((c) => c + 1); } else sfx("fail");
+      if (res === "win") {
+        sfx("win");
+        setConfetti((c) => c + 1);
+      } else sfx("fail");
     });
     rt.current = r;
     setRunning(true);
@@ -108,7 +166,9 @@ export default function FreeStudio() {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
-      if (["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown", " "].includes(e.key)) {
+      if (
+        ["ArrowRight", "ArrowLeft", "ArrowUp", "ArrowDown", " "].includes(e.key)
+      ) {
         e.preventDefault();
         rt.current?.key(e.key);
       }
@@ -119,12 +179,21 @@ export default function FreeStudio() {
 
   const sprite = project?.sprites.find((s) => s.id === sel);
   const updateSprite = useCallback((id: string, patch: Partial<SpriteDef>) => {
-    setProject((p) => p && { ...p, sprites: p.sprites.map((s) => (s.id === id ? { ...s, ...patch } : s)) });
+    setProject(
+      (p) =>
+        p && {
+          ...p,
+          sprites: p.sprites.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+        },
+    );
   }, []);
 
   const others = useMemo(
-    () => (project?.sprites ?? []).filter((s) => s.id !== sel).map((s) => ({ id: s.id, name: s.name })),
-    [project, sel]
+    () =>
+      (project?.sprites ?? [])
+        .filter((s) => s.id !== sel)
+        .map((s) => ({ id: s.id, name: s.name })),
+    [project, sel],
   );
 
   const addSprite = (name: string, src: string) => {
@@ -133,8 +202,13 @@ export default function FreeStudio() {
     let k = 2;
     while (project.sprites.some((s) => s.name === n)) n = `${name} ${k++}`;
     const s: SpriteDef = {
-      id: newId(), name: n, src, size: 100, scripts: [],
-      x: 60 + Math.random() * (STAGE_W - 120), y: 60 + Math.random() * (STAGE_H - 120),
+      id: newId(),
+      name: n,
+      src,
+      size: 100,
+      scripts: [],
+      x: 60 + Math.random() * (STAGE_W - 120),
+      y: 60 + Math.random() * (STAGE_H - 120),
     };
     setProject({ ...project, sprites: [...project.sprites, s] });
     setSel(s.id);
@@ -154,7 +228,9 @@ export default function FreeStudio() {
 
   const download = () => {
     if (!project) return;
-    const blob = new Blob([JSON.stringify(project)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(project)], {
+      type: "application/json",
+    });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "mon-jeu.cubocode.json";
@@ -166,7 +242,11 @@ export default function FreeStudio() {
 
   const openFile = async (f: File) => {
     try {
-      const p = sanitizeProject(JSON.parse(await f.text()), (t) => t in BLOCKS, (id) => BACKGROUNDS.some((b) => b.id === id));
+      const p = sanitizeProject(
+        JSON.parse(await f.text()),
+        (t) => t in BLOCKS,
+        (id) => BACKGROUNDS.some((b) => b.id === id),
+      );
       if (!p) throw new Error();
       stopGame();
       setProject(p);
@@ -181,14 +261,23 @@ export default function FreeStudio() {
 
   // Glisser les personnages sur la scène (quand le jeu est arrêté)
   const dragSprite = (e: React.PointerEvent, s: SpriteDef) => {
-    if (running) { rt.current?.click(s.id); return; }
+    if (running) {
+      rt.current?.click(s.id);
+      return;
+    }
     e.preventDefault();
     setSel(s.id);
     sfx("pick");
     const stage = stageRef.current!.getBoundingClientRect();
     const move = (ev: PointerEvent) => {
-      const x = Math.max(0, Math.min(STAGE_W, (ev.clientX - stage.left) / scale));
-      const y = Math.max(0, Math.min(STAGE_H, (ev.clientY - stage.top) / scale));
+      const x = Math.max(
+        0,
+        Math.min(STAGE_W, (ev.clientX - stage.left) / scale),
+      );
+      const y = Math.max(
+        0,
+        Math.min(STAGE_H, (ev.clientY - stage.top) / scale),
+      );
       updateSprite(s.id, { x: Math.round(x), y: Math.round(y) });
     };
     const up = () => {
@@ -200,7 +289,12 @@ export default function FreeStudio() {
     window.addEventListener("pointerup", up);
   };
 
-  if (!project) return <div className="grid h-dvh place-items-center bg-cream font-display text-2xl">Chargement…</div>;
+  if (!project)
+    return (
+      <div className="grid h-dvh place-items-center bg-cream font-display text-2xl">
+        Chargement…
+      </div>
+    );
   const bg = BACKGROUNDS.find((b) => b.id === project.bg) ?? BACKGROUNDS[0];
   const r = rt.current;
 
@@ -210,19 +304,78 @@ export default function FreeStudio() {
       <header className="sticky top-0 z-40 flex min-h-[72px] shrink-0 flex-wrap items-center gap-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:gap-3 sm:px-4">
         <BackButton fallback="/" />
         <Logo small />
-        <span className="toon ml-2 hidden items-center gap-2 rounded-full bg-pink md:flex px-3 py-1 font-display text-lg font-bold"><Palette size={20} strokeWidth={ICON_STROKE} aria-hidden="true" /> Création libre</span>
+        <span className="toon ml-2 hidden items-center gap-2 rounded-full bg-pink md:flex px-3 py-1 font-display text-lg font-bold">
+          <Palette size={20} strokeWidth={ICON_STROKE} aria-hidden="true" />{" "}
+          Création libre
+        </span>
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <button onClick={download} title="Télécharger mon jeu" aria-label="Télécharger mon jeu" className="btn flex items-center gap-2 bg-mint px-3 py-2 xl:px-4"><Download size={19} strokeWidth={ICON_STROKE} aria-hidden="true" /><span className="hidden xl:inline">Télécharger mon jeu</span></button>
-          <button onClick={() => openRef.current?.click()} title="Ouvrir un jeu" aria-label="Ouvrir un jeu" className="btn flex items-center gap-2 bg-sky px-3 py-2 xl:px-4"><FolderOpen size={19} strokeWidth={ICON_STROKE} aria-hidden="true" /><span className="hidden xl:inline">Ouvrir</span></button>
-          <input ref={openRef} type="file" accept=".json,application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) openFile(f); e.target.value = ""; }} />
           <button
-            onClick={() => { if (window.confirm("Effacer ton jeu et recommencer avec l'exemple ?")) { stopGame(); const p = starter(); setProject(p); setSel(p.sprites[0].id); sfx("trash"); } }}
-            title="Nouveau jeu" aria-label="Nouveau jeu"
+            onClick={download}
+            title="Télécharger mon jeu"
+            aria-label="Télécharger mon jeu"
+            className="btn flex items-center gap-2 bg-mint px-3 py-2 xl:px-4"
+          >
+            <Download size={19} strokeWidth={ICON_STROKE} aria-hidden="true" />
+            <span className="hidden xl:inline">Télécharger mon jeu</span>
+          </button>
+          <button
+            onClick={() => openRef.current?.click()}
+            title="Ouvrir un jeu"
+            aria-label="Ouvrir un jeu"
+            className="btn flex items-center gap-2 bg-sky px-3 py-2 xl:px-4"
+          >
+            <FolderOpen
+              size={19}
+              strokeWidth={ICON_STROKE}
+              aria-hidden="true"
+            />
+            <span className="hidden xl:inline">Ouvrir</span>
+          </button>
+          <input
+            ref={openRef}
+            type="file"
+            accept=".json,application/json"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) openFile(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Effacer ton jeu et recommencer avec l'exemple ?",
+                )
+              ) {
+                stopGame();
+                const p = starter();
+                setProject(p);
+                setSel(p.sprites[0].id);
+                sfx("trash");
+              }
+            }}
+            title="Nouveau jeu"
+            aria-label="Nouveau jeu"
             className="btn flex items-center gap-2 bg-paper px-3 py-2 xl:px-4"
           >
-            <WandSparkles size={19} strokeWidth={ICON_STROKE} aria-hidden="true" /><span className="hidden xl:inline">Nouveau</span>
+            <WandSparkles
+              size={19}
+              strokeWidth={ICON_STROKE}
+              aria-hidden="true"
+            />
+            <span className="hidden xl:inline">Nouveau</span>
           </button>
-          <Link href="/jouer/" title="Les défis" aria-label="Les défis" className="btn flex items-center gap-2 bg-sun px-3 py-2 xl:px-4"><MapIcon size={19} strokeWidth={ICON_STROKE} aria-hidden="true" /><span className="hidden xl:inline">Jouer</span></Link>
+          <Link
+            href="/jouer/"
+            title="Les défis"
+            aria-label="Les défis"
+            className="btn flex items-center gap-2 bg-sun px-3 py-2 xl:px-4"
+          >
+            <MapIcon size={19} strokeWidth={ICON_STROKE} aria-hidden="true" />
+            <span className="hidden xl:inline">Jouer</span>
+          </Link>
           <SoundToggle />
         </div>
       </header>
@@ -240,11 +393,14 @@ export default function FreeStudio() {
             {r?.planks.map((pl, i) => (
               <motion.span
                 key={i}
-                initial={{ scale: 0 }} animate={{ scale: 1 }}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
                 className="absolute rounded-md border-[3px] border-ink"
                 style={{
-                  left: (pl.x - (pl.horizontal ? 24 : 14)) * scale, top: (pl.y - (pl.horizontal ? 14 : 24)) * scale,
-                  width: (pl.horizontal ? 48 : 28) * scale, height: (pl.horizontal ? 28 : 48) * scale,
+                  left: (pl.x - (pl.horizontal ? 24 : 14)) * scale,
+                  top: (pl.y - (pl.horizontal ? 14 : 24)) * scale,
+                  width: (pl.horizontal ? 48 : 28) * scale,
+                  height: (pl.horizontal ? 28 : 48) * scale,
                   background: `repeating-linear-gradient(${pl.horizontal ? 90 : 0}deg, #D69A5B 0 10px, #8A5A2E 10px 12px)`,
                 }}
                 aria-hidden="true"
@@ -262,16 +418,29 @@ export default function FreeStudio() {
                   onPointerDown={(e) => dragSprite(e, s)}
                   className={`absolute ${running ? "cursor-pointer" : "cursor-grab"} ${!running && s.id === sel ? "rounded-xl outline-dashed outline-[3px] outline-grape" : ""}`}
                   style={{
-                    left: x * scale - size / 2, top: y * scale - size / 2, width: size, height: size,
-                    opacity: visible ? 1 : 0, pointerEvents: visible ? "auto" : "none",
+                    left: x * scale - size / 2,
+                    top: y * scale - size / 2,
+                    width: size,
+                    height: size,
+                    opacity: visible ? 1 : 0,
+                    pointerEvents: visible ? "auto" : "none",
                     transform: `translateY(${(st?.jy ?? 0) * scale}px) rotate(${st?.spin ?? 0}deg)`,
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={s.src} alt={s.name} draggable={false} className="size-full select-none object-contain" style={{ transform: st?.dir === 3 ? "scaleX(-1)" : undefined }} />
+                  <img
+                    src={s.src}
+                    alt={s.name}
+                    draggable={false}
+                    className="size-full select-none object-contain"
+                    style={{
+                      transform: st?.dir === 3 ? "scaleX(-1)" : undefined,
+                    }}
+                  />
                   {st?.say && (
                     <motion.span
-                      initial={{ scale: 0 }} animate={{ scale: 1 }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
                       className="absolute bottom-full left-1/2 mb-1 w-max max-w-[180px] -translate-x-1/4 rounded-2xl border-[3px] border-ink bg-paper px-3 py-1 font-display text-sm font-bold"
                     >
                       {st.say}
@@ -282,23 +451,43 @@ export default function FreeStudio() {
             })}
             {running && r && (
               <div className="toon absolute top-2 left-2 flex items-center gap-1.5 rounded-full bg-sun px-3 py-1 font-display text-lg font-bold">
-                <StarIcon size={20} /> Score : <BumpNumber key={r.scoreBump} value={r.score} />
+                <StarIcon size={20} /> Score :{" "}
+                <BumpNumber key={r.scoreBump} value={r.score} />
               </div>
             )}
             <AnimatePresence>
               {ended && (
                 <motion.div
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="absolute inset-0 grid place-items-center bg-ink/45"
                 >
                   <motion.div
-                    initial={{ scale: 0.3, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 300, damping: 12 }}
+                    initial={{ scale: 0.3, rotate: -10 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 12 }}
                     className={`rounded-3xl border-[3px] border-ink px-6 py-4 text-center shadow-pop-lg ${ended === "win" ? "bg-sun" : "bg-coral"}`}
                   >
-                    {ended === "win" && <PartyPopper size={44} strokeWidth={2.5} className="mx-auto" aria-hidden="true" />}
-                    <p className="font-display text-4xl font-bold">{ended === "win" ? "BRAVO !" : "Perdu !"}</p>
+                    {ended === "win" && (
+                      <PartyPopper
+                        size={44}
+                        strokeWidth={2.5}
+                        className="mx-auto"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <p className="font-display text-4xl font-bold">
+                      {ended === "win" ? "BRAVO !" : "Perdu !"}
+                    </p>
                     <p className="font-bold">Score : {r?.score ?? 0}</p>
-                    <button onClick={play} className="btn mt-2 inline-flex items-center gap-1.5 bg-paper px-4 py-1.5"><RotateCcw size={17} strokeWidth={3} aria-hidden="true" /> Rejouer</button>
+                    <button
+                      onClick={play}
+                      className="btn mt-2 inline-flex items-center gap-1.5 bg-paper px-4 py-1.5"
+                    >
+                      <RotateCcw size={17} strokeWidth={3} aria-hidden="true" />{" "}
+                      Rejouer
+                    </button>
                   </motion.div>
                 </motion.div>
               )}
@@ -306,11 +495,35 @@ export default function FreeStudio() {
           </div>
 
           <div className="flex gap-3">
-            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }} onClick={play} className="btn flex flex-1 items-center justify-center gap-2 bg-mint py-2.5 text-2xl">
-              <Play size={24} strokeWidth={ICON_STROKE} fill="#16123A" aria-hidden="true" /> Jouer
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={play}
+              className="btn flex flex-1 items-center justify-center gap-2 bg-mint py-2.5 text-2xl"
+            >
+              <Play
+                size={24}
+                strokeWidth={ICON_STROKE}
+                fill="#16123A"
+                aria-hidden="true"
+              />{" "}
+              Jouer
             </motion.button>
-            <button onClick={() => { stopGame(); sfx("click"); }} disabled={!running} className="btn bg-coral px-6 py-2.5" aria-label="Arrêter">
-              <Square size={24} strokeWidth={ICON_STROKE} fill="#16123A" aria-hidden="true" />
+            <button
+              onClick={() => {
+                stopGame();
+                sfx("click");
+              }}
+              disabled={!running}
+              className="btn bg-coral px-6 py-2.5"
+              aria-label="Arrêter"
+            >
+              <Square
+                size={24}
+                strokeWidth={ICON_STROKE}
+                fill="#16123A"
+                aria-hidden="true"
+              />
             </button>
           </div>
 
@@ -318,8 +531,14 @@ export default function FreeStudio() {
           <div className="toon flex min-h-0 flex-1 flex-col gap-2 rounded-3xl bg-paper p-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-lg font-bold">Personnages</h2>
-              <div className="flex flex-wrap items-center gap-1" role="radiogroup" aria-label="Décor">
-                <span className="mr-1 text-sm font-extrabold whitespace-nowrap">Décor :</span>
+              <div
+                className="flex flex-wrap items-center gap-1"
+                role="radiogroup"
+                aria-label="Décor"
+              >
+                <span className="mr-1 text-sm font-extrabold whitespace-nowrap">
+                  Décor :
+                </span>
                 {BACKGROUNDS.map((b) => (
                   <button
                     key={b.id}
@@ -327,7 +546,10 @@ export default function FreeStudio() {
                     aria-checked={b.id === project.bg}
                     aria-label={b.name}
                     title={b.name}
-                    onClick={() => { setProject({ ...project, bg: b.id }); sfx("click"); }}
+                    onClick={() => {
+                      setProject({ ...project, bg: b.id });
+                      sfx("click");
+                    }}
                     className={`size-7 rounded-lg border-[3px] ${b.id === project.bg ? "border-ink shadow-pop" : "border-ink/30"}`}
                     style={{ background: b.css }}
                   />
@@ -339,20 +561,30 @@ export default function FreeStudio() {
                 <motion.button
                   key={s.id}
                   layout
-                  initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
                   whileHover={{ y: -3 }}
-                  onClick={() => { setSel(s.id); sfx("click"); }}
+                  onClick={() => {
+                    setSel(s.id);
+                    sfx("click");
+                  }}
                   aria-pressed={s.id === sel}
                   className={`flex w-[78px] flex-col items-center rounded-2xl border-[3px] p-1 ${s.id === sel ? "border-ink bg-lilac shadow-pop" : "border-ink/25 bg-cream"}`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={s.src} alt="" className="size-11 object-contain" />
-                  <span className="w-full truncate text-center text-xs font-extrabold">{s.name}</span>
+                  <span className="w-full truncate text-center text-xs font-extrabold">
+                    {s.name}
+                  </span>
                 </motion.button>
               ))}
               <motion.button
-                whileHover={{ scale: 1.05, rotate: 2 }} whileTap={{ scale: 0.95 }}
-                onClick={() => { setLibOpen(true); sfx("click"); }}
+                whileHover={{ scale: 1.05, rotate: 2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setLibOpen(true);
+                  sfx("click");
+                }}
                 className="flex w-[78px] flex-col items-center justify-center rounded-2xl border-[3px] border-dashed border-ink bg-sun/50 p-1 font-display font-bold"
               >
                 <Plus size={30} strokeWidth={3} aria-hidden="true" />
@@ -376,20 +608,36 @@ export default function FreeStudio() {
             title={
               <span className="flex items-center gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={sprite.src} alt="" className="size-8 object-contain" />
+                <img
+                  src={sprite.src}
+                  alt=""
+                  className="size-8 object-contain"
+                />
                 <span className="hidden 2xl:inline">Programme de</span>
                 <input
                   value={sprite.name}
                   maxLength={16}
                   aria-label="Nom du personnage"
-                  onChange={(e) => updateSprite(sprite.id, { name: e.target.value })}
+                  onChange={(e) =>
+                    updateSprite(sprite.id, { name: e.target.value })
+                  }
                   className="w-28 min-w-0 rounded-full border-[3px] border-ink bg-paper px-2 font-display text-base font-bold"
                 />
               </span>
             }
             toolbar={
               project.sprites.length > 1 && (
-                <button onClick={() => removeSprite(sprite.id)} className="btn flex items-center gap-1 bg-paper px-3 py-0.5 text-sm"><Trash2 size={15} strokeWidth={ICON_STROKE} aria-hidden="true" /> Supprimer</button>
+                <button
+                  onClick={() => removeSprite(sprite.id)}
+                  className="btn flex items-center gap-1 bg-paper px-3 py-0.5 text-sm"
+                >
+                  <Trash2
+                    size={15}
+                    strokeWidth={ICON_STROKE}
+                    aria-hidden="true"
+                  />{" "}
+                  Supprimer
+                </button>
               )
             }
           />
@@ -400,7 +648,9 @@ export default function FreeStudio() {
         {notice && (
           <motion.div
             key={notice.key}
-            initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
             className="toon fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-full bg-ink px-5 py-2.5 font-display text-lg font-bold text-white"
             role="status"
           >
@@ -410,9 +660,14 @@ export default function FreeStudio() {
       </AnimatePresence>
 
       <AnimatePresence>
-        {libOpen && <SpriteLibrary onClose={() => setLibOpen(false)} onPick={addSprite} onError={notify} />}
+        {libOpen && (
+          <SpriteLibrary
+            onClose={() => setLibOpen(false)}
+            onPick={addSprite}
+            onError={notify}
+          />
+        )}
       </AnimatePresence>
     </div>
   );
 }
-

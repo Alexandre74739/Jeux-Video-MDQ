@@ -18,6 +18,7 @@ export function errorText(e: unknown) {
     const min = Number(e.info.retryIn ?? 15);
     return `Trop d'essais ratés. Réessaie dans ${min >= 90 ? `${Math.round(min / 60)} heures` : `${min} minutes`}.`;
   }
-  if (e.code === "badCode" && typeof e.info.left === "number") return `Ce n'est pas le bon code secret. Encore ${e.info.left} essai${e.info.left > 1 ? "s" : ""}.`;
+  if (e.code === "badCode" && typeof e.info.left === "number")
+    return `Ce n'est pas le bon code secret. Encore ${e.info.left} essai${e.info.left > 1 ? "s" : ""}.`;
   return ERRORS[e.code] ?? ERRORS.server;
 }

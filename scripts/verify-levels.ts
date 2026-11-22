@@ -1,5 +1,11 @@
 // Vérifie que la solution de chaque niveau de chaque parcours gagne bien.
-import { COURSES, buildWorld, runProgram, countBlocks, type Outcome } from "../src/lib/levels.ts";
+import {
+  COURSES,
+  buildWorld,
+  runProgram,
+  countBlocks,
+  type Outcome,
+} from "../src/lib/levels.ts";
 
 let failed = 0;
 for (const course of COURSES) {
@@ -10,19 +16,33 @@ for (const course of COURSES) {
     const gen = runProgram(buildWorld(lvl), lvl.solution);
     let r = gen.next();
     let steps = 0;
-    while (!r.done) { r = gen.next(); steps++; }
+    while (!r.done) {
+      r = gen.next();
+      steps++;
+    }
     const out = r.value as Outcome;
     const n = countBlocks(lvl.solution);
-    const unknown = lvl.solution.flatMap(function walk(b): string[] {
-      return [b.type, ...(b.children ?? []).flatMap(walk), ...(b.alt ?? []).flatMap(walk)];
-    }).filter((t) => !lvl.blocks.includes(t));
-    const ok = out.ok && widths.size === 1 && counts("S") === 1 && counts("F") === 1 && unknown.length === 0;
+    const unknown = lvl.solution
+      .flatMap(function walk(b): string[] {
+        return [
+          b.type,
+          ...(b.children ?? []).flatMap(walk),
+          ...(b.alt ?? []).flatMap(walk),
+        ];
+      })
+      .filter((t) => !lvl.blocks.includes(t));
+    const ok =
+      out.ok &&
+      widths.size === 1 &&
+      counts("S") === 1 &&
+      counts("F") === 1 &&
+      unknown.length === 0;
     if (!ok) failed++;
     console.log(
       `${ok ? "✓" : "✗"} ${lvl.id}. ${lvl.title} : ${n} blocs, ${steps} étapes`,
       out.ok ? "" : JSON.stringify(out),
       widths.size > 1 ? "LIGNES INÉGALES" : "",
-      unknown.length ? `BLOCS NON AUTORISÉS ${unknown}` : ""
+      unknown.length ? `BLOCS NON AUTORISÉS ${unknown}` : "",
     );
   }
 }

@@ -4,6 +4,7 @@ Site pour apprendre à coder par blocs (6–10 ans) : un tutoriel et des défis 
 puis un mode « Création libre » pour inventer son jeu. Next.js 16 (App Router, export statique) + fonctions Vercel + MongoDB Atlas.
 
 ## Pages
+
 - `/` : accueil
 - `/jouer/` : choix des défis, `/jouer/<parcours>/` : un parcours
 - `/creer/` : création libre
@@ -12,6 +13,7 @@ puis un mode « Création libre » pour inventer son jeu. Next.js 16 (App Router
 - `/mentions-legales/`, `/confidentialite/` : pages légales
 
 ## Développement
+
 ```bash
 npm install
 cp .env.example .env   # puis renseigner MONGODB_URI
@@ -27,6 +29,7 @@ npm run voices     # (re)génère les fichiers audio de la voix de Cubo
 ```
 
 ## Structure
+
 ```
 api/                    fonctions serveur Vercel (_mongo.ts, _ratelimit.ts : non exposés)
 src/app/                routes ; chaque route garde ses composants propres dans _components/ ou _sections/
@@ -41,17 +44,21 @@ src/lib/                logique sans interface (niveaux, blocs, moteur, stockage
 tests/                  tests unitaires
 scripts/                build du service worker, voix, sprites, serveur d'API local
 ```
+
 Alias `@/*` → `src/*`. Imports relatifs (`./`) seulement entre fichiers d'une même route ou de `lib/`.
 
 ## Variables d'environnement
+
 Voir [.env.example](.env.example) : `MONGODB_URI`, `CRON_SECRET`, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`.
 À définir dans Vercel (Settings → Environment Variables) et dans `.env` en local (jamais commité).
 
 ## Déploiement sur Vercel
+
 `vercel.json` fixe la commande (`npm run build`), le dossier `out/`, la tâche planifiée et les en-têtes de sécurité
 (CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy). Chaque push sur `main` déclenche un déploiement.
 
 ## Joueurs et sauvegarde en ligne
+
 - Plusieurs joueurs par appareil (bouton avatar dans l'en-tête) : chacun a ses étoiles, badges, tenue et programmes.
 - Sauvegarde en ligne facultative : pseudo + code secret de 4 chiffres (aucun e-mail).
   La progression reste d'abord sur l'appareil ; la synchronisation fusionne en gardant le meilleur (aucune perte possible).
@@ -64,19 +71,23 @@ Voir [.env.example](.env.example) : `MONGODB_URI`, `CRON_SECRET`, `NEXT_PUBLIC_S
   de MongoDB Atlas gratuit après 30 jours sans connexion.
 
 ## Hors-ligne
+
 Le service worker met en cache les fichiers légers dès la première visite (pages, styles, polices, petits scripts),
 puis le reste (3D, images) quand l'enfant entre dans le jeu (`/jouer`, `/creer`, `/cubo`). Ensuite, le site
 fonctionne même si la connexion coupe. Les effets sonores sont synthétisés ; la voix de Cubo est en MP3 (voir « Voix »).
 
 ### Mises à jour automatiques
+
 Le build génère un nouveau `sw.js` (version calculée à partir du contenu des fichiers et du commit). Les postes ouverts
 ou l'appli installée vérifient les mises à jour au chargement, toutes les 15 minutes et au retour sur l'onglet, puis
 rechargent automatiquement la page. `vercel.json` empêche la mise en cache de `sw.js` et du manifeste.
 
 ## Application installable (PWA)
+
 Le site est installable (icône de Cubo sur fond bleu, la même que le logo) depuis la barre d'adresse du navigateur.
 
 ## Accessibilité
+
 - Les animations respectent le réglage système « réduire les animations » (`MotionProvider`).
 - L'éditeur de blocs s'utilise sans glisser-déposer : Entrée sur un bloc de la palette pour l'ajouter (dans la boucle
   sélectionnée s'il y en a une), puis sur un bloc du programme : Suppr pour l'enlever, Alt + ↑/↓ pour le déplacer,
@@ -84,6 +95,7 @@ Le site est installable (icône de Cubo sur fond bleu, la même que le logo) dep
 - Lien « Aller au contenu », contours de focus visibles, consignes lues à voix haute.
 
 ## Voix
+
 Cubo a une seule voix : Thierry (voix neuronale). Toutes ses phrases sont pré-enregistrées dans
 `public/voice/thierry/` (une phrase = un fichier MP3, liste dans `src/lib/voice-manifest.json`).
 Après avoir ajouté ou modifié un texte (niveaux, histoire, badges…), lancer `npm run voices` :

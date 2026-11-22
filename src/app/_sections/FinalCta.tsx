@@ -11,9 +11,12 @@ export default function FinalCta() {
           <Cubo size={120} mood="wow" />
         </div>
         <h2 className="text-5xl font-bold text-balance">On relève le défi ?</h2>
-        <p className="text-xl font-bold">Cubo t&apos;attend pour sa première aventure.</p>
+        <p className="text-xl font-bold">
+          Cubo t&apos;attend pour sa première aventure.
+        </p>
         <ButtonLink href="/jouer/" size="lg">
-          C&apos;est parti <ArrowRight size={26} strokeWidth={3} aria-hidden="true" />
+          C&apos;est parti{" "}
+          <ArrowRight size={26} strokeWidth={3} aria-hidden="true" />
         </ButtonLink>
       </div>
     </section>

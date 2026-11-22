@@ -2,7 +2,13 @@
 import { motion } from "motion/react";
 
 /** Petit nombre qui rebondit quand il change. */
-export function BumpNumber({ value, className = "" }: { value: number; className?: string }) {
+export function BumpNumber({
+  value,
+  className = "",
+}: {
+  value: number;
+  className?: string;
+}) {
   return (
     <motion.span
       key={value}

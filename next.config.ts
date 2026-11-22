@@ -11,7 +11,17 @@ const base: NextConfig = {
 // En développement : /api/* est redirigé vers le serveur local lancé par « npm run dev » (scripts/dev-api.ts).
 export default function config(phase: string): NextConfig {
   if (phase === PHASE_DEVELOPMENT_SERVER) {
-    return { ...base, async rewrites() { return [{ source: "/api/:path*", destination: "http://localhost:3001/api/:path*" }]; } };
+    return {
+      ...base,
+      async rewrites() {
+        return [
+          {
+            source: "/api/:path*",
+            destination: "http://localhost:3001/api/:path*",
+          },
+        ];
+      },
+    };
   }
   return { ...base, output: "export" };
 }
