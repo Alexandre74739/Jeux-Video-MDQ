@@ -1,12 +1,12 @@
 "use client";
 import { motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Cubo } from "@/_components/ui/Cubo";
-import { ImagePlus, X } from "lucide-react";
-import { resizeImage } from "@/lib/image";
+import { X } from "lucide-react";
 import { sfx } from "@/lib/sound";
 import LIBRARY from "@/lib/sprites.json";
-import { ICON_STROKE } from "@/lib/site";
+import { ImageImportButton } from "./ImageImportButton";
+import { SpriteGrid } from "./SpriteGrid";
 
 export function SpriteLibrary({
   onClose,
@@ -19,7 +19,6 @@ export function SpriteLibrary({
 }) {
   const cats = Array.from(new Set(LIBRARY.map((s) => s.category)));
   const [cat, setCat] = useState(cats[0]);
-  const fileRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", k);
@@ -72,57 +71,9 @@ export function SpriteLibrary({
               {c}
             </button>
           ))}
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="btn ml-auto flex items-center gap-2 bg-sky px-4 py-1.5"
-          >
-            <ImagePlus size={19} strokeWidth={ICON_STROKE} aria-hidden="true" />{" "}
-            Importer une image
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={async (e) => {
-              const f = e.target.files?.[0];
-              e.target.value = "";
-              if (!f) return;
-              try {
-                const src = await resizeImage(f, 160);
-                onPick(
-                  f.name.replace(/\.[^.]+$/, "").slice(0, 14) || "Image",
-                  src,
-                );
-              } catch {
-                onError("Oups, cette image ne marche pas.");
-              }
-            }}
-          />
+          <ImageImportButton onPick={onPick} onError={onError} />
         </div>
-        <div className="scroll-soft grid grid-cols-6 gap-3 overflow-y-auto p-5">
-          {LIBRARY.filter((s) => s.category === cat).map((s, i) => (
-            <motion.button
-              key={s.id}
-              initial={{ scale: 0, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{
-                delay: i * 0.02,
-                type: "spring",
-                stiffness: 400,
-                damping: 15,
-              }}
-              whileHover={{ scale: 1.1, rotate: -4 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => onPick(s.name, s.src)}
-              className="flex flex-col items-center rounded-2xl border-[3px] border-ink/20 bg-cream p-2 hover:border-ink"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.src} alt="" className="size-16" />
-              <span className="text-sm font-extrabold">{s.name}</span>
-            </motion.button>
-          ))}
-        </div>
+        <SpriteGrid category={cat} onPick={onPick} />
       </motion.div>
     </motion.div>
   );

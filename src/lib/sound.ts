@@ -4,6 +4,7 @@ import { lineId } from "./lines";
 import manifest from "./voice-manifest.json";
 
 let ctx: AudioContext | null = null;
+const listeners = new Set<() => void>();
 let muted = false;
 if (typeof window !== "undefined") muted = load("muted", false);
 
@@ -11,6 +12,7 @@ export const isMuted = () => muted;
 export function setMuted(m: boolean) {
   muted = m;
   save("muted", m);
+  listeners.forEach((f) => f());
 }
 
 function ac() {
@@ -160,7 +162,7 @@ export function sfx(name: SfxName, arg?: number) {
 const VOICE = "thierry";
 
 export type VoicePrefs = { on: boolean; rate: number; auto: boolean };
-const DEFAULT_VOICE: VoicePrefs = { on: true, rate: 1, auto: false };
+export const DEFAULT_VOICE: VoicePrefs = { on: true, rate: 1, auto: false };
 let voicePrefs: VoicePrefs = DEFAULT_VOICE;
 if (typeof window !== "undefined") {
   const saved = load<Partial<VoicePrefs>>("voice", {});
@@ -183,8 +185,7 @@ export function setVoicePrefs(p: Partial<VoicePrefs>) {
   listeners.forEach((f) => f());
 }
 
-const listeners = new Set<() => void>();
-/** Prévient quand les réglages de voix changent ; renvoie la fonction de désinscription. */
+/** Prévient quand les réglages du son ou de la voix changent ; renvoie la fonction de désinscription. */
 export function onVoicePrefs(f: () => void) {
   listeners.add(f);
   return () => {

@@ -1,60 +1,14 @@
 "use client";
 import Link from "next/link";
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import { Cubo } from "@/_components/ui/Cubo";
 import { StarIcon } from "@/_components/icons/Icon";
-import { Check, LayoutGrid, Map as MapIcon } from "lucide-react";
+import { LayoutGrid, Map as MapIcon } from "lucide-react";
 import { LINES } from "@/lib/lines";
 import type { WorldLock } from "@/lib/levels";
 import { getVoicePrefs, speak } from "@/lib/sound";
 import { ICON_STROKE } from "@/lib/site";
-
-function Goal({
-  icon,
-  label,
-  have,
-  need,
-}: {
-  icon: ReactNode;
-  label: string;
-  have: number;
-  need: number;
-}) {
-  const ok = have >= need;
-  return (
-    <div className="mt-4 text-left">
-      <p className="flex items-center justify-between gap-2 font-display text-lg font-bold">
-        <span className="flex items-center gap-2">
-          {icon} {label}
-        </span>
-        <span className="flex items-center gap-1">
-          {Math.min(have, need)} / {need}
-          {ok && (
-            <Check
-              size={20}
-              strokeWidth={3.5}
-              className="text-[#22B377]"
-              aria-label="fait"
-            />
-          )}
-        </span>
-      </p>
-      <div
-        className="mt-1.5 h-5 overflow-hidden rounded-full border-[3px] border-ink bg-cream"
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={need}
-        aria-valuenow={Math.min(have, need)}
-        aria-label={`${label} : ${Math.min(have, need)} sur ${need}`}
-      >
-        <div
-          className={`h-full ${ok ? "bg-mint" : "bg-sun"}`}
-          style={{ width: `${Math.min(100, (have / need) * 100)}%` }}
-        />
-      </div>
-    </div>
-  );
-}
+import { GoalBar } from "./GoalBar";
 
 /** Écran du monde secret tant que la carte au trésor n'est pas complète ou que le phare n'est pas allumé. */
 export function LockedWorld({ lock }: { lock: WorldLock }) {
@@ -73,7 +27,7 @@ export function LockedWorld({ lock }: { lock: WorldLock }) {
           Pour trouver l'île, il faut la carte au trésor complète et le phare
           allumé !
         </p>
-        <Goal
+        <GoalBar
           icon={
             <MapIcon size={24} strokeWidth={ICON_STROKE} aria-hidden="true" />
           }
@@ -82,7 +36,7 @@ export function LockedWorld({ lock }: { lock: WorldLock }) {
           need={4}
         />
         {lock.need > 0 && (
-          <Goal
+          <GoalBar
             icon={<StarIcon size={24} />}
             label="Étoiles du phare"
             have={lock.have}

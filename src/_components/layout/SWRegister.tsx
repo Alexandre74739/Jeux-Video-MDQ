@@ -1,98 +1,21 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { RefreshCw } from "lucide-react";
 import "@/lib/install"; // écoute l'événement d'installation dès le chargement
-import { warmVoice } from "@/lib/sound";
 import { startAutoSync } from "@/lib/profiles";
-
-const CHECK_EVERY = 15 * 60 * 1000; // vérifie les mises à jour toutes les 15 minutes
-/** Pages du jeu : en y entrant, tout le site (3D, images) est mis en cache pour le hors-ligne. */
-const GAME_PAGES = /^\/(jouer|creer|cubo)(\/|$)/;
+import { useServiceWorker } from "@/hooks/useServiceWorker";
 
 /**
  * Enregistre le service worker (site hors-ligne) et applique automatiquement les mises à jour :
  * chaque déploiement produit un nouveau sw.js ; dès qu'il prend le relais, la page se recharge.
  */
 export default function SWRegister() {
-  const [updating, setUpdating] = useState(false);
-
-  const pathname = usePathname();
-  useEffect(() => {
-    if (
-      process.env.NODE_ENV !== "production" ||
-      !("serviceWorker" in navigator) ||
-      !GAME_PAGES.test(pathname)
-    )
-      return;
-    navigator.serviceWorker.ready
-      .then((r) => r.active?.postMessage("warm"))
-      .catch(() => {});
-  }, [pathname]);
+  const updating = useServiceWorker();
 
   // Sauvegarde en ligne du joueur en cours (si son compte est relié)
   useEffect(() => {
     startAutoSync();
-  }, []);
-
-  useEffect(() => {
-    if (
-      process.env.NODE_ENV !== "production" ||
-      !("serviceWorker" in navigator)
-    ) {
-      warmVoice();
-      return;
-    }
-    let reg: ServiceWorkerRegistration | undefined;
-    const hadController = !!navigator.serviceWorker.controller;
-    let reloading = false;
-
-    const check = () => {
-      if (navigator.onLine) reg?.update().catch(() => {});
-    };
-
-    navigator.serviceWorker
-      .register("/sw.js", { updateViaCache: "none" })
-      .then((r) => {
-        reg = r;
-        check();
-        return navigator.serviceWorker.ready;
-      })
-      .then(() => warmVoice())
-      .catch(() => {});
-
-    // Nouvelle version active : on recharge (sauf à la toute première installation).
-    const onControllerChange = () => {
-      if (!hadController || reloading) return;
-      reloading = true;
-      if (document.visibilityState === "hidden") {
-        window.location.reload();
-        return;
-      }
-      setUpdating(true);
-      setTimeout(() => window.location.reload(), 2500);
-    };
-    const onVisible = () => {
-      if (document.visibilityState === "visible") check();
-    };
-
-    navigator.serviceWorker.addEventListener(
-      "controllerchange",
-      onControllerChange,
-    );
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("online", check);
-    const timer = setInterval(check, CHECK_EVERY);
-    return () => {
-      navigator.serviceWorker.removeEventListener(
-        "controllerchange",
-        onControllerChange,
-      );
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("online", check);
-      clearInterval(timer);
-    };
   }, []);
 
   return (

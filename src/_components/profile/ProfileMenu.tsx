@@ -37,11 +37,8 @@ import { CODE_LENGTH, DEFAULT_AVATAR, cleanPseudo } from "@/lib/cloud";
 
 import { sfx } from "@/lib/sound";
 import { ERRORS, errorText } from "@/_components/profile/errors";
-import {
-  SPRITES,
-  Avatar,
-  AvatarPicker,
-} from "@/_components/profile/AvatarPicker";
+import { SPRITES, Avatar } from "@/_components/profile/Avatar";
+import { AvatarPicker } from "@/_components/profile/AvatarPicker";
 import { CodePad } from "@/_components/profile/CodePad";
 import { ICON_STROKE } from "@/lib/site";
 

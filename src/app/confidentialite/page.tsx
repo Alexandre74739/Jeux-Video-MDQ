@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import LegalLayout from "@/_components/legal/LegalLayout";
 import { PUBLISHER } from "@/lib/site";
+import CloudSaveDetails from "./_components/CloudSaveDetails";
+import KidsSummary from "./_components/KidsSummary";
 
 export const metadata: Metadata = {
   title: "Confidentialité",
@@ -15,28 +17,7 @@ export default function Confidentialite() {
   );
   return (
     <LegalLayout title="Confidentialité" updated="21 novembre 2026">
-      <aside className="toon mt-6 rounded-3xl bg-sun/40 p-5">
-        <p className="mt-0! font-display text-xl font-bold">
-          En bref, pour les enfants
-        </p>
-        <ul>
-          <li>
-            Tu peux jouer sans rien donner : pas de nom, pas d&apos;e-mail, pas
-            de compte.
-          </li>
-          <li>
-            Tes étoiles et tes jeux restent sur ton ordinateur ou ta tablette.
-          </li>
-          <li>
-            Si tu choisis la sauvegarde en ligne, on garde seulement ton pseudo,
-            ton code (caché) et ta progression.
-          </li>
-          <li>
-            N&apos;utilise jamais ton vrai prénom ou ton nom comme pseudo.
-          </li>
-          <li>Tu peux tout effacer quand tu veux, depuis le menu du joueur.</li>
-        </ul>
-      </aside>
+      <KidsSummary />
 
       <h2>Responsable du traitement</h2>
       <p>
@@ -52,34 +33,7 @@ export default function Confidentialite() {
         réduites et ne quittent jamais l&apos;appareil.
       </p>
 
-      <h2>Sauvegarde en ligne (facultative)</h2>
-      <ul>
-        <li>
-          <strong>Données :</strong> pseudo, code secret à 4 chiffres
-          (enregistré sous forme chiffrée irréversible), identifiant du
-          personnage choisi comme avatar, étoiles, badges, tenue, scènes de
-          l&apos;histoire vues, dates de création et de dernière utilisation.
-        </li>
-        <li>
-          <strong>Finalité :</strong> retrouver sa progression sur un autre
-          appareil.
-        </li>
-        <li>
-          <strong>Base légale :</strong> le consentement (article 6.1.a du
-          RGPD). Pour un enfant de moins de 15 ans, ce consentement est donné
-          avec l&apos;accord d&apos;un parent ou de l&apos;animateur de la
-          séance (article 45 de la loi Informatique et Libertés).
-        </li>
-        <li>
-          <strong>Durée de conservation :</strong> un compte inutilisé pendant
-          12 mois est supprimé automatiquement. Une connexion inutilisée pendant
-          6 mois expire.
-        </li>
-        <li>
-          <strong>Sécurité :</strong> connexion chiffrée (HTTPS), code secret
-          haché avec sel, nombre d&apos;essais limité.
-        </li>
-      </ul>
+      <CloudSaveDetails />
 
       <h2>Adresse IP</h2>
       <p>
