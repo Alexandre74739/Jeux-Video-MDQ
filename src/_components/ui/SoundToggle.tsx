@@ -1,6 +1,6 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { setMuted, setVoicePrefs, sfx } from "@/lib/sound";
 import { ICON_STROKE } from "@/lib/site";
@@ -14,8 +14,7 @@ export function SoundToggle() {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
-  const hide = useCallback(() => setOpen(false), []);
-  useDismiss(open, box, hide);
+  useDismiss(open, box, () => setOpen(false));
 
   return (
     <div ref={box} className="relative">

@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   starsOf,
   useProfiles,
@@ -36,12 +36,12 @@ export function useProfileMenu() {
     [open, list],
   );
 
-  const close = useCallback(() => {
+  const close = () => {
     setOpen(false);
     setView("home");
     setError(null);
     setConfirmDelete(false);
-  }, []);
+  };
   useEscape(close, open);
 
   const sel = list.find((p) => p.id === selId) ?? null;

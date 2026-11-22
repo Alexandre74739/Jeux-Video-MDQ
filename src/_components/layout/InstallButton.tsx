@@ -1,6 +1,6 @@
 "use client";
 import { AnimatePresence } from "motion/react";
-import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { Download } from "lucide-react";
 import {
   canPrompt,
@@ -37,8 +37,7 @@ export default function InstallButton({
   const [help, setHelp] = useState(false);
   const box = useRef<HTMLDivElement>(null);
 
-  const hide = useCallback(() => setHelp(false), []);
-  useDismiss(help, box, hide);
+  useDismiss(help, box, () => setHelp(false));
 
   if (standalone) return null;
 
