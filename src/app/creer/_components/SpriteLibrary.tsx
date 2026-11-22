@@ -1,9 +1,10 @@
 "use client";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Cubo } from "@/_components/ui/Cubo";
 import { X } from "lucide-react";
 import { sfx } from "@/lib/sound";
+import { useEscape } from "@/hooks/useEscape";
 import LIBRARY from "@/lib/sprites.json";
 import { ImageImportButton } from "./ImageImportButton";
 import { SpriteGrid } from "./SpriteGrid";
@@ -19,11 +20,7 @@ export function SpriteLibrary({
 }) {
   const cats = Array.from(new Set(LIBRARY.map((s) => s.category)));
   const [cat, setCat] = useState(cats[0]);
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", k);
-    return () => window.removeEventListener("keydown", k);
-  }, [onClose]);
+  useEscape(onClose);
 
   return (
     <motion.div

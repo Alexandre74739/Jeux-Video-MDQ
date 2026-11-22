@@ -1,21 +1,14 @@
 "use client";
-import Link from "next/link";
 import { motion } from "motion/react";
 import { useEffect } from "react";
 import { Cubo } from "@/_components/ui/Cubo";
-import { Icon, StarIcon } from "@/_components/icons/Icon";
-import {
-  ArrowRight,
-  BookOpen,
-  Gift,
-  Lightbulb,
-  Trophy,
-  RotateCcw,
-} from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { BADGES, type Item } from "@/lib/rewards";
 import { badgeLine, giftLine, winLine } from "@/lib/lines";
 import { sfx, speak } from "@/lib/sound";
-import { ICON_STROKE } from "@/lib/site";
+import { WinActions } from "./WinActions";
+import { WinRewards } from "./WinRewards";
+import { WinStars } from "./WinStars";
 
 export type WinInfo = {
   stars: number;
@@ -75,31 +68,7 @@ export function WinCard({
       <h2 id="win-title" className="mt-8 text-3xl font-bold sm:text-4xl">
         Niveau {levelId} réussi !
       </h2>
-      <div
-        className="my-4 flex justify-center gap-3"
-        aria-label={`${info.stars} étoiles sur 3`}
-      >
-        {[0, 1, 2].map((i) => (
-          <motion.span
-            key={i}
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: i < info.stars ? 1 : 0.8, rotate: 0 }}
-            transition={{
-              delay: 0.35 + i * 0.3,
-              type: "spring",
-              stiffness: 400,
-              damping: 10,
-            }}
-            aria-hidden="true"
-          >
-            <StarIcon
-              size={68}
-              filled={i < info.stars}
-              className="size-14 sm:size-[68px]"
-            />
-          </motion.span>
-        ))}
-      </div>
+      <WinStars stars={info.stars} />
       <p className="text-lg font-bold">
         Tu as utilisé <strong className="text-grape">{info.used}</strong> bloc
         {info.used > 1 ? "s" : ""}.
@@ -116,91 +85,14 @@ export function WinCard({
           boucle « répéter » !
         </p>
       )}
-      {info.badges.map((k) => (
-        <motion.div
-          key={k}
-          initial={{ scale: 0, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          transition={{ delay: 1.4, type: "spring" }}
-          className="toon mt-3 flex items-center gap-3 rounded-2xl bg-lilac px-4 py-2 text-left"
-        >
-          <span
-            className="grid size-14 shrink-0 place-items-center rounded-full border-[3px] border-ink bg-sun"
-            aria-hidden="true"
-          >
-            <Icon name={BADGES[k].icon} size={28} />
-          </span>
-          <span>
-            <span className="block font-display text-lg font-bold">
-              Nouveau badge : {BADGES[k].name}
-            </span>
-            <span className="font-bold">{BADGES[k].text}</span>
-          </span>
-        </motion.div>
-      ))}
-      {info.gifts.map((g) => (
-        <motion.div
-          key={g.id}
-          initial={{ scale: 0, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          transition={{ delay: 1.6, type: "spring" }}
-          className="toon mt-3 flex items-center gap-3 rounded-2xl bg-sky/60 px-4 py-2 text-left"
-        >
-          <span
-            className="grid size-14 shrink-0 place-items-center rounded-full border-[3px] border-ink bg-paper"
-            aria-hidden="true"
-          >
-            <Gift size={28} strokeWidth={ICON_STROKE} />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-display text-lg font-bold">
-              Cadeau pour Cubo : {g.name} !
-            </span>
-            <Link href="/cubo/" className="font-extrabold text-grape underline">
-              Essayer dans « Mon Cubo »
-            </Link>
-          </span>
-        </motion.div>
-      ))}
-      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
-        <button
-          onClick={onReplay}
-          className="btn flex items-center justify-center gap-1.5 bg-paper py-3 text-lg sm:flex-1"
-        >
-          <RotateCcw size={18} strokeWidth={3} aria-hidden="true" /> Rejouer
-        </button>
-        {last && info.outro ? (
-          <motion.button
-            autoFocus
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ repeat: Infinity, duration: 1.2 }}
-            onClick={onStory}
-            className="btn flex items-center justify-center gap-2 bg-sun py-3 text-lg sm:flex-[2]"
-          >
-            <BookOpen size={20} strokeWidth={ICON_STROKE} aria-hidden="true" />{" "}
-            La suite de l'histoire
-          </motion.button>
-        ) : last ? (
-          <Link
-            href="/jouer/"
-            className="btn flex items-center justify-center gap-2 bg-pink py-3 text-lg sm:flex-[2]"
-          >
-            <Trophy size={20} strokeWidth={ICON_STROKE} aria-hidden="true" />{" "}
-            Autres défis
-          </Link>
-        ) : (
-          <motion.button
-            autoFocus
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ repeat: Infinity, duration: 1.2 }}
-            onClick={onNext}
-            className="btn flex items-center justify-center gap-2 bg-mint py-3 text-lg sm:flex-[2]"
-          >
-            Niveau suivant{" "}
-            <ArrowRight size={20} strokeWidth={3} aria-hidden="true" />
-          </motion.button>
-        )}
-      </div>
+      <WinRewards badges={info.badges} gifts={info.gifts} />
+      <WinActions
+        last={last}
+        outro={info.outro}
+        onReplay={onReplay}
+        onNext={onNext}
+        onStory={onStory}
+      />
     </motion.div>
   );
 }
