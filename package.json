@@ -12,7 +12,9 @@
     "verify": "node --experimental-strip-types scripts/verify-levels.ts",
     "voices": "node --experimental-strip-types scripts/build-voices.ts",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test \"tests/**/*.test.ts\""
+    "test": "node --experimental-strip-types --test \"tests/**/*.test.ts\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -34,6 +36,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.6",
     "msedge-tts": "^2.1.1",
+    "prettier": "^3.10.1",
     "tailwindcss": "^4.3.5",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"

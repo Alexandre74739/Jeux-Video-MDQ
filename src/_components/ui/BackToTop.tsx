@@ -18,12 +18,17 @@ export default function BackToTop() {
     <AnimatePresence>
       {show && (
         <motion.button
-          initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 90 }}
-          whileHover={{ y: -4 }} whileTap={{ scale: 0.9 }}
+          initial={{ scale: 0, rotate: -90 }}
+          animate={{ scale: 1, rotate: 0 }}
+          exit={{ scale: 0, rotate: 90 }}
+          whileHover={{ y: -4 }}
+          whileTap={{ scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 18 }}
           onClick={() => {
             sfx("jump");
-            const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const reduce = window.matchMedia(
+              "(prefers-reduced-motion: reduce)",
+            ).matches;
             window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
           }}
           className="btn fixed right-4 bottom-4 z-50 grid size-14 place-items-center bg-sun sm:right-6 sm:bottom-6"

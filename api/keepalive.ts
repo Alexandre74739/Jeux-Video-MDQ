@@ -6,7 +6,8 @@ import { database, json } from "./_mongo.js";
 
 export async function GET(req: Request): Promise<Response> {
   const secret = process.env.CRON_SECRET;
-  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return json({ ok: false }, 401);
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`)
+    return json({ ok: false }, 401);
   try {
     await (await database()).command({ ping: 1 });
     return json({ ok: true, at: new Date().toISOString() });

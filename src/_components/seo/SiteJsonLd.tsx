@@ -16,5 +16,12 @@ export default function SiteJsonLd() {
     offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
     author: { "@type": "Person", name: PUBLISHER.name },
   };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(data).replace(/</g, "\\u003c"),
+      }}
+    />
+  );
 }

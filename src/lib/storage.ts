@@ -5,12 +5,20 @@ const PREFIX = "cubocode:";
 export const MAIN_PROFILE = "main";
 
 /** Données propres à chaque joueur. */
-const PER_PLAYER = new Set(["progress", "story", "outfit", "outfitAt", "project", "streak"]);
+const PER_PLAYER = new Set([
+  "progress",
+  "story",
+  "outfit",
+  "outfitAt",
+  "project",
+  "streak",
+]);
 /** Données sauvegardées en ligne : un changement déclenche une synchronisation. */
 const SYNCED = new Set(["progress", "story", "outfit", "outfitAt"]);
 export const CHANGED_EVENT = "cubocode:changed";
 
-const perPlayer = (key: string) => PER_PLAYER.has(key) || key.startsWith("prog:");
+const perPlayer = (key: string) =>
+  PER_PLAYER.has(key) || key.startsWith("prog:");
 
 /** Joueur en cours sur cet appareil. */
 export function activeProfileId(): string {
@@ -24,7 +32,9 @@ export function activeProfileId(): string {
 
 /** Clé réelle d'une donnée, pour un joueur donné (le joueur en cours par défaut). */
 export function keyFor(key: string, profile = activeProfileId()) {
-  return perPlayer(key) && profile !== MAIN_PROFILE ? `${PREFIX}u:${profile}:${key}` : PREFIX + key;
+  return perPlayer(key) && profile !== MAIN_PROFILE
+    ? `${PREFIX}u:${profile}:${key}`
+    : PREFIX + key;
 }
 
 function read<T>(store: Storage, full: string, fallback: T): T {
@@ -47,7 +57,8 @@ export function save(key: string, value: unknown, { silent = false } = {}) {
   } catch {
     /* stockage plein ou bloqué : on continue sans sauvegarde */
   }
-  if (!silent && SYNCED.has(key)) window.dispatchEvent(new Event(CHANGED_EVENT));
+  if (!silent && SYNCED.has(key))
+    window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
 /** Efface toutes les données de jeu d'un joueur sur cet appareil (les réglages communs sont gardés). */
@@ -55,9 +66,12 @@ export function wipeProfile(profile: string) {
   try {
     for (const store of [window.localStorage, window.sessionStorage]) {
       const keys = Object.keys(store);
-      const doomed = profile === MAIN_PROFILE
-        ? keys.filter((k) => k.startsWith(PREFIX) && perPlayer(k.slice(PREFIX.length)))
-        : keys.filter((k) => k.startsWith(`${PREFIX}u:${profile}:`));
+      const doomed =
+        profile === MAIN_PROFILE
+          ? keys.filter(
+              (k) => k.startsWith(PREFIX) && perPlayer(k.slice(PREFIX.length)),
+            )
+          : keys.filter((k) => k.startsWith(`${PREFIX}u:${profile}:`));
       doomed.forEach((k) => store.removeItem(k));
     }
   } catch {

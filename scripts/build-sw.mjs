@@ -24,7 +24,10 @@ for (const f of [...files]) {
   const i = parts.findIndex((p) => p.startsWith("__next."));
   if (i === -1 || i === parts.length - 1) continue;
   const flat = join(...parts.slice(0, i), parts.slice(i).join("."));
-  if (!existsSync(flat)) { await copyFile(f, flat); files.push(flat); }
+  if (!existsSync(flat)) {
+    await copyFile(f, flat);
+    files.push(flat);
+  }
 }
 
 files.sort();
@@ -40,9 +43,16 @@ for (const f of files) {
   if (rel.startsWith("/voice/")) continue;
   hash.update(rel);
   hash.update(await readFile(f));
-  const url = rel.endsWith("/index.html") ? rel.slice(0, -"index.html".length) : rel;
+  const url = rel.endsWith("/index.html")
+    ? rel.slice(0, -"index.html".length)
+    : rel;
   urls.push(url);
-  if ((await stat(f)).size <= CORE_MAX && !rel.startsWith("/sprites/") && !rel.startsWith("/screens/")) core.push(url);
+  if (
+    (await stat(f)).size <= CORE_MAX &&
+    !rel.startsWith("/sprites/") &&
+    !rel.startsWith("/screens/")
+  )
+    core.push(url);
 }
 // Le numéro de commit (fourni par Vercel) garantit une nouvelle version à chaque push.
 hash.update(process.env.VERCEL_GIT_COMMIT_SHA ?? "");
@@ -50,6 +60,11 @@ const version = hash.digest("hex").slice(0, 10);
 const tpl = await readFile("scripts/sw-template.js", "utf8");
 await writeFile(
   join(OUT, "sw.js"),
-  tpl.replace("__VERSION__", version).replace("__URLS__", JSON.stringify(urls)).replace("__CORE__", JSON.stringify(core))
+  tpl
+    .replace("__VERSION__", version)
+    .replace("__URLS__", JSON.stringify(urls))
+    .replace("__CORE__", JSON.stringify(core)),
 );
-console.log(`sw.js : ${core.length} fichiers dès la 1re visite, ${urls.length} au total (v${version})`);
+console.log(
+  `sw.js : ${core.length} fichiers dès la 1re visite, ${urls.length} au total (v${version})`,
+);

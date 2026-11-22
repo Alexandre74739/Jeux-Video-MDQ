@@ -1,7 +1,9 @@
 // Informations générales du site (métadonnées, SEO, pages légales).
 
 /** Adresse publique du site : à définir dans Vercel (NEXT_PUBLIC_SITE_URL) si un domaine est utilisé. */
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://jeux-video-mdq.vercel.app").replace(/\/$/, "");
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://jeux-video-mdq.vercel.app"
+).replace(/\/$/, "");
 export const SITE_NAME = "CuboCode";
 export const SITE_TITLE = "CuboCode : crée ton jeu vidéo";
 export const SITE_DESCRIPTION =
@@ -10,7 +12,8 @@ export const SITE_DESCRIPTION =
 /** Éditeur du site (mentions légales). */
 export const PUBLISHER = {
   name: "Alexandre-Philippe Perez",
-  contact: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "perezalexandre430@gmail.com",
+  contact:
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL || "perezalexandre430@gmail.com",
 };
 
 /** Couleur de trait de la charte (identique au token CSS --color-ink), pour les SVG et styles en ligne. */

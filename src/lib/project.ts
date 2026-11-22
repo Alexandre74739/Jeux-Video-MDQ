@@ -11,37 +11,61 @@ const MAX_DEPTH = 12;
 
 const ID = /^[\w-]{1,40}$/;
 /** Image locale de la bibliothèque, ou image importée et réduite sur l'appareil (data:image/…). */
-const SAFE_SRC = /^(\/sprites\/[\w-]{1,40}\.svg|data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]{1,400000})$/;
+const SAFE_SRC =
+  /^(\/sprites\/[\w-]{1,40}\.svg|data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+/=]{1,400000})$/;
 
 const num = (v: unknown, min: number, max: number, fallback: number) =>
-  typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : fallback;
-const text = (v: unknown, max: number) => (typeof v === "string" ? v.slice(0, max) : "");
+  typeof v === "number" && Number.isFinite(v)
+    ? Math.min(max, Math.max(min, v))
+    : fallback;
+const text = (v: unknown, max: number) =>
+  typeof v === "string" ? v.slice(0, max) : "";
 
-function blocks(list: unknown, isBlockType: (t: string) => boolean, depth: number, budget: { left: number }): Block[] {
+function blocks(
+  list: unknown,
+  isBlockType: (t: string) => boolean,
+  depth: number,
+  budget: { left: number },
+): Block[] {
   if (!Array.isArray(list) || depth > MAX_DEPTH) return [];
   const out: Block[] = [];
   for (const raw of list) {
     if (budget.left-- <= 0) break;
     const b = raw as Record<string, unknown>;
-    if (!b || typeof b.type !== "string" || !isBlockType(b.type) || typeof b.id !== "string" || !ID.test(b.id)) continue;
+    if (
+      !b ||
+      typeof b.type !== "string" ||
+      !isBlockType(b.type) ||
+      typeof b.id !== "string" ||
+      !ID.test(b.id)
+    )
+      continue;
     const params: Block["params"] = {};
     if (b.params && typeof b.params === "object") {
-      for (const [k, v] of Object.entries(b.params as Record<string, unknown>).slice(0, 10)) {
+      for (const [k, v] of Object.entries(
+        b.params as Record<string, unknown>,
+      ).slice(0, 10)) {
         if (!ID.test(k)) continue;
         if (typeof v === "number" && Number.isFinite(v)) params[k] = v;
         else if (typeof v === "string") params[k] = v.slice(0, 80);
       }
     }
     const block: Block = { id: b.id, type: b.type, params };
-    if (b.children !== undefined) block.children = blocks(b.children, isBlockType, depth + 1, budget);
-    if (b.alt !== undefined) block.alt = blocks(b.alt, isBlockType, depth + 1, budget);
+    if (b.children !== undefined)
+      block.children = blocks(b.children, isBlockType, depth + 1, budget);
+    if (b.alt !== undefined)
+      block.alt = blocks(b.alt, isBlockType, depth + 1, budget);
     out.push(block);
   }
   return out;
 }
 
 /** Projet propre, ou null si le fichier n'est pas un jeu CuboCode utilisable. */
-export function sanitizeProject(x: unknown, isBlockType: (t: string) => boolean, isBackground: (id: string) => boolean): Project | null {
+export function sanitizeProject(
+  x: unknown,
+  isBlockType: (t: string) => boolean,
+  isBackground: (id: string) => boolean,
+): Project | null {
   if (!x || typeof x !== "object") return null;
   const o = x as Record<string, unknown>;
   if (!Array.isArray(o.sprites)) return null;
@@ -49,7 +73,14 @@ export function sanitizeProject(x: unknown, isBlockType: (t: string) => boolean,
   const sprites: SpriteDef[] = [];
   for (const raw of o.sprites.slice(0, MAX_SPRITES)) {
     const s = raw as Record<string, unknown>;
-    if (!s || typeof s.id !== "string" || !ID.test(s.id) || typeof s.src !== "string" || !SAFE_SRC.test(s.src)) continue;
+    if (
+      !s ||
+      typeof s.id !== "string" ||
+      !ID.test(s.id) ||
+      typeof s.src !== "string" ||
+      !SAFE_SRC.test(s.src)
+    )
+      continue;
     sprites.push({
       id: s.id,
       name: text(s.name, 30) || "Personnage",

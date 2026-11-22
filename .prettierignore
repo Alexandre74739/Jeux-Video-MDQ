@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+public
+package-lock.json
+next-env.d.ts
+src/lib/voice-manifest.json
+src/lib/sprites.json
+*.tsbuildinfo

@@ -27,7 +27,10 @@ export function useOutfit(): Outfit {
     upd();
     window.addEventListener(EVENT, upd);
     window.addEventListener("storage", upd);
-    return () => { window.removeEventListener(EVENT, upd); window.removeEventListener("storage", upd); };
+    return () => {
+      window.removeEventListener(EVENT, upd);
+      window.removeEventListener("storage", upd);
+    };
   }, []);
   return o;
 }

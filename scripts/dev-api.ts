@@ -9,7 +9,8 @@ import * as keepalive from "../api/keepalive";
 if (existsSync(".env")) {
   for (const line of readFileSync(".env", "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=(.*)$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim().replace(/^(["'])(.*)\1$/, "$2");
+    if (m && !process.env[m[1]])
+      process.env[m[1]] = m[2].trim().replace(/^(["'])(.*)\1$/, "$2");
   }
 }
 
@@ -23,21 +24,35 @@ const PORT = 3001;
 createServer(async (req, res) => {
   const path = (req.url ?? "/").split("?")[0].replace(/\/+$/, "");
   const handler = ROUTES[path]?.[req.method ?? "GET"];
-  if (!handler) { res.writeHead(404, { "content-type": "application/json" }); res.end('{"error":"notFound"}'); return; }
+  if (!handler) {
+    res.writeHead(404, { "content-type": "application/json" });
+    res.end('{"error":"notFound"}');
+    return;
+  }
   const chunks: Buffer[] = [];
   for await (const c of req) chunks.push(c as Buffer);
   const hasBody = !["GET", "HEAD"].includes(req.method ?? "GET");
   try {
-    const r = await handler(new Request(`http://localhost:${PORT}${req.url}`, {
-      method: req.method, headers: { "content-type": String(req.headers["content-type"] ?? "application/json") },
-      body: hasBody ? Buffer.concat(chunks) : undefined,
-    }));
+    const r = await handler(
+      new Request(`http://localhost:${PORT}${req.url}`, {
+        method: req.method,
+        headers: {
+          "content-type": String(
+            req.headers["content-type"] ?? "application/json",
+          ),
+        },
+        body: hasBody ? Buffer.concat(chunks) : undefined,
+      }),
+    );
     res.writeHead(r.status, Object.fromEntries(r.headers));
     res.end(Buffer.from(await r.arrayBuffer()));
   } catch (e) {
     console.error(e);
-    res.writeHead(500); res.end('{"error":"server"}');
+    res.writeHead(500);
+    res.end('{"error":"server"}');
   }
 }).listen(PORT, () => {
-  console.log(`API locale prête sur http://localhost:${PORT} (MONGODB_URI ${process.env.MONGODB_URI ? "trouvée" : "MANQUANTE : ajoute-la dans .env"})`);
+  console.log(
+    `API locale prête sur http://localhost:${PORT} (MONGODB_URI ${process.env.MONGODB_URI ? "trouvée" : "MANQUANTE : ajoute-la dans .env"})`,
+  );
 });

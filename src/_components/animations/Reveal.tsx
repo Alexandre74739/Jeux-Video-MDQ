@@ -2,9 +2,19 @@
 import { motion } from "motion/react";
 
 /** Apparition douce quand le bloc entre dans l'écran (une seule fois). Utilisable depuis un composant serveur. */
-type Props = { children: React.ReactNode; className?: string; delay?: number; style?: React.CSSProperties };
+type Props = {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  style?: React.CSSProperties;
+};
 
-export default function Reveal({ children, className = "", delay = 0, style }: Props) {
+export default function Reveal({
+  children,
+  className = "",
+  delay = 0,
+  style,
+}: Props) {
   return (
     <motion.div
       style={style}
