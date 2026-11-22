@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, Check, Info, Lock, Palette, Shirt, Sparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check, Info, Lock, Map as MapIcon, Palette, Shirt, Sparkles, X } from "lucide-react";
 import StoryModal, { TreasureMap } from "@/_components/game/StoryModal";
 import { AnimatePresence } from "motion/react";
 import { useRef } from "react";
@@ -16,7 +16,7 @@ import { Icon, StarIcon } from "@/_components/icons/Icon";
 import { BlockView } from "@/_components/game/BlockView";
 import { createBlock } from "@/lib/blocks";
 import { BLOCKS } from "@/lib/blocks";
-import { COURSES, DIFFICULTY, buildWorld, type Course } from "@/lib/levels";
+import { COURSES, DIFFICULTY, buildWorld, worldLock, type Course } from "@/lib/levels";
 import { load, loadSession, saveSession } from "@/lib/storage";
 import { BADGES, emptyProgress, nextItem, totalStars, type Progress } from "@/lib/rewards";
 import { ISLAND_STARS, MAP_COURSES, STORY } from "@/lib/story";
@@ -206,7 +206,7 @@ export default function CourseHub() {
             <p className="mt-1 font-bold text-ink-soft">
               {got.every(Boolean)
                 ? "La carte est complète ! Elle mène à l'île secrète."
-                : `Chaque défi terminé te donne un morceau de la carte. Tu en as ${got.filter(Boolean).length} sur 4.`}
+                : `Chaque défi terminé te donne un morceau de la carte. Tu en as ${got.filter(Boolean).length} sur 4 : il faut les 4 pour trouver l'île secrète.`}
             </p>
             <div className="mt-4 flex items-center justify-between text-sm font-extrabold">
               <span>Le phare de l'île</span>
@@ -237,8 +237,8 @@ export default function CourseHub() {
             const stars = c.levels.reduce((a, l) => a + (progress.stars[`${c.slug}:${l.id}`] ?? 0), 0);
             const max = c.levels.length * 3;
             const label = done === c.levels.length ? "Rejouer" : done > 0 ? "Continuer" : "Commencer";
-            const locked = !!c.unlockStars && total < c.unlockStars;
-            if (locked) return (
+            const lock = worldLock(c, progress.stars);
+            if (lock) return (
               <motion.article
                 key={c.slug}
                 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
@@ -246,8 +246,11 @@ export default function CourseHub() {
               >
                 <span className="grid size-16 place-items-center rounded-full border-[3px] border-ink bg-cream"><Lock size={30} strokeWidth={ICON_STROKE} aria-hidden="true" /></span>
                 <h2 className="text-3xl font-bold">{c.title}</h2>
-                <p className="font-bold text-ink-soft">Un monde secret… Allume le phare avec {c.unlockStars} étoiles pour le découvrir !</p>
-                <p className="flex items-center gap-1 font-display text-xl font-bold"><StarIcon size={22} /> {total} / {c.unlockStars}</p>
+                <p className="font-bold text-ink-soft">Un monde secret… Complète la carte au trésor et allume le phare avec {lock.need} étoiles pour le découvrir !</p>
+                <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 font-display text-xl font-bold">
+                  <span className="flex items-center gap-1"><MapIcon size={22} strokeWidth={ICON_STROKE} aria-hidden="true" /> {lock.pieces} / 4<span className="sr-only"> morceaux de carte</span></span>
+                  <span className="flex items-center gap-1"><StarIcon size={22} /> {Math.min(lock.have, lock.need)} / {lock.need}<span className="sr-only"> étoiles</span></span>
+                </p>
               </motion.article>
             );
             return (

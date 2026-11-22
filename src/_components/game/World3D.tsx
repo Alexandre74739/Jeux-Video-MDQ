@@ -369,9 +369,31 @@ function Face3D({ id }: { id: string }) {
   }
 }
 
+/** Matière du corps de Cubo : couleur unie, ou rayures diagonales dessinées dans une petite texture. */
+function bodyMaterial(id: string): THREE.Material {
+  const c = colorOf(id);
+  if (!c.stripes || typeof document === "undefined") return mat(c.faces[1]);
+  const S = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = S;
+  const g = canvas.getContext("2d")!;
+  g.fillStyle = c.faces[1];
+  g.fillRect(0, 0, S, S);
+  g.fillStyle = c.stripes[1];
+  // 4 bandes diagonales qui se raccordent d'une face à l'autre (motif répétable)
+  for (let k = -S; k < 2 * S; k += S / 2) {
+    g.beginPath();
+    g.moveTo(k, 0); g.lineTo(k + S / 4, 0); g.lineTo(k + S / 4 - S, S); g.lineTo(k - S, S);
+    g.closePath(); g.fill();
+  }
+  const map = new THREE.CanvasTexture(canvas);
+  map.colorSpace = THREE.SRGBColorSpace;
+  return mat("#ffffff", { map });
+}
+
 /** Corps de Cubo (cube, yeux, accessoires, chapeau) avec la tenue choisie. */
 export function CuboBody({ outfit }: { outfit: Outfit }) {
-  const body = useMemo(() => mat(colorOf(outfit.color).faces[1]), [outfit.color]);
+  const body = useMemo(() => bodyMaterial(outfit.color), [outfit.color]);
   return (
     <>
       <Box size={[0.64, 0.64, 0.64]} pos={[0, 0, 0]} material={body} />

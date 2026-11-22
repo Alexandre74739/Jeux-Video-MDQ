@@ -1,4 +1,5 @@
 "use client";
+import { useId } from "react";
 import { useOutfit } from "@/lib/outfit";
 import { colorOf, type Outfit } from "@/lib/rewards";
 
@@ -125,10 +126,24 @@ function Face2D({ id, y, under }: { id: string; y: number; under: boolean }) {
 export function Cubo({ size = 120, mood = "happy", className = "", outfit }: { size?: number; mood?: Mood; className?: string; outfit?: Outfit }) {
   const current = useOutfit();
   const o = outfit ?? current;
-  const [top, left, right] = colorOf(o.color).faces;
+  const color = colorOf(o.color);
+  const uid = useId().replace(/:/g, "");
+  // Couleur rayée : un motif de rayures diagonales par face (mêmes ombres que les couleurs unies).
+  const fills = color.faces.map((f, i) => (color.stripes ? `url(#${uid}-s${i})` : f));
+  const [top, left, right] = fills;
   const eyeY = mood === "sad" ? 62 : 58;
   return (
     <svg viewBox="0 0 120 130" width={size} height={size * 1.08} className={className} style={{ overflow: "visible" }} aria-hidden="true">
+      {color.stripes && (
+        <defs>
+          {color.faces.map((f, i) => (
+            <pattern key={i} id={`${uid}-s${i}`} width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="14" height="14" fill={f} />
+              <rect width="7" height="14" fill={color.stripes![i]} />
+            </pattern>
+          ))}
+        </defs>
+      )}
       <ellipse cx="60" cy="122" rx="38" ry="6" fill="#16123A" opacity="0.18" />
       {/* accessoire de dos */}
       <Back2D id={o.back} />
