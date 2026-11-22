@@ -2,7 +2,8 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef, type ReactNode } from "react";
 import * as THREE from "three";
-import { CuboBody, Trail } from "./World3D";
+import { CuboBody } from "./world3d/CuboBody";
+import { Trail } from "./world3d/Trail";
 import type { Outfit } from "@/lib/rewards";
 
 /** Cubo qui fait des petits tours sur son île, pour montrer sa tenue et sa traînée. */
