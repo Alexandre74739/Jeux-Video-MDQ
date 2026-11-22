@@ -27,7 +27,7 @@ export function SpriteLibrary({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[90] grid place-items-center bg-ink/50 p-4"
+      className="fixed inset-0 z-90 grid place-items-center bg-ink/50 p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -39,7 +39,7 @@ export function SpriteLibrary({
         exit={{ scale: 0.7, y: 40 }}
         transition={{ type: "spring", stiffness: 320, damping: 22 }}
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[88vh] w-[760px] max-w-full flex-col overflow-hidden rounded-[32px] border-[3px] border-ink bg-paper shadow-pop-xl"
+        className="flex max-h-[88vh] w-190 max-w-full flex-col overflow-hidden rounded-4xl border-[3px] border-ink bg-paper shadow-pop-xl"
       >
         <div className="flex items-center gap-3 border-b-[3px] border-ink bg-pink px-5 py-3">
           <Cubo size={40} mood="wow" />

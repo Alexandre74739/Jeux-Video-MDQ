@@ -18,7 +18,7 @@ export function LockedWorld({ lock }: { lock: WorldLock }) {
   }, [lock.pieces]);
   return (
     <div className="flex min-h-dvh items-center justify-center bg-cream px-4 py-10">
-      <div className="toon w-[460px] max-w-full rounded-[32px] bg-paper p-6 text-center">
+      <div className="toon w-115 max-w-full rounded-4xl bg-paper p-6 text-center">
         <div className="flex justify-center">
           <Cubo size={96} mood="think" />
         </div>

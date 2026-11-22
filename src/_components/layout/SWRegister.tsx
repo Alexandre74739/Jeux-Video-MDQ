@@ -26,7 +26,7 @@ export default function SWRegister() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           role="status"
-          className="fixed bottom-5 left-1/2 z-[120] flex -translate-x-1/2 items-center gap-3 rounded-full border-[3px] border-ink bg-ink px-5 py-3 font-display text-lg font-bold text-white shadow-pop"
+          className="fixed bottom-5 left-1/2 z-120 flex -translate-x-1/2 items-center gap-3 rounded-full border-[3px] border-ink bg-ink px-5 py-3 font-display text-lg font-bold text-white shadow-pop"
         >
           <motion.span
             animate={{ rotate: 360 }}

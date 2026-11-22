@@ -11,7 +11,7 @@ export function StepDots({ steps, step }: { steps: string[]; step: number }) {
         <li key={s} className="flex items-center gap-2">
           {i > 0 && (
             <span
-              className={`h-[3px] w-6 rounded-full ${i <= step ? "bg-ink" : "bg-ink/20"}`}
+              className={`h-0.75 w-6 rounded-full ${i <= step ? "bg-ink" : "bg-ink/20"}`}
               aria-hidden="true"
             />
           )}

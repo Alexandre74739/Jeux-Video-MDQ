@@ -82,7 +82,7 @@ export default function Wardrobe() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
             role="status"
-            className="fixed bottom-5 left-1/2 z-[120] w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-full border-[3px] border-ink bg-lilac px-5 py-3 font-display text-lg font-bold shadow-pop"
+            className="fixed bottom-5 left-1/2 z-120 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-full border-[3px] border-ink bg-lilac px-5 py-3 font-display text-lg font-bold shadow-pop"
           >
             Nouveau badge secret : {toast} !
           </motion.div>

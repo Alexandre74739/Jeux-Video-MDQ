@@ -34,7 +34,7 @@ export function DemoProgram({
           Effacer
         </button>
       </div>
-      <div className="dots flex min-h-[230px] flex-1 flex-col gap-1.5 p-5">
+      <div className="dots flex min-h-57.5 flex-1 flex-col gap-1.5 p-5">
         <div className="flex w-fit items-center gap-2 rounded-t-[22px] rounded-b-2xl border-[3px] border-ink bg-sun px-4 pt-2.5 pb-1.5 font-display font-semibold shadow-pop">
           <Play size={16} strokeWidth={3} fill="#16123A" aria-hidden="true" />{" "}
           quand je lance

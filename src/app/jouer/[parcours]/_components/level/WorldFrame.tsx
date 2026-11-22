@@ -19,7 +19,7 @@ export function WorldFrame({ g }: { g: LevelGameState }) {
   return (
     <div
       key={shake}
-      className={`relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop sm:aspect-[16/10] lg:aspect-auto lg:min-h-0 lg:flex-1 ${shake ? "shake" : ""}`}
+      className={`relative aspect-4/3 w-full shrink-0 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop sm:aspect-16/10 lg:aspect-auto lg:min-h-0 lg:flex-1 ${shake ? "shake" : ""}`}
       style={{
         background:
           "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)",

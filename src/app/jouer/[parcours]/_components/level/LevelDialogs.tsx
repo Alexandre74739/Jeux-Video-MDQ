@@ -19,7 +19,7 @@ export function LevelDialogs({ g }: { g: LevelGameState }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[90] flex justify-center overflow-y-auto bg-ink/50 px-4 pt-20 pb-6 sm:items-center sm:py-16"
+            className="fixed inset-0 z-90 flex justify-center overflow-y-auto bg-ink/50 px-4 pt-20 pb-6 sm:items-center sm:py-16"
             role="dialog"
             aria-modal="true"
             aria-labelledby="win-title"

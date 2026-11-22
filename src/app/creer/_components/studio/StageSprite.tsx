@@ -47,7 +47,7 @@ export function StageSprite({
         <motion.span
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute bottom-full left-1/2 mb-1 w-max max-w-[180px] -translate-x-1/4 rounded-2xl border-[3px] border-ink bg-paper px-3 py-1 font-display text-sm font-bold"
+          className="absolute bottom-full left-1/2 mb-1 w-max max-w-45 -translate-x-1/4 rounded-2xl border-[3px] border-ink bg-paper px-3 py-1 font-display text-sm font-bold"
         >
           {st.say}
         </motion.span>

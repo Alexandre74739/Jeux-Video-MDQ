@@ -39,14 +39,14 @@ export function CodePad({
           </span>
         ))}
       </div>
-      <div className="mx-auto mt-3 grid max-w-[240px] grid-cols-3 gap-2">
+      <div className="mx-auto mt-3 grid max-w-60 grid-cols-3 gap-2">
         {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
           <motion.button
             key={d}
             type="button"
             whileTap={{ scale: 0.88 }}
             onClick={() => add(d)}
-            className="btn aspect-[4/3] bg-paper font-display text-2xl"
+            className="btn aspect-4/3 bg-paper font-display text-2xl"
           >
             {d}
           </motion.button>
@@ -56,7 +56,7 @@ export function CodePad({
           type="button"
           whileTap={{ scale: 0.88 }}
           onClick={() => add("0")}
-          className="btn aspect-[4/3] bg-paper font-display text-2xl"
+          className="btn aspect-4/3 bg-paper font-display text-2xl"
         >
           0
         </motion.button>
@@ -68,7 +68,7 @@ export function CodePad({
             sfx("click");
           }}
           disabled={!value.length}
-          className="btn grid aspect-[4/3] place-items-center bg-cream disabled:opacity-40"
+          className="btn grid aspect-4/3 place-items-center bg-cream disabled:opacity-40"
           aria-label="Effacer le dernier chiffre"
         >
           <Delete size={22} strokeWidth={ICON_STROKE} aria-hidden="true" />

@@ -61,7 +61,7 @@ export function Stage({
       ref={stageRef}
       tabIndex={0}
       aria-label="Scène du jeu. Utilise les flèches du clavier pendant le jeu."
-      className="relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop outline-none"
+      className="relative aspect-4/3 w-full shrink-0 overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop outline-none"
       style={{ background: bg.css }}
     >
       {rt && <Planks rt={rt} scale={scale} />}

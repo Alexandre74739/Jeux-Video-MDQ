@@ -25,7 +25,7 @@ export function WinStars({ stars }: { stars: number }) {
           <StarIcon
             size={68}
             filled={i < stars}
-            className="size-14 sm:size-[68px]"
+            className="size-14 sm:size-17"
           />
         </motion.span>
       ))}

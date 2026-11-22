@@ -22,8 +22,8 @@ export function TileArt({
         animate={{ backgroundColor: ["#FF6A1F", "#FF8A3D", "#FF6A1F"] }}
         transition={{ repeat: Infinity, duration: 1.6 }}
       >
-        <span className="absolute top-[25%] left-[20%] size-[16%] rounded-full bg-[#FFD23F]" />
-        <span className="absolute top-[60%] left-[60%] size-[12%] rounded-full bg-[#FFD23F]" />
+        <span className="absolute top-[25%] left-[20%] size-[16%] rounded-full bg-sun" />
+        <span className="absolute top-[60%] left-[60%] size-[12%] rounded-full bg-sun" />
       </motion.div>
     );
   }
@@ -70,7 +70,7 @@ export function TileArt({
           }}
         >
           {t === "D" && (
-            <span className="absolute top-1/2 left-1/2 size-[40%] max-h-3 max-w-3 -translate-1/2 rounded-full border-2 border-ink bg-[#FFD23F]" />
+            <span className="absolute top-1/2 left-1/2 size-[40%] max-h-3 max-w-3 -translate-1/2 rounded-full border-2 border-ink bg-sun" />
           )}
         </div>
       )}
@@ -87,8 +87,8 @@ export function TileArt({
       )}
       {t === "f" && (
         <>
-          <span className="absolute top-[22%] left-[22%] size-[13%] border-2 border-ink bg-[#FF6B57]" />
-          <span className="absolute top-[55%] left-[62%] size-[13%] border-2 border-ink bg-[#FFD23F]" />
+          <span className="absolute top-[22%] left-[22%] size-[13%] border-2 border-ink bg-coral" />
+          <span className="absolute top-[55%] left-[62%] size-[13%] border-2 border-ink bg-sun" />
           <span className="absolute top-[70%] left-[35%] size-[13%] border-2 border-ink bg-white" />
         </>
       )}

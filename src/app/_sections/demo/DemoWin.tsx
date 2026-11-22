@@ -19,7 +19,7 @@ export function DemoWin({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[90] flex justify-center overflow-y-auto bg-ink/50 px-4 pt-20 pb-6 sm:items-center sm:py-16"
+      className="fixed inset-0 z-90 flex justify-center overflow-y-auto bg-ink/50 px-4 pt-20 pb-6 sm:items-center sm:py-16"
       role="dialog"
       aria-modal="true"
       aria-labelledby="demo-win-title"
@@ -31,7 +31,7 @@ export function DemoWin({
         initial={{ scale: 0.4, rotate: -6, y: 60 }}
         animate={{ scale: 1, rotate: 0, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 16 }}
-        className="relative h-fit w-[440px] max-w-full rounded-[32px] border-[3px] border-ink bg-paper p-5 text-center shadow-pop-xl sm:rounded-[36px] sm:p-7"
+        className="relative h-fit w-110 max-w-full rounded-4xl border-[3px] border-ink bg-paper p-5 text-center shadow-pop-xl sm:rounded-[36px] sm:p-7"
       >
         <motion.div
           className="absolute -top-16 left-1/2 -translate-x-1/2"
@@ -76,7 +76,7 @@ export function DemoWin({
             <RotateCcw size={18} strokeWidth={3} aria-hidden="true" /> Rejouer
           </button>
           <motion.div
-            className="sm:flex-[2]"
+            className="sm:flex-2"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ repeat: Infinity, duration: 1.2 }}
           >

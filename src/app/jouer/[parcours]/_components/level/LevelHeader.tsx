@@ -17,7 +17,7 @@ export function LevelHeader({ g }: { g: LevelGameState }) {
     0,
   );
   return (
-    <header className="sticky top-0 z-40 flex min-h-[72px] shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:px-4 lg:flex-nowrap">
+    <header className="sticky top-0 z-40 flex min-h-18 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:px-4 lg:flex-nowrap">
       <BackButton fallback="/jouer/" label="Défis" />
       <Logo small />
       <LevelNav g={g} />

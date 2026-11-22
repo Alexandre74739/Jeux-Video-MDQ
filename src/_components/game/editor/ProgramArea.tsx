@@ -24,7 +24,7 @@ export function ProgramArea({
   return (
     <section
       aria-label="Mon programme"
-      className={`flex min-h-[340px] min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-pop md:min-h-0 ${block.disabled ? "pointer-events-none" : ""}`}
+      className={`flex min-h-85 min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border-[3px] border-ink bg-paper shadow-pop md:min-h-0 ${block.disabled ? "pointer-events-none" : ""}`}
     >
       <div className="flex items-center gap-2 border-b-[3px] border-ink bg-sun px-4 py-1.5">
         <h2 className="text-lg font-bold whitespace-nowrap">{title}</h2>

@@ -22,7 +22,7 @@ export function InstallHelp({
       exit={{ opacity: 0, y: -8, scale: 0.95 }}
       role="dialog"
       aria-label="Comment installer l'application"
-      className={`rounded-3xl border-[3px] border-ink bg-paper p-4 text-left shadow-pop-lg ${full ? "relative mt-3 w-full" : "absolute top-14 right-0 z-[95] w-[min(320px,calc(100vw-2rem))]"}`}
+      className={`rounded-3xl border-[3px] border-ink bg-paper p-4 text-left shadow-pop-lg ${full ? "relative mt-3 w-full" : "absolute top-14 right-0 z-95 w-[min(320px,calc(100vw-2rem))]"}`}
     >
       <button
         onClick={onClose}

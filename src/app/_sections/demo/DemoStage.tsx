@@ -37,7 +37,7 @@ export function DemoStage({
   return (
     <div className="flex flex-col gap-3">
       <div
-        className="toon relative aspect-[4/3] w-full overflow-hidden rounded-[28px] sm:aspect-[16/10]"
+        className="toon relative aspect-4/3 w-full overflow-hidden rounded-[28px] sm:aspect-16/10"
         style={{
           background:
             "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)",

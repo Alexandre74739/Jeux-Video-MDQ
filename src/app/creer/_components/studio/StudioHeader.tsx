@@ -19,7 +19,7 @@ import type { StudioState } from "./useStudio";
 export function StudioHeader({ s }: { s: StudioState }) {
   const openRef = useRef<HTMLInputElement>(null);
   return (
-    <header className="sticky top-0 z-40 flex min-h-[72px] shrink-0 flex-wrap items-center gap-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:gap-3 sm:px-4">
+    <header className="sticky top-0 z-40 flex min-h-18 shrink-0 flex-wrap items-center gap-2 border-b-[3px] border-ink bg-paper px-3 py-2 sm:gap-3 sm:px-4">
       <BackButton fallback="/" />
       <Logo small />
       <span className="toon ml-2 hidden items-center gap-2 rounded-full bg-pink md:flex px-3 py-1 font-display text-lg font-bold">

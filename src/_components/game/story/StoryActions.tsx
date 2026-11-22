@@ -37,7 +37,7 @@ export function StoryActions({
           if (last) onSkip();
           else onNext();
         }}
-        className="btn flex items-center justify-center gap-2 bg-mint py-3 text-lg sm:flex-[2]"
+        className="btn flex items-center justify-center gap-2 bg-mint py-3 text-lg sm:flex-2"
       >
         {last ? (
           <>

@@ -13,7 +13,7 @@ export function Confetti({ fire }: { fire: number }) {
   return (
     <canvas
       ref={setCanvas}
-      className="pointer-events-none fixed inset-0 z-[100]"
+      className="pointer-events-none fixed inset-0 z-100"
       aria-hidden="true"
     />
   );

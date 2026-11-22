@@ -21,7 +21,7 @@ export function OutfitPreview({
   return (
     <section className="flex min-w-0 flex-col gap-4" aria-label="Aperçu">
       <div
-        className="relative aspect-square w-full overflow-hidden rounded-[30px] border-[3px] border-ink shadow-pop sm:aspect-[4/3] lg:aspect-square"
+        className="relative aspect-square w-full overflow-hidden rounded-[30px] border-[3px] border-ink shadow-pop sm:aspect-4/3 lg:aspect-square"
         style={{
           background:
             "radial-gradient(circle at 50% 30%, #D5F1FD 0%, #8FD8FA 100%)",

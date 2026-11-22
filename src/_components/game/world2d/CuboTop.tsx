@@ -26,7 +26,7 @@ export function CuboTop({ cubo, size }: { cubo: World["cubo"]; size: string }) {
       >
         <svg
           viewBox="0 0 100 100"
-          className="absolute -top-[42%] left-[30%] w-[40%] overflow-visible"
+          className="absolute top-[-42%] left-[30%] w-[40%] overflow-visible"
           aria-hidden="true"
         >
           <path

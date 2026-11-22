@@ -56,7 +56,7 @@ export function WinCard({
       initial={{ scale: 0.4, rotate: -6, y: 60 }}
       animate={{ scale: 1, rotate: 0, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 16 }}
-      className="relative h-fit w-[440px] max-w-full rounded-[32px] border-[3px] border-ink bg-paper p-5 text-center shadow-pop-xl sm:rounded-[36px] sm:p-7"
+      className="relative h-fit w-110 max-w-full rounded-4xl border-[3px] border-ink bg-paper p-5 text-center shadow-pop-xl sm:rounded-[36px] sm:p-7"
     >
       <motion.div
         className="absolute -top-16 left-1/2 -translate-x-1/2"

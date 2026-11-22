@@ -19,8 +19,8 @@ export function MobArt({ mob }: { mob: Mob }) {
         <div className="absolute inset-[22%] rounded-[30%] bg-[#3FAE4A]/60" />
       ) : (
         <>
-          <span className="absolute -top-[22%] left-[8%] h-[30%] w-[22%] rounded-t-full border-[3px] border-ink bg-[#FFF1BF]" />
-          <span className="absolute -top-[22%] right-[8%] h-[30%] w-[22%] rounded-t-full border-[3px] border-ink bg-[#FFF1BF]" />
+          <span className="absolute top-[-22%] left-[8%] h-[30%] w-[22%] rounded-t-full border-[3px] border-ink bg-[#FFF1BF]" />
+          <span className="absolute top-[-22%] right-[8%] h-[30%] w-[22%] rounded-t-full border-[3px] border-ink bg-[#FFF1BF]" />
         </>
       )}
       <span className="absolute top-[22%] left-[16%] size-[26%] rounded-full border-2 border-ink bg-white">

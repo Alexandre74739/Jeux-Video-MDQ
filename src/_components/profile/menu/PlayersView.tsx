@@ -58,7 +58,7 @@ export function PlayersView({ m }: { m: ProfileMenuState }) {
         <li>
           <button
             onClick={newPlayer}
-            className="flex h-full min-h-[132px] w-full flex-col items-center justify-center gap-1 rounded-3xl border-[3px] border-dashed border-ink/40 bg-cream p-3 font-display font-bold hover:border-ink"
+            className="flex h-full min-h-33 w-full flex-col items-center justify-center gap-1 rounded-3xl border-[3px] border-dashed border-ink/40 bg-cream p-3 font-display font-bold hover:border-ink"
           >
             <Plus size={30} strokeWidth={3} aria-hidden="true" /> Nouveau joueur
           </button>

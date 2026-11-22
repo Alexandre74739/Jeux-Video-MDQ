@@ -55,7 +55,7 @@ export function SpritePanel({
               sfx("click");
             }}
             aria-pressed={sp.id === s.sel}
-            className={`flex w-[78px] flex-col items-center rounded-2xl border-[3px] p-1 ${sp.id === s.sel ? "border-ink bg-lilac shadow-pop" : "border-ink/25 bg-cream"}`}
+            className={`flex w-19.5 flex-col items-center rounded-2xl border-[3px] p-1 ${sp.id === s.sel ? "border-ink bg-lilac shadow-pop" : "border-ink/25 bg-cream"}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={sp.src} alt="" className="size-11 object-contain" />
@@ -71,7 +71,7 @@ export function SpritePanel({
             s.setLibOpen(true);
             sfx("click");
           }}
-          className="flex w-[78px] flex-col items-center justify-center rounded-2xl border-[3px] border-dashed border-ink bg-sun/50 p-1 font-display font-bold"
+          className="flex w-19.5 flex-col items-center justify-center rounded-2xl border-[3px] border-dashed border-ink bg-sun/50 p-1 font-display font-bold"
         >
           <Plus size={30} strokeWidth={3} aria-hidden="true" />
           <span className="text-xs">Ajouter</span>

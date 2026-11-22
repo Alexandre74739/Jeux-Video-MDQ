@@ -23,9 +23,9 @@ export function CuboBubble({ g }: { g: LevelGameState }) {
       >
         <Cubo size={64} mood={msg.mood} />
       </motion.div>
-      <div className="toon relative min-h-[76px] flex-1 rounded-3xl bg-paper px-4 py-2.5">
+      <div className="toon relative min-h-19 flex-1 rounded-3xl bg-paper px-4 py-2.5">
         <span
-          className="absolute top-6 -left-[11px] size-4 rotate-45 border-b-[3px] border-l-[3px] border-ink bg-paper"
+          className="absolute top-6 -left-2.75 size-4 rotate-45 border-b-[3px] border-l-[3px] border-ink bg-paper"
           aria-hidden="true"
         />
         <p className="mb-0.5 font-display text-sm font-bold text-grape">

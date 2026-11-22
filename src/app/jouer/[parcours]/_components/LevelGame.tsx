@@ -17,7 +17,7 @@ export default function LevelGame({ slug }: { slug: string }) {
   if (g.lock) return <LockedWorld lock={g.lock} />;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-cream lg:h-dvh lg:min-h-[620px] lg:overflow-hidden">
+    <div className="flex min-h-dvh flex-col bg-cream lg:h-dvh lg:min-h-155 lg:overflow-hidden">
       <Confetti fire={g.confetti} />
       <LevelHeader g={g} />
       <main className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:flex-row">

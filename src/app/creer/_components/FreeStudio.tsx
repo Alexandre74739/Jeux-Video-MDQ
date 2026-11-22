@@ -31,11 +31,11 @@ export default function FreeStudio() {
   const sprite = project.sprites.find((sp) => sp.id === s.sel);
 
   return (
-    <div className="flex min-h-dvh flex-col bg-cream lg:h-dvh lg:min-h-[620px] lg:overflow-hidden">
+    <div className="flex min-h-dvh flex-col bg-cream lg:h-dvh lg:min-h-155 lg:overflow-hidden">
       <Confetti fire={game.confetti} />
       <StudioHeader s={s} />
       <main className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:flex-row">
-        <div className="flex w-full shrink-0 flex-col gap-3 md:mx-auto md:max-w-[560px] lg:mx-0 lg:w-[min(38vw,500px)] lg:max-w-none">
+        <div className="flex w-full shrink-0 flex-col gap-3 md:mx-auto md:max-w-140 lg:mx-0 lg:w-[min(38vw,500px)] lg:max-w-none">
           <Stage s={s} game={game} project={project} stageRef={stageRef} />
           <div className="flex gap-3">
             <motion.button
@@ -76,7 +76,7 @@ export default function FreeStudio() {
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
-            className="toon fixed bottom-5 left-1/2 z-[80] -translate-x-1/2 rounded-full bg-ink px-5 py-2.5 font-display text-lg font-bold text-white"
+            className="toon fixed bottom-5 left-1/2 z-80 -translate-x-1/2 rounded-full bg-ink px-5 py-2.5 font-display text-lg font-bold text-white"
             role="status"
           >
             {s.notice.text}

@@ -9,7 +9,7 @@ export function LevelNav({ g }: { g: LevelGameState }) {
   return (
     <nav
       aria-label="Niveaux"
-      className="order-last flex w-full items-center overflow-x-auto px-1 pt-1 pb-3 lg:order-none lg:mx-auto lg:w-auto lg:overflow-visible lg:p-0"
+      className="order-last flex w-full items-center overflow-x-auto px-1 pt-1 pb-3 lg:order-0 lg:mx-auto lg:w-auto lg:overflow-visible lg:p-0"
     >
       {g.levels.map((l, i) => {
         const st = g.progress.stars[g.sk(l.id)] ?? 0;
@@ -19,7 +19,7 @@ export function LevelNav({ g }: { g: LevelGameState }) {
           <div key={l.id} className="flex items-center">
             {i > 0 && (
               <span
-                className={`h-[5px] w-3 ${open ? "bg-ink" : "bg-ink/20"}`}
+                className={`h-1.25 w-3 ${open ? "bg-ink" : "bg-ink/20"}`}
                 aria-hidden="true"
               />
             )}

@@ -37,7 +37,7 @@ export function Palette({
     <section
       data-trash={dragging ? "1" : undefined}
       aria-label="Blocs disponibles"
-      className={`relative flex w-full max-h-[280px] md:max-h-none ${showTabs ? "md:w-[320px]" : "md:w-[250px]"} shrink-0 flex-col overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop transition-colors ${overTrash ? "bg-coral/30" : "bg-paper"}`}
+      className={`relative flex w-full max-h-70 md:max-h-none ${showTabs ? "md:w-[320px]" : "md:w-62.5"} shrink-0 flex-col overflow-hidden rounded-3xl border-[3px] border-ink shadow-pop transition-colors ${overTrash ? "bg-coral/30" : "bg-paper"}`}
     >
       <h2 className="border-b-[3px] border-ink bg-sky px-4 py-2 text-lg font-bold">
         Blocs

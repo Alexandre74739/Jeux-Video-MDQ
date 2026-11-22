@@ -37,7 +37,7 @@ export default function StoryModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[90] flex justify-center overflow-y-auto bg-ink/60 px-4 pt-20 pb-6 sm:items-center sm:py-16"
+      className="fixed inset-0 z-90 flex justify-center overflow-y-auto bg-ink/60 px-4 pt-20 pb-6 sm:items-center sm:py-16"
       role="dialog"
       aria-modal="true"
       aria-labelledby="story-title"
@@ -46,7 +46,7 @@ export default function StoryModal({
         initial={{ scale: 0.6, y: 40 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 18 }}
-        className="relative h-fit w-[480px] max-w-full rounded-[32px] border-[3px] border-ink bg-paper p-5 text-center shadow-pop-xl sm:p-7"
+        className="relative h-fit w-120 max-w-full rounded-4xl border-[3px] border-ink bg-paper p-5 text-center shadow-pop-xl sm:p-7"
       >
         <motion.div
           className="absolute -top-16 left-1/2 -translate-x-1/2"
@@ -66,7 +66,7 @@ export default function StoryModal({
             <TreasureMap got={map.got} fresh={map.fresh} size={180} />
           </div>
         )}
-        <div className="mt-3 min-h-[96px]">
+        <div className="mt-3 min-h-24">
           <AnimatePresence mode="wait">
             <motion.p
               key={page}

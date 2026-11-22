@@ -21,7 +21,7 @@ export default function BlockEditor(props: EditorProps) {
     dnd.startDrag(e, b, fromPalette);
 
   return (
-    <div className="flex min-h-[640px] flex-1 flex-col gap-3 md:min-h-[520px] md:flex-row lg:min-h-0">
+    <div className="flex min-h-160 flex-1 flex-col gap-3 md:min-h-130 md:flex-row lg:min-h-0">
       <Palette
         groups={groups}
         dragging={!!dnd.drag}

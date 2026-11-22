@@ -24,7 +24,7 @@ export function ProfileDialog({ m }: { m: ProfileMenuState }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[110] flex justify-center overflow-y-auto bg-ink/50 px-4 py-6 sm:items-center"
+      className="fixed inset-0 z-110 flex justify-center overflow-y-auto bg-ink/50 px-4 py-6 sm:items-center"
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) m.close();
       }}
@@ -37,7 +37,7 @@ export function ProfileDialog({ m }: { m: ProfileMenuState }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="profile-title"
-        className="relative h-fit w-[500px] max-w-full rounded-[32px] border-[3px] border-ink bg-paper p-5 text-left text-ink shadow-pop-xl sm:p-6"
+        className="relative h-fit w-125 max-w-full rounded-4xl border-[3px] border-ink bg-paper p-5 text-left text-ink shadow-pop-xl sm:p-6"
       >
         <button
           onClick={m.close}

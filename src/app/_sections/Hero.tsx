@@ -60,7 +60,7 @@ export default function Hero() {
         {/* Mockup de tablette : l'appli telle qu'elle s'affiche sur une tablette en portrait */}
         <motion.div
           {...appear(0.15)}
-          className="relative mx-auto w-full max-w-[25rem]"
+          className="relative mx-auto w-full max-w-100"
         >
           <div className="rounded-[2.5rem] border-[3px] border-ink bg-ink p-3 shadow-pop-xl">
             <div
