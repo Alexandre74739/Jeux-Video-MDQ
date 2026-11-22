@@ -107,8 +107,13 @@ export function badgesFor(c: WinContext, owned: string[]): string[] {
 // ---------------------------------------------------------------- GARDE-ROBE
 export type Slot = "color" | "hat" | "face" | "back" | "trail";
 /** Objet de la garde-robe : débloqué avec des étoiles, ou avec un badge précis. */
-export type Item = { id: string; name: string; stars: number; badge?: string };
-export type ColorItem = Item & { faces: [string, string, string] };
+export type Item = {
+  id: string; name: string; stars: number; badge?: string;
+  /** Objet secret : absent de la garde-robe tant qu'il n'est pas débloqué. */
+  hidden?: boolean;
+};
+/** `faces` : dessus, gauche, droite. `stripes` : seconde couleur des rayures (mêmes trois tons), pour une couleur rayée. */
+export type ColorItem = Item & { faces: [string, string, string]; stripes?: [string, string, string] };
 export type TrailItem = Item & { colors: string[] };
 
 export const COLORS: ColorItem[] = [
@@ -120,6 +125,11 @@ export const COLORS: ColorItem[] = [
   { id: "rouge", name: "Rouge pompier", stars: 40, faces: ["#FF9C8F", "#FF6B57", "#D9473A"] },
   { id: "nuit", name: "Nuit étoilée", stars: 55, faces: ["#7F7BC0", "#4A4594", "#332F72"] },
   { id: "or", name: "Or", stars: 90, faces: ["#FFE58A", "#FFD23F", "#E0AE10"] },
+  // Couleur secrète : offerte avec le badge de fin de l'île secrète.
+  {
+    id: "rayures", name: "Rayures magiques", stars: 0, badge: "legend", hidden: true,
+    faces: ["#9EDFFF", "#4FC3F7", "#2A9FD6"], stripes: ["#FFC2E2", "#FF8FC7", "#E866A8"],
+  },
 ];
 
 export const HATS: Item[] = [

@@ -127,7 +127,7 @@ export default function Wardrobe() {
               ))}
             </div>
             <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4" role="tabpanel">
-              {SLOTS[tab].items.map((item) => {
+              {SLOTS[tab].items.filter((item) => !item.hidden || isUnlocked(item, progress)).map((item) => {
                 const open = isUnlocked(item, progress);
                 const on = outfit[tab] === item.id;
                 return (

@@ -1,4 +1,5 @@
-// Parcours (tutoriel + défis), niveaux et moteur d'exécution (sans dépendance, testable avec Node).
+// Parcours (tutoriel + défis), niveaux et moteur d'exécution (testable avec Node : seule dépendance, story.ts, elle-même sans import).
+import { ISLAND_STARS, MAP_COURSES } from "./story.ts";
 
 export type Block = {
   id: string;
@@ -60,6 +61,8 @@ export type Course = {
   levels: LevelDef[];
   /** Monde secret : étoiles nécessaires pour l'ouvrir. */
   unlockStars?: number;
+  /** Monde secret : il faut aussi avoir complété la carte au trésor (les parcours de MAP_COURSES). */
+  unlockMap?: boolean;
 };
 
 export const DIFFICULTY = ["", "Débutant", "Moyen", "Difficile", "Expert"] as const;
@@ -739,9 +742,25 @@ export const COURSES: Course[] = [
   },
   {
     slug: "ile-secrete", title: "L'île secrète", subtitle: "Le monde caché de la carte au trésor. Tous tes blocs pour une seule aventure !",
-    difficulty: 3, color: "#5EE6C8", newBlocks: [], preview: 3, levels: numbered(ILE), unlockStars: 60,
+    difficulty: 3, color: "#5EE6C8", newBlocks: [], preview: 3, levels: numbered(ILE), unlockStars: ISLAND_STARS, unlockMap: true,
   },
 ];
+
+/** Tous les niveaux du parcours sont-ils réussis ? */
+export const courseDone = (c: Course, stars: Record<string, number>) => c.levels.every((l) => stars[`${c.slug}:${l.id}`]);
+
+/** Morceaux de la carte au trésor trouvés (un par parcours de MAP_COURSES terminé). */
+export const mapPieces = (stars: Record<string, number>) =>
+  MAP_COURSES.map((slug) => { const c = COURSES.find((x) => x.slug === slug); return !!c && courseDone(c, stars); });
+
+export type WorldLock = { have: number; need: number; pieces: number };
+/** Ce qui manque pour ouvrir un monde secret, ou null s'il est ouvert. */
+export function worldLock(c: Course, stars: Record<string, number>): WorldLock | null {
+  if (!c.unlockStars && !c.unlockMap) return null;
+  const have = Object.values(stars).reduce((a, n) => a + n, 0);
+  const pieces = c.unlockMap ? mapPieces(stars).filter(Boolean).length : MAP_COURSES.length;
+  return have >= (c.unlockStars ?? 0) && pieces >= MAP_COURSES.length ? null : { have, need: c.unlockStars ?? 0, pieces };
+}
 
 /** Nombre total de niveaux, tous parcours confondus. */
 export const TOTAL_LEVELS = COURSES.reduce((n, c) => n + c.levels.length, 0);

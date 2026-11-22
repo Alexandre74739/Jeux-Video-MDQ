@@ -20,13 +20,13 @@ import ProfileMenu from "@/_components/profile/ProfileMenu";
 import { DATA_EVENT } from "@/lib/profiles";
 import { BLOCKS, type Block, type Category } from "@/lib/blocks";
 import {
-  COURSES, DIFFICULTY, FAIL_MESSAGES, buildWorld, countBlocks, runProgram, starsFor,
+  COURSES, DIFFICULTY, FAIL_MESSAGES, buildWorld, countBlocks, mapPieces, runProgram, starsFor, worldLock,
   type Outcome, type Step, type World,
 } from "@/lib/levels";
 import { load, loadSession, save, saveSession } from "@/lib/storage";
 import { BADGES, badgeItems, badgesFor, emptyProgress, newItems, totalStars as allStars, type Progress } from "@/lib/rewards";
 import { CHEERS, LINES, tipLine } from "@/lib/lines";
-import { MAP_COURSES, STORY } from "@/lib/story";
+import { STORY } from "@/lib/story";
 import { getVoicePrefs, sfx, speak } from "@/lib/sound";
 import { WinCard, type WinInfo } from "./WinCard";
 import { LockedWorld } from "./LockedWorld";
@@ -96,7 +96,7 @@ export default function LevelGame({ slug }: { slug: string }) {
     setProgress(p);
     setView3d(load("view3d", true));
     setStreak(loadSession("streak", 0));
-    const lockedNow = !!course.unlockStars && allStars(p) < course.unlockStars;
+    const lockedNow = !!worldLock(course, p.stars);
     if (!lockedNow && STORY[course.slug] && !load<string[]>("story", []).includes(`${course.slug}:intro`)) setStory("intro");
     const firstTodo = LEVELS.findIndex((l) => !p.stars[sk(l.id)]);
     // « ?niveau=N » dans l'adresse ouvre directement ce niveau (s'il est débloqué), sinon le premier à faire.
@@ -144,7 +144,7 @@ export default function LevelGame({ slug }: { slug: string }) {
 
   const unlocked = (i: number) => i === 0 || !!progress.stars[sk(LEVELS[i - 1].id)];
   const totalStars = LEVELS.reduce((a, l) => a + (progress.stars[sk(l.id)] ?? 0), 0);
-  const locked = !!course.unlockStars && ready && allStars(progress) < course.unlockStars;
+  const lock = ready ? worldLock(course, progress.stars) : null;
   const markSeen = (k: "intro" | "outro") => {
     const seen = load<string[]>("story", []);
     if (!seen.includes(`${course.slug}:${k}`)) save("story", [...seen, `${course.slug}:${k}`]);
@@ -226,7 +226,7 @@ export default function LevelGame({ slug }: { slug: string }) {
 
   const fallback2D = <World2D world={world} />;
 
-  if (locked) return <LockedWorld need={course.unlockStars!} have={allStars(progress)} />;
+  if (lock) return <LockedWorld lock={lock} />;
 
   return (
     <div className="flex min-h-dvh flex-col bg-cream lg:h-dvh lg:min-h-[620px] lg:overflow-hidden">
@@ -430,7 +430,7 @@ export default function LevelGame({ slug }: { slug: string }) {
             key={story}
             scene={STORY[course.slug][story]}
             map={STORY[course.slug].piece !== undefined ? {
-              got: MAP_COURSES.map((c) => coursesDone(progress).includes(c)),
+              got: mapPieces(progress.stars),
               fresh: story === "outro" ? STORY[course.slug].piece : undefined,
             } : undefined}
             cta={story === "intro" ? "C'est parti !" : "Super !"}
